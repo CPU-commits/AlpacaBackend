@@ -1,0 +1,18 @@
+{
+	"roles": {
+		"unauthorized": "Unauthorized role"
+	},
+	"unauthorized": "Unauthorized",
+	"dog": {
+		"not_found": "Dog not found",
+		"has_owner": "Owner has dog"
+	},
+	"server": {
+		"internal_error": "Internal error"
+	},
+	"form": {
+		"error": "Error form",
+		"required": "Required",
+		"min": "Minimus"
+	}
+}

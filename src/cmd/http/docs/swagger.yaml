@@ -1,0 +1,94 @@
+basePath: /api
+consumes:
+- application/json
+definitions:
+  model.Dog:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+    type: object
+  utils.ErrorProblemDetails:
+    properties:
+      param:
+        type: string
+      pointer:
+        type: string
+      title:
+        type: string
+    type: object
+  utils.ProblemDetails:
+    properties:
+      detail:
+        type: string
+      errors:
+        items:
+          $ref: '#/definitions/utils.ErrorProblemDetails'
+        type: array
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API Server
+  license:
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: API
+  version: "1.0"
+paths:
+  /api/dogs:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Insertar un perro
+      tags:
+      - dogs
+  /api/dogs/{idDog}:
+    get:
+      parameters:
+      - description: ID Dog
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Dog'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Obtener un perro por ID
+      tags:
+      - dogs
+produces:
+- application/json
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    description: BearerJWTToken in Authorization Header
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

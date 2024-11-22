@@ -1,0 +1,11 @@
+output="src/package/db/models"
+add-enum-types=true
+
+[crdb]
+user="root"
+pass=""
+host="localhost"
+port=26257
+dbname="defaultdb"
+sslmode="disable"
+blacklist=["schema_lock", "schema_migrations"]

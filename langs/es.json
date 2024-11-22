@@ -1,0 +1,18 @@
+{
+	"roles": {
+		"unauthorized": "Rol no autorizado"
+	},
+	"unauthorized": "No tienes acceso",
+	"dog": {
+		"not_found": "No se ha encontrado el perro",
+		"has_owner": "El dueño tiene perro"
+	},
+	"server": {
+		"internal_error": "Error del servidor"
+	},
+	"form": {
+		"error": "Error en el formulario",
+		"required": "Requerido",
+		"min": "Mínimo"
+	}
+}

@@ -1,0 +1,15 @@
+# Vscode
+.vscode
+
+#.env
+.env
+
+#main
+main*
+!*.go
+
+#swag
+swag
+
+#logs
+logs/

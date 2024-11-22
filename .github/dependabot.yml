@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "[security]"
+      include: scope
+    labels:
+      - "gomod"
+      - "dependencies"
+      - "server"
+    open-pull-requests-limit: 0
+    target-branch: "master"
