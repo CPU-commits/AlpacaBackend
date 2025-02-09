@@ -4,7 +4,47 @@
 package models
 
 var TableNames = struct {
-	Dogs string
+	Accesses            string
+	Auths               string
+	Categories          string
+	Follows             string
+	Images              string
+	Likes               string
+	PostCategories      string
+	PostImages          string
+	Posts               string
+	ProfileCategories   string
+	Profiles            string
+	Reviews             string
+	RolesUsers          string
+	Sessions            string
+	StudioAdmins        string
+	StudioTattooArtists string
+	Studios             string
+	TattooCategories    string
+	Tattoos             string
+	TokenPasswords      string
+	Users               string
 }{
-	Dogs: "dogs",
+	Accesses:            "accesses",
+	Auths:               "auths",
+	Categories:          "categories",
+	Follows:             "follows",
+	Images:              "images",
+	Likes:               "likes",
+	PostCategories:      "post_categories",
+	PostImages:          "post_images",
+	Posts:               "posts",
+	ProfileCategories:   "profile_categories",
+	Profiles:            "profiles",
+	Reviews:             "reviews",
+	RolesUsers:          "roles_users",
+	Sessions:            "sessions",
+	StudioAdmins:        "studio_admins",
+	StudioTattooArtists: "studio_tattoo_artists",
+	Studios:             "studios",
+	TattooCategories:    "tattoo_categories",
+	Tattoos:             "tattoos",
+	TokenPasswords:      "token_passwords",
+	Users:               "users",
 }

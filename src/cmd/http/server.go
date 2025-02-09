@@ -8,11 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
+	authController "github.com/CPU-commits/Template_Go-EventDriven/src/auth/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/dogs/controller"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
+	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
+	tattooController "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/controller"
+	userController "github.com/CPU-commits/Template_Go-EventDriven/src/user/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/secure"
@@ -56,18 +59,15 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	docs.SwaggerInfo.Version = "v1"
 	docs.SwaggerInfo.Host = "localhost:8080"
 	// CORS
-	if settingsData.GO_ENV == "prod" {
-		router.Use(cors.New(cors.Config{
-			AllowOrigins:     strings.Split(settingsData.CORS_DOMAINS, ","),
-			AllowMethods:     []string{"GET", "OPTIONS", "PUT", "DELETE", "POST"},
-			AllowCredentials: true,
-			AllowHeaders:     []string{"*"},
-			AllowWebSockets:  false,
-			MaxAge:           12 * time.Hour,
-		}))
-	} else {
-		router.Use(cors.Default())
-	}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Split(settingsData.CORS_DOMAINS, ","),
+		AllowMethods:     []string{"GET", "OPTIONS", "PUT", "DELETE", "POST", "PATCH"},
+		AllowCredentials: true,
+		AllowHeaders:     []string{"*"},
+		AllowWebSockets:  false,
+		MaxAge:           12 * time.Hour,
+		ExposeHeaders:    []string{"X-Total", "X-Per-Page"},
+	}))
 	// Secure
 	sslUrl := "ssl." + settingsData.CLIENT_DOMAIN
 	secureConfig := secure.Config{
@@ -89,18 +89,51 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		lang := ctx.DefaultQuery("lang", "es")
 		ctx.Set("localizer", utils.GetLocalizer(lang))
 	})
-	// Init bus
-	bus := queue.New(logger)
 	// Routes
-	dog := router.Group("api/dogs")
+	auth := router.Group("api/auth")
 	{
 		// Controllers
-		dogController := controller.NewHTTPDogController(
-			bus,
-		)
+		authController := new(authController.HttpAuthController)
 		// Define routes
-		dog.GET("/:idDog", dogController.GetDog)
-		dog.POST("", dogController.InsertDog)
+		auth.POST("/login", authController.Login)
+		auth.POST("/refresh", middleware.JWTMiddleware(), authController.Refresh)
+		auth.POST("/register", authController.Register)
+	}
+	category := router.Group("api/categories")
+	{
+		// Controllers
+		categoryController := new(tattooController.HttpCategoryController)
+		// Define routes
+		category.GET("", categoryController.GetCategories)
+	}
+	tattoo := router.Group("api/tattoos")
+	{
+		// Controllers
+		tattooController := new(tattooController.HttpTattooController)
+		// Define routes
+		tattoo.GET("/:username", tattooController.GetTattoos)
+		tattoo.GET("/latest/:username", tattooController.GetLatestTattoos)
+		tattoo.POST("", middleware.JWTMiddleware(), tattooController.UploadTattoos)
+	}
+	profile := router.Group("api/profiles")
+	{
+		// Controllers
+		profileController := new(userController.HttpProfileController)
+		// Define routes
+		profile.GET("/:username", profileController.GetProfile)
+		profile.PATCH("/avatar", middleware.JWTMiddleware(), profileController.ChangeAvatar)
+		profile.PATCH("", middleware.JWTMiddleware(), profileController.UpdateProfile)
+	}
+	publication := router.Group("api/publications")
+	{
+		// Controllers
+		publicationController := new(publicationController.HttpPublicationController)
+		// Define routes
+		publication.GET("/username/:username", publicationController.GetPublications)
+		publication.GET("/:idPost/like", publicationController.GetMyLike)
+		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
+		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
+		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

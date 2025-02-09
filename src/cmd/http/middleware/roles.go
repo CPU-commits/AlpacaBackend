@@ -11,10 +11,14 @@ import (
 func RolesMiddleware(roles []string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		claims, _ := utils.NewClaimsFromContext(ctx)
-		for _, rol := range roles {
-			if rol == claims.UserType {
-				ctx.Next()
-				return
+		userRoles := claims.Roles
+		for _, allowRole := range roles {
+			for _, userRole := range userRoles {
+				if allowRole == userRole {
+					ctx.Next()
+					return
+				}
+
 			}
 		}
 		localizer := utils.GetI18nLocalizer(ctx)

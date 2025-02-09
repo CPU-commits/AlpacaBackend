@@ -1,0 +1,181 @@
+package profile_repository
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+)
+
+type sqlProfileRepository struct {
+	db *sql.DB
+}
+
+type SqlProfileRepository = sqlProfileRepository
+
+func (sqlProfileRepository) sqlProfileToProfile(
+	profile *models.Profile,
+) model.Profile {
+	var avatar *fileModel.Image
+	if profile.R != nil && profile.R.IDAvatarImage != nil {
+		sqlAvatar := profile.R.IDAvatarImage
+
+		avatar = &fileModel.Image{
+			ID:        sqlAvatar.ID,
+			Key:       sqlAvatar.Key,
+			MimeType:  sqlAvatar.MimeType,
+			Name:      sqlAvatar.Name,
+			CreatedAt: sqlAvatar.CreatedAt,
+		}
+	}
+
+	return model.Profile{
+		ID:          profile.ID,
+		IDUser:      profile.IDUser,
+		Likes:       profile.Likes,
+		CreatedAt:   profile.CreatedAt,
+		Description: profile.Description.String,
+		Avatar:      avatar,
+	}
+}
+
+func (sqlProfileRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
+	mod := []QueryMod{}
+	if selectOpts == nil {
+		return mod
+	}
+
+	if selectOpts.ID != nil && *selectOpts.ID {
+		mod = append(mod, Select(models.ProfileColumns.ID))
+	}
+	if selectOpts.Avatar != nil && *selectOpts.Avatar {
+		mod = append(mod, Select(models.ProfileColumns.IDAvatar))
+	}
+
+	return mod
+}
+
+func (sqlProfileRepository) loadOpts(load *LoadOpts) []QueryMod {
+	mod := []QueryMod{}
+	if load == nil {
+		return mod
+	}
+	if load.Avatar {
+		mod = append(mod, Load(models.ProfileRels.IDAvatarImage))
+	}
+
+	return mod
+}
+
+func (sqlPR sqlProfileRepository) findOneOptionsToMod(opts *FindOneOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlPR.selectOpts(opts.SelectOpts)...)
+	mod = append(mod, sqlPR.loadOpts(opts.load)...)
+
+	return mod
+}
+
+func (sqlPR sqlProfileRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
+	mod := []QueryMod{}
+	if criteria == nil {
+		return mod
+	}
+	if criteria.ID != 0 {
+		mod = append(mod, Where("id = ?", criteria.ID))
+	}
+	if criteria.IDUser != 0 {
+		mod = append(mod, Where("id_user = ?", criteria.IDUser))
+	}
+
+	return mod
+}
+
+func (sqlPR sqlProfileRepository) FindOne(criteria *Criteria, opts *FindOneOptions) (*model.Profile, error) {
+	mod := sqlPR.findOneOptionsToMod(opts)
+	where := sqlPR.criteriaToWhere(criteria)
+
+	sqlProfile, err := models.Profiles(append(mod, where...)...).One(context.Background(), sqlPR.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	profile := sqlPR.sqlProfileToProfile(sqlProfile)
+
+	return &profile, nil
+}
+
+func (sqlPR sqlProfileRepository) UpdateOne(criteria *Criteria, data UpdateData) error {
+	where := sqlPR.criteriaToWhere(criteria)
+
+	sqlProfile, err := models.Profiles(append([]QueryMod{
+		Select("id"),
+	}, where...)...).One(context.Background(), sqlPR.db)
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+
+	ctx := context.Background()
+	tx, err := sqlPR.db.BeginTx(ctx, nil)
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+	// Set columns
+	var cols []string
+
+	if data.Avatar != nil {
+		sqlImage := models.Image{
+			Key:      data.Avatar.Key,
+			Name:     data.Avatar.Name,
+			MimeType: data.Avatar.MimeType,
+		}
+		if err := sqlImage.Insert(ctx, tx, boil.Infer()); err != nil {
+			tx.Rollback()
+
+			return utils.ErrRepositoryFailed
+		}
+
+		sqlProfile.IDAvatar = null.Int64From(sqlImage.ID)
+		cols = append(cols, models.ProfileColumns.IDAvatar)
+	}
+	if data.Description != "" {
+		sqlProfile.Description = null.StringFrom(data.Description)
+		cols = append(cols, models.ProfileColumns.Description)
+	}
+
+	_, err = sqlProfile.Update(ctx, tx, boil.Whitelist(cols...))
+	if err != nil {
+		tx.Rollback()
+		return utils.ErrRepositoryFailed
+	}
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
+}
+
+func NewSqlProfileRepository(db *sql.DB) ProfileRepository {
+	return sqlProfileRepository{
+		db: db,
+	}
+}
+
+func SqlExplicitProfileRepository(db *sql.DB) sqlProfileRepository {
+	return sqlProfileRepository{
+		db: db,
+	}
+}

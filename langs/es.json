@@ -3,16 +3,34 @@
 		"unauthorized": "Rol no autorizado"
 	},
 	"unauthorized": "No tienes acceso",
-	"dog": {
-		"not_found": "No se ha encontrado el perro",
-		"has_owner": "El dueño tiene perro"
-	},
 	"server": {
-		"internal_error": "Error del servidor"
+		"internal_error": "Error del servidor",
+		"db_error": "Error del servidor"
 	},
 	"form": {
 		"error": "Error en el formulario",
 		"required": "Requerido",
 		"min": "Mínimo"
+	},
+	"auth": {
+		"err_credentials": "Credenciales inválidas",
+		"unable_role": "No se puede registrar con este rol",
+		"exists_email_or_username": "Ya existe el email o el nombre de usuario"
+	},
+	"refresh_not_found": "No se encuentra el Header X-Refresh",
+	"session": {
+		"not_exists": "La sesión ya no existe"
+	},
+	"user": {
+		"not_found": "El usuario no existe",
+		"no_profile": "El usuario no tiene perfil",
+		"username_not_exists": "No existe el nombre de usuario"
+	},
+	"category": {
+		"not_exists": "Alguna de las categorías no existe"
+	},
+	"publication": {
+		"not_exists": "No existe la publicación",
+		"not_have_access": "No tienes accesso a la publicación"
 	}
 }

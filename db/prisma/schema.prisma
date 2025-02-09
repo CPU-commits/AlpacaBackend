@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model accesses {
+  id         BigInt   @id @default(sequence())
+  token      String
+  expires_at DateTime @db.Date
+  is_revoked Boolean  @default(false)
+  id_session BigInt
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  sessions   sessions @relation(fields: [id_session], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model auths {
+  id         BigInt     @id @default(sequence())
+  password   String
+  id_user    BigInt     @unique
+  created_at DateTime   @default(now()) @db.Timestamp(6)
+  users      users      @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sessions   sessions[]
+}
+
+model roles_users {
+  id         BigInt    @id @default(sequence())
+  id_user    BigInt
+  role       role_name
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sessions {
+  id         BigInt     @id @default(sequence())
+  token      String
+  id_auth    BigInt
+  device     String?
+  ip         String?
+  browser    String?
+  location   String?
+  expires_at DateTime   @db.Date
+  created_at DateTime   @default(now()) @db.Timestamp(6)
+  accesses   accesses[]
+  auths      auths      @relation(fields: [id_auth], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id                 BigInt               @id @default(sequence())
+  email              String               @unique
+  name               String
+  username String @unique
+  phone              String?
+  created_at         DateTime            @default(now()) @db.Timestamp(6)
+  auths              auths[]
+  roles_users        roles_users[]
+  token_passwords    token_passwords[]
+  profile profiles?
+  follows follows[]
+  studios studio_tattoo_artists[]
+  my_studios studio_admins[]
+  reviews reviews[]
+  likes likes[]
+  appointments appointments[] @relation(references: [id_tattoo_artist, id_user])
+}
+
+model token_passwords {
+  id             BigInt    @id @default(sequence())
+  token          String
+  id_user        BigInt     @unique
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+  users          users      @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model categories {
+	id BigInt @id @default(sequence())
+	name String
+	state Boolean @default(true)
+	description String
+	slug String @unique
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	profiles profile_categories[]
+	tattoos tattoo_categories[]
+	posts post_categories[]
+}
+
+model images {
+	id BigInt @id @default(sequence())
+	key String @unique
+	name String
+	mimeType String
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	profiles profiles?
+	tattoo tattoos?
+	post post_images?
+}
+
+model profile_categories {
+	id BigInt @id @default(sequence())
+	id_profile BigInt
+	id_categories BigInt
+	profile profiles @relation(fields: [id_profile], references: [id])
+	category categories @relation(fields: [id_categories], references: [id])
+}
+
+model profiles {
+	id BigInt @id @default(sequence())
+	description String?
+	id_avatar BigInt? @unique
+	avatar images? @relation(fields: [id_avatar], references: [id])
+	likes Int @default(0)
+	id_user BigInt @unique
+	user users @relation(fields: [id_user], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	categories profile_categories[]
+	follows follows[]
+	tattoos tattoos[]
+	reviews reviews[]
+	posts posts[]
+	like likes[]
+}
+
+model follows {
+	id BigInt @id @default(sequence())
+	id_user BigInt
+	id_profile BigInt
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	user users @relation(fields: [id_user], references: [id])
+	profile profiles @relation(fields: [id_profile], references: [id])
+}
+
+model tattoo_categories {
+	id BigInt @id @default(sequence())
+	id_tattoo BigInt
+	id_category BigInt
+	tattoo tattoos @relation(fields: [id_tattoo], references: [id])
+	category categories @relation(fields: [id_category], references: [id])
+}
+
+model tattoos {
+	id BigInt @id @default(sequence())
+	id_profile BigInt
+	id_image BigInt @unique
+	likes Int @default(0)
+	description String?
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	popularity Int @default(0)
+	id_post BigInt?
+	views Int @default(0)
+	coordinate Unsupported("GEOMETRY")?
+	post posts? @relation(fields: [id_post], references: [id])
+	image images @relation(fields: [id_image], references: [id])
+	profile profiles @relation(fields: [id_profile], references: [id])
+	categories tattoo_categories[]
+}
+
+model studio_tattoo_artists {
+	id BigInt @id @default(sequence())
+	id_studio BigInt
+	id_tattoo_artist BigInt
+	studio studios @relation(fields: [id_studio], references: [id])
+	tattoo_artist users @relation(fields: [id_tattoo_artist], references: [id])
+}
+
+model studio_admins {
+	id BigInt @id @default(sequence())
+	id_studio BigInt
+	id_owner BigInt
+	studio studios @relation(fields: [id_studio], references: [id])
+	owner users @relation(fields: [id_owner], references: [id])
+}
+
+model studios {
+	id BigInt @id @default(sequence())
+	description String
+	direction Json
+	email String
+	phone String?
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	tattoo_artists studio_tattoo_artists[]
+	admins studio_admins[]
+}
+
+model reviews {
+	id BigInt @id @default(sequence())
+	id_user BigInt
+	id_profile BigInt
+	content String
+	stars Int
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	user users @relation(fields: [id_user], references: [id])
+	profile profiles @relation(fields: [id_profile], references: [id])
+}
+
+model post_images {
+	id BigInt @id @default(sequence())
+	id_image BigInt @unique
+	id_post BigInt
+	image images @relation(references: [id], fields: [id_image], onDelete: Cascade)
+	post posts @relation(references: [id], fields: [id_post])
+}
+
+model post_categories {
+	id BigInt @id @default(sequence())
+	id_post BigInt
+	id_category BigInt
+	post posts @relation(references: [id], fields: [id_post])
+	category categories @relation(fields: [id_category], references: [id])
+}
+
+model posts {
+	id BigInt @id @default(sequence())
+	id_profile BigInt
+	content String
+	likes Int
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	profile profiles @relation(fields: [id_profile], references: [id])
+	tattoos tattoos[]
+	images post_images[]
+	like likes[]
+	categories post_categories[]
+}
+
+model likes {
+	id BigInt @id @default(sequence())
+	id_user BigInt
+	id_profile BigInt
+	id_post BigInt
+	user users @relation(fields: [id_user], references: [id])
+	profile profiles @relation(fields: [id_profile], references: [id])
+	post posts @relation(fields: [id_post], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+}
+
+model appointments {
+	id BigInt @id @default(sequence())
+	id_user BigInt
+	id_tattoo_artist BigInt
+	status appointment_status
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	user users @relation(references: [id], fields: [id_user])
+	tattoo_artist users @relation(references: [id], fields: [id_tattoo_artist])
+}
+
+enum appointment_status {
+	paid
+	created
+}
+
+enum role_name {
+  admin
+  user
+  tattooArtist
+}

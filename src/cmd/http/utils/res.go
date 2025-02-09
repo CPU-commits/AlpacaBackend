@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -71,8 +72,13 @@ func ResWithMessageID(
 	c *gin.Context,
 	messageId string,
 	statusCode int,
+	errors ...error,
 ) {
 	localizer := GetI18nLocalizer(c)
+	var detail string
+	for _, err := range errors {
+		detail += err.Error()
+	}
 
 	c.AbortWithStatusJSON(
 		statusCode,
@@ -80,6 +86,25 @@ func ResWithMessageID(
 			Title: localizer.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: messageId,
 			}),
+			Detail: detail,
+		},
+	)
+}
+
+func ResErrValidators(
+	c *gin.Context,
+	err error,
+) {
+	localizer := GetI18nLocalizer(c)
+
+	c.AbortWithStatusJSON(
+		http.StatusBadRequest,
+		ProblemDetails{
+			Errors: ValidatorErrorToErrorProblemDetails(err, localizer),
+			Title: localizer.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "form.error",
+			}),
+			Detail: err.Error(),
 		},
 	)
 }

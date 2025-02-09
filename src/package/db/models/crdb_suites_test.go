@@ -6,5 +6,25 @@ package models
 import "testing"
 
 func TestUpsert(t *testing.T) {
-	t.Run("Dogs", testDogsUpsert)
+	t.Run("Accesses", testAccessesUpsert)
+	t.Run("Auths", testAuthsUpsert)
+	t.Run("Categories", testCategoriesUpsert)
+	t.Run("Follows", testFollowsUpsert)
+	t.Run("Images", testImagesUpsert)
+	t.Run("Likes", testLikesUpsert)
+	t.Run("PostCategories", testPostCategoriesUpsert)
+	t.Run("PostImages", testPostImagesUpsert)
+	t.Run("Posts", testPostsUpsert)
+	t.Run("ProfileCategories", testProfileCategoriesUpsert)
+	t.Run("Profiles", testProfilesUpsert)
+	t.Run("Reviews", testReviewsUpsert)
+	t.Run("RolesUsers", testRolesUsersUpsert)
+	t.Run("Sessions", testSessionsUpsert)
+	t.Run("StudioAdmins", testStudioAdminsUpsert)
+	t.Run("StudioTattooArtists", testStudioTattooArtistsUpsert)
+	t.Run("Studios", testStudiosUpsert)
+	t.Run("TattooCategories", testTattooCategoriesUpsert)
+	t.Run("Tattoos", testTattoosUpsert)
+	t.Run("TokenPasswords", testTokenPasswordsUpsert)
+	t.Run("Users", testUsersUpsert)
 }

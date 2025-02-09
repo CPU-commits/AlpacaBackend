@@ -3,7 +3,12 @@ package utils
 import (
 	"net/http"
 
-	"github.com/CPU-commits/Template_Go-EventDriven/src/dogs/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
+	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
+	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
 
 type errRes struct {
@@ -27,12 +32,52 @@ func GetErrRes(err error) errRes {
 }
 
 func init() {
-	errorsService[service.ErrDogNotExists] = errRes{
-		StatusCode: http.StatusNotFound,
-		MessageId:  "dog.not_found",
+	errorsService[authService.ErrInvalidCredentials] = errRes{
+		StatusCode: http.StatusForbidden,
+		MessageId:  "auth.err_credentials",
 	}
-	errorsService[service.ErrOwnerDogHasOneDog] = errRes{
+	errorsService[authService.ErrUserLoginNotFound] = errRes{
+		StatusCode: http.StatusForbidden,
+		MessageId:  "auth.err_credentials",
+	}
+	errorsService[utils.ErrRepositoryFailed] = errRes{
+		StatusCode: http.StatusServiceUnavailable,
+		MessageId:  "server.db_error",
+	}
+	errorsService[authService.ErrSessionNotExists] = errRes{
 		StatusCode: http.StatusConflict,
-		MessageId:  "dog.has_owner",
+		MessageId:  "session.not_exists",
+	}
+	errorsService[authService.ErrUserNotFound] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "user.not_found",
+	}
+	errorsService[authService.ErrExistsEmailOrUsername] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "auth.exists_email_or_username",
+	}
+	errorsService[dto.ErrUnableToRegisterRole] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "auth.unable_role",
+	}
+	errorsService[userService.ErrUserNoHasProfile] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "user.no_profile",
+	}
+	errorsService[tattooService.ErrCategoriesNotExists] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "category.not_exists",
+	}
+	errorsService[authService.ErrUsernameNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "user.username_not_exists",
+	}
+	errorsService[publicationService.ErrPublicationNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "publication.not_exists",
+	}
+	errorsService[publicationService.ErrPublicationNotAccess] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "publication.not_have_access",
 	}
 }

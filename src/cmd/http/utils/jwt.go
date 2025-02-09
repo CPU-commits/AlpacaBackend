@@ -14,9 +14,9 @@ var jwtKey = settings.GetSettings().JWT_SECRET_KEY
 var jwtKeyByte = []byte(jwtKey)
 
 type Claims struct {
-	ID       string
-	UserType string
-	Name     string
+	ID    int64
+	Roles []string
+	Name  string
 }
 
 type RefreshClaims struct {
@@ -53,10 +53,18 @@ func VerifyToken(bearerToken string) (*jwt.Token, error) {
 
 func ExtractTokenMetadata(token *jwt.Token) (*Claims, error) {
 	claim := token.Claims.(jwt.MapClaims)
+	var rolesIn []string
+	if roles, ok := claim["roles"].([]interface{}); ok {
+		for _, role := range roles {
+			if roleStr, ok := role.(string); ok {
+				rolesIn = append(rolesIn, roleStr)
+			}
+		}
+	}
 	return &Claims{
-		ID:       fmt.Sprintf("%v", claim["_id"]),
-		UserType: fmt.Sprintf("%v", claim["user_type"]),
-		Name:     fmt.Sprintf("%v", claim["name"]),
+		ID:    int64(claim["uid"].(float64)),
+		Roles: rolesIn,
+		Name:  fmt.Sprintf("%v", claim["name"]),
 	}, nil
 }
 
@@ -77,8 +85,8 @@ func NewClaimsFromContext(ctx *gin.Context) (*Claims, bool) {
 		return &Claims{}, false
 	}
 	return &Claims{
-		ID:       user.(*Claims).ID,
-		UserType: user.(*Claims).UserType,
-		Name:     user.(*Claims).Name,
+		ID:    user.(*Claims).ID,
+		Roles: user.(*Claims).Roles,
+		Name:  user.(*Claims).Name,
 	}, true
 }

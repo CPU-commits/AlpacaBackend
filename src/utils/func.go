@@ -19,14 +19,18 @@ func Some[T comparable](slice []T, validorFunc func(x T) bool) bool {
 	return true
 }
 
-func AnyMatch[T comparable](slice []T, condition func(x T) bool) (bool, error) {
+func AnyMatch[T comparable](slice []T, condition func(x T) (bool, error)) (bool, error) {
 	v := reflect.ValueOf(slice)
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 		return false, errors.New("first arg. is not a slice")
 	}
 
 	for i := 0; i < v.Len(); i++ {
-		if condition(v.Index(i).Interface().(T)) {
+		v, err := condition(v.Index(i).Interface().(T))
+		if err != nil {
+			return false, err
+		}
+		if v {
 			return true, nil
 		}
 	}
