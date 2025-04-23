@@ -7,7 +7,6 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/category_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	tattooServices "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
@@ -45,14 +44,5 @@ var (
 		*profileService,
 		tattooRepository,
 		*categoryService,
-	)
-	publicationService = service.NewPublicationService(
-		*tattooService,
-		*categoryService,
-		*profileService,
-		imageStore,
-		publicationRepository,
-		likeRepository,
-		tattooRepository,
 	)
 )

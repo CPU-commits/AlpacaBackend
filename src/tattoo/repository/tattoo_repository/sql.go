@@ -98,13 +98,15 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	return mod
 }
 
-func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64) error {
+func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error) {
 	ctx := context.Background()
 	tx, err := sqlTR.db.BeginTx(ctx, nil)
 	if err != nil {
-		return utils.ErrRepositoryFailed
+		return nil, utils.ErrRepositoryFailed
 	}
-	for _, tattoo := range tattoos {
+	newTattoos := tattoos
+
+	for i, tattoo := range tattoos {
 		sqlImage := models.Image{
 			Key:      tattoo.Image.Key,
 			Name:     tattoo.Image.Name,
@@ -113,7 +115,14 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 		if err := sqlImage.Insert(ctx, tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
-			return utils.ErrRepositoryFailed
+			return nil, utils.ErrRepositoryFailed
+		}
+		tattoo.Image = fileModel.Image{
+			ID:        sqlImage.ID,
+			Key:       tattoo.Image.Key,
+			Name:      tattoo.Image.Name,
+			MimeType:  tattoo.Image.MimeType,
+			CreatedAt: sqlImage.CreatedAt,
 		}
 
 		sqlTattoo := models.Tattoo{
@@ -134,8 +143,11 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 		if err := sqlTattoo.Insert(ctx, tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
-			return utils.ErrRepositoryFailed
+			return nil, utils.ErrRepositoryFailed
 		}
+		tattoo.ID = sqlTattoo.ID
+		tattoo.CreatedAt = sqlTattoo.CreatedAt
+
 		for _, idCategory := range tattoo.IDCategories {
 			sqlCategoryTattoo := models.TattooCategory{
 				IDTattoo:   sqlTattoo.ID,
@@ -144,17 +156,19 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 			if err := sqlCategoryTattoo.Insert(ctx, tx, boil.Infer()); err != nil {
 				tx.Rollback()
 
-				return utils.ErrRepositoryFailed
+				return nil, utils.ErrRepositoryFailed
 			}
 		}
+
+		newTattoos[i] = tattoo
 	}
 	if err := tx.Commit(); err != nil {
 		tx.Rollback()
 
-		return utils.ErrRepositoryFailed
+		return nil, utils.ErrRepositoryFailed
 	}
 
-	return nil
+	return newTattoos, nil
 }
 
 func (sqlTattooRepository) includeOpts(include *Include) []QueryMod {

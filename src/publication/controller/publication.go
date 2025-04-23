@@ -8,15 +8,20 @@ import (
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
-type HttpPublicationController struct{}
+type HttpPublicationController struct {
+	bus                bus.Bus
+	publicationService *service.PublicationService
+}
 
-func (*HttpPublicationController) GetPublications(c *gin.Context) {
+func (httpPC *HttpPublicationController) GetPublications(c *gin.Context) {
 	username := c.Param("username")
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
@@ -25,7 +30,7 @@ func (*HttpPublicationController) GetPublications(c *gin.Context) {
 		return
 	}
 
-	publications, metadata, err := publicationService.GetPublications(
+	publications, metadata, err := httpPC.publicationService.GetPublications(
 		username,
 		page,
 	)
@@ -36,7 +41,7 @@ func (*HttpPublicationController) GetPublications(c *gin.Context) {
 	c.JSON(http.StatusOK, publications)
 }
 
-func (*HttpPublicationController) GetMyLike(c *gin.Context) {
+func (httpPC *HttpPublicationController) GetMyLike(c *gin.Context) {
 	idPostStr := c.Param("idPost")
 	idPost, err := strconv.Atoi(idPostStr)
 	if err != nil {
@@ -45,7 +50,7 @@ func (*HttpPublicationController) GetMyLike(c *gin.Context) {
 	}
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	isLike, err := publicationService.GetMyLike(
+	isLike, err := httpPC.publicationService.GetMyLike(
 		int64(idPost),
 		claims.ID,
 	)
@@ -59,7 +64,7 @@ func (*HttpPublicationController) GetMyLike(c *gin.Context) {
 	})
 }
 
-func (*HttpPublicationController) Like(c *gin.Context) {
+func (httpPC *HttpPublicationController) Like(c *gin.Context) {
 	idPostStr := c.Param("idPost")
 	idPost, err := strconv.Atoi(idPostStr)
 	if err != nil {
@@ -68,7 +73,7 @@ func (*HttpPublicationController) Like(c *gin.Context) {
 	}
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	isLike, err := publicationService.HandleLike(
+	isLike, err := httpPC.publicationService.HandleLike(
 		int64(idPost),
 		claims.ID,
 	)
@@ -82,7 +87,7 @@ func (*HttpPublicationController) Like(c *gin.Context) {
 	})
 }
 
-func (*HttpPublicationController) Publish(c *gin.Context) {
+func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	var publicationDto *dto.PublicationDto
 	if err := c.Bind(&publicationDto); err != nil {
 		utils.ResErrValidators(c, err)
@@ -125,7 +130,7 @@ func (*HttpPublicationController) Publish(c *gin.Context) {
 	publicationDto.Images = imagesDto
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	publication, err := publicationService.Publish(publicationDto, claims.ID)
+	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -134,7 +139,7 @@ func (*HttpPublicationController) Publish(c *gin.Context) {
 	c.JSON(http.StatusCreated, publication)
 }
 
-func (*HttpPublicationController) DeletePublication(c *gin.Context) {
+func (httpPC *HttpPublicationController) DeletePublication(c *gin.Context) {
 	idPublicationStr := c.Param("idPublication")
 	idPublication, err := strconv.Atoi(idPublicationStr)
 	if err != nil {
@@ -143,7 +148,7 @@ func (*HttpPublicationController) DeletePublication(c *gin.Context) {
 	}
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	if err := publicationService.DeletePublication(
+	if err := httpPC.publicationService.DeletePublication(
 		int64(idPublication),
 		claims.ID,
 	); err != nil {
@@ -152,4 +157,20 @@ func (*HttpPublicationController) DeletePublication(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, nil)
+}
+
+func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
+	return &HttpPublicationController{
+		bus: bus,
+		publicationService: service.NewPublicationService(
+			*tattooService,
+			*categoryService,
+			*profileService,
+			imageStore,
+			publicationRepository,
+			likeRepository,
+			tattooRepository,
+			bus,
+		),
+	}
 }

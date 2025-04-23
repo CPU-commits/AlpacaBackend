@@ -102,15 +102,15 @@ func (tattooService *TattooService) GetLatestTattoos(username string) ([]model.T
 func (tattooService *TattooService) PublishTattoos(
 	tattoosDto []dto.TattooDto,
 	idUser int64,
-) error {
+) ([]model.Tattoo, error) {
 	idProfile, err := tattooService.profileService.GetProfileIDFromIDUser(idUser)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := utils.ForEach(tattoosDto, func(tattooDto dto.TattooDto) error {
 		return tattooService.categoryService.ExistsCategories(tattooDto.IDCategories)
 	}); err != nil {
-		return err
+		return nil, err
 	}
 
 	tattoos, err := utils.ConcurrentMap(tattoosDto, func(tattooDto dto.TattooDto) (model.Tattoo, error) {
@@ -122,7 +122,7 @@ func (tattooService *TattooService) PublishTattoos(
 		return tattooDto.ToModel(*image), nil
 	}, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return tattooService.tattooRepository.Insert(tattoos, idProfile)

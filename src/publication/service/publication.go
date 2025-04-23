@@ -5,6 +5,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
@@ -27,6 +28,7 @@ type PublicationService struct {
 	publicationRepository publication_repository.PublicationRepository
 	likeRepository        like_repository.LikeRepository
 	tattooRepository      tattoo_repository.TattooRepository
+	bus                   bus.Bus
 }
 
 type PublicationsMetadata struct {
@@ -260,15 +262,22 @@ func (publicationService *PublicationService) Publish(
 	}
 	publication.Images = images
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
-
-	if err := publicationService.tattooService.PublishTattoos(
+	if err != nil {
+		return nil, err
+	}
+	if _, err := publicationService.tattooService.PublishTattoos(
 		publicationDto.ToTattoos(insertedPublication.ID),
 		idUser,
 	); err != nil {
 		return nil, err
 	}
 
-	return publicationService.GetPublication(insertedPublication.ID)
+	publication, err = publicationService.GetPublication(insertedPublication.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return publication, nil
 }
 
 func (publicationService *PublicationService) DeletePublication(
@@ -345,6 +354,7 @@ func NewPublicationService(
 	publicationRepository publication_repository.PublicationRepository,
 	likeRepository like_repository.LikeRepository,
 	tattooRepository tattoo_repository.TattooRepository,
+	busS bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
 		publicationService = &PublicationService{
@@ -355,6 +365,7 @@ func NewPublicationService(
 			publicationRepository: publicationRepository,
 			likeRepository:        likeRepository,
 			tattooRepository:      tattooRepository,
+			bus:                   busS,
 		}
 	}
 

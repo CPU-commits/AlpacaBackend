@@ -15,7 +15,7 @@ type PublicationImageDto struct {
 
 type PublicationDto struct {
 	Content      string                `form:"content" binding:"required,max=500"`
-	Images       []PublicationImageDto `form:"images" binding:"required,dive"`
+	Images       []PublicationImageDto `form:"images" binding:"dive"`
 	IDCategories []int64               `form:"idCategories"`
 }
 

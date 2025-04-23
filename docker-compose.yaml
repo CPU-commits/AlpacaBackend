@@ -10,15 +10,53 @@ services:
     depends_on:
       - nats-js
       - crdb
+      - kafka
     networks:
-      - app_network
+      - alpaca_network
+  kafka-ui:
+    image: kafbat/kafka-ui:main
+    ports:
+      - 8083:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+    depends_on:
+      - kafka
+    networks:
+      - alpaca_network
+  kafka:
+    image: apache/kafka-native
+    ports:
+      - "9092:9092"
+    expose:
+      - 9093
+    environment:
+      # Configure listeners for both docker and host communication
+      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+
+      # Settings required for KRaft mode
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+
+      # Listener to use for broker-to-broker communication
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+
+      # Required for a single node cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - alpaca_network
   nats-js:
     image: nats:2.10-scratch
     ports:
       - 4222:4222
     command: '-js'
     networks:
-      - app_network
+      - alpaca_network
   crdb:
     image: cockroachdb/cockroach:v24.2.3
     ports:
@@ -28,11 +66,11 @@ services:
     volumes:
       - "db:/cockroach/cockroach-data"
     networks:
-      - app_network
+      - alpaca_network
 
 networks:
-  app_network:
-    driver: bridge
+  alpaca_network:
+    external: true
 
 volumes:
   db:
