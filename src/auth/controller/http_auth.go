@@ -11,6 +11,18 @@ import (
 
 type HttpAuthController struct{}
 
+// Register godoc
+//
+//	@Summary	Registrase dentro de la aplicación de AlpacaTatto
+//	@Tags		auth
+//	@Success	200		{object}	controller.LoginResponse
+//	@Param		authDto	body		dto.RegisterDto			true	"name, username, email, password, role"
+//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
+//
+//	@Failure	403		{object}	utils.ProblemDetails	"Credenciales inválidas"
+//	@Failure	409		{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
+//
+//	@Router		/api/auth/register [post]
 func (*HttpAuthController) Register(c *gin.Context) {
 	var registerDto *dto.RegisterDto
 
@@ -75,7 +87,7 @@ func (*HttpAuthController) Login(c *gin.Context) {
 //	@Summary	Refrescar sesión
 //	@Tags		auth
 //	@Success	200			{object}	controller.LoginResponse
-//	@Param		X-Refresh	header		string				 true	"Token de refresco, es decir, de sesión"
+//	@Param		X-Refresh	header		string					true	"Token de refresco, es decir, de sesión"
 //	@Failure	403			{object}	utils.ProblemDetails	"No está el token de refresco en el header X-Refresh"
 //	@Failure	400			{object}	utils.ProblemDetails	"No es un token válido JWT"
 //	@Failure	404			{object}	utils.ProblemDetails	"El token no tiene un usuario registrado en la BD"

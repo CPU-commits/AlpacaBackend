@@ -2,36 +2,105 @@ basePath: /api
 consumes:
 - application/json
 definitions:
-  model.Dog:
+  controller.LoginResponse:
     properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  dto.AuthDto:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dto.RegisterDto:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        type: string
+      username:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - role
+    - username
+    type: object
+  model.Role:
+    enum:
+    - user
+    - tattooArtist
+    - admin
+    type: string
+    x-enum-varnames:
+    - USER_ROLE
+    - TATTOO_ARTIST_ROLE
+    - ADMIN_ROLE
+  model.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
       id:
         type: integer
       name:
         type: string
-      owner:
+      roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      username:
         type: string
     type: object
   utils.ErrorProblemDetails:
     properties:
       param:
+        example: "3"
         type: string
       pointer:
+        example: max
         type: string
       title:
+        example: name
         type: string
     type: object
   utils.ProblemDetails:
     properties:
       detail:
+        example: Detalle técnico del error
         type: string
       errors:
         items:
           $ref: '#/definitions/utils.ErrorProblemDetails'
         type: array
       title:
+        example: Descripción del problema para mostrar al usuario
         type: string
       type:
+        example: /docs/errors/errorPointer
         type: string
+    required:
+    - title
     type: object
 host: localhost:8080
 info:
@@ -46,40 +115,96 @@ info:
   title: API
   version: "1.0"
 paths:
-  /api/dogs:
+  /api/auth/login:
     post:
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/utils.ProblemDetails'
-      summary: Insertar un perro
-      tags:
-      - dogs
-  /api/dogs/{idDog}:
-    get:
       parameters:
-      - description: ID Dog
-        in: path
-        name: id
+      - description: Password y username
+        in: body
+        name: authDto
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/dto.AuthDto'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Dog'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/controller.LoginResponse'
+        "403":
+          description: Credenciales inválidas
           schema:
             $ref: '#/definitions/utils.ProblemDetails'
-      summary: Obtener un perro por ID
+        "409":
+          description: La sesión no existe. Probablemente porque la eliminaron
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Loggearse dentro de la aplicación de NeoHome
       tags:
-      - dogs
+      - auth
+  /api/auth/refresh:
+    post:
+      parameters:
+      - description: Token de refresco, es decir, de sesión
+        in: header
+        name: X-Refresh
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.LoginResponse'
+        "400":
+          description: No es un token válido JWT
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "403":
+          description: No está el token de refresco en el header X-Refresh
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "404":
+          description: El token no tiene un usuario registrado en la BD
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "409":
+          description: La sesión no existe. Probablemente porque la eliminaron
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Refrescar sesión
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      parameters:
+      - description: name, username, email, password, role
+        in: body
+        name: authDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterDto'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.LoginResponse'
+        "403":
+          description: Credenciales inválidas
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "409":
+          description: La sesión no existe. Probablemente porque la eliminaron
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Registrase dentro de la aplicación de AlpacaTatto
+      tags:
+      - auth
 produces:
 - application/json
 schemes:

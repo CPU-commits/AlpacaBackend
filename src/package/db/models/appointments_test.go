@@ -15,29 +15,29 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-func testLikesUpsert(t *testing.T) {
+func testAppointmentsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(likeAllColumns) == len(likePrimaryKeyColumns) {
+	if len(appointmentAllColumns) == len(appointmentPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Like{}
-	if err = randomize.Struct(seed, &o, likeDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := Appointment{}
+	if err = randomize.Struct(seed, &o, appointmentDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Like: %s", err)
+		t.Errorf("Unable to upsert Appointment: %s", err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,15 +46,15 @@ func testLikesUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, likeDBTypes, false, likePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err = randomize.Struct(seed, &o, appointmentDBTypes, false, appointmentPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Like: %s", err)
+		t.Errorf("Unable to upsert Appointment: %s", err)
 	}
 
-	count, err = Likes().Count(ctx, tx)
+	count, err = Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -69,24 +69,24 @@ var (
 	_ = queries.Equal
 )
 
-func testLikes(t *testing.T) {
+func testAppointments(t *testing.T) {
 	t.Parallel()
 
-	query := Likes()
+	query := Appointments()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testLikesDelete(t *testing.T) {
+func testAppointmentsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -102,7 +102,7 @@ func testLikesDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -112,14 +112,14 @@ func testLikesDelete(t *testing.T) {
 	}
 }
 
-func testLikesQueryDeleteAll(t *testing.T) {
+func testAppointmentsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -129,13 +129,13 @@ func testLikesQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Likes().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := Appointments().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -145,14 +145,14 @@ func testLikesQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testLikesSliceDeleteAll(t *testing.T) {
+func testAppointmentsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -162,7 +162,7 @@ func testLikesSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := LikeSlice{o}
+	slice := AppointmentSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -170,7 +170,7 @@ func testLikesSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -180,14 +180,14 @@ func testLikesSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testLikesExists(t *testing.T) {
+func testAppointmentsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -197,23 +197,23 @@ func testLikesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := LikeExists(ctx, tx, o.ID)
+	e, err := AppointmentExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Like exists: %s", err)
+		t.Errorf("Unable to check if Appointment exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected LikeExists to return true, but got false.")
+		t.Errorf("Expected AppointmentExists to return true, but got false.")
 	}
 }
 
-func testLikesFind(t *testing.T) {
+func testAppointmentsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -223,24 +223,24 @@ func testLikesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	likeFound, err := FindLike(ctx, tx, o.ID)
+	appointmentFound, err := FindAppointment(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if likeFound == nil {
+	if appointmentFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testLikesBind(t *testing.T) {
+func testAppointmentsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -250,19 +250,19 @@ func testLikesBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Likes().Bind(ctx, tx, o); err != nil {
+	if err = Appointments().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testLikesOne(t *testing.T) {
+func testAppointmentsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -272,38 +272,38 @@ func testLikesOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Likes().One(ctx, tx); err != nil {
+	if x, err := Appointments().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testLikesAll(t *testing.T) {
+func testAppointmentsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	likeOne := &Like{}
-	likeTwo := &Like{}
-	if err = randomize.Struct(seed, likeOne, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	appointmentOne := &Appointment{}
+	appointmentTwo := &Appointment{}
+	if err = randomize.Struct(seed, appointmentOne, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
-	if err = randomize.Struct(seed, likeTwo, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err = randomize.Struct(seed, appointmentTwo, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = likeOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = appointmentOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = likeTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = appointmentTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Likes().All(ctx, tx)
+	slice, err := Appointments().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -313,31 +313,31 @@ func testLikesAll(t *testing.T) {
 	}
 }
 
-func testLikesCount(t *testing.T) {
+func testAppointmentsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	likeOne := &Like{}
-	likeTwo := &Like{}
-	if err = randomize.Struct(seed, likeOne, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	appointmentOne := &Appointment{}
+	appointmentTwo := &Appointment{}
+	if err = randomize.Struct(seed, appointmentOne, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
-	if err = randomize.Struct(seed, likeTwo, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err = randomize.Struct(seed, appointmentTwo, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = likeOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = appointmentOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = likeTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = appointmentTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -347,155 +347,155 @@ func testLikesCount(t *testing.T) {
 	}
 }
 
-func likeBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func likeAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Like) error {
-	*o = Like{}
+func appointmentAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+	*o = Appointment{}
 	return nil
 }
 
-func testLikesHooks(t *testing.T) {
+func testAppointmentsHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Like{}
-	o := &Like{}
+	empty := &Appointment{}
+	o := &Appointment{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, likeDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Like object: %s", err)
+	if err = randomize.Struct(seed, o, appointmentDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Appointment object: %s", err)
 	}
 
-	AddLikeHook(boil.BeforeInsertHook, likeBeforeInsertHook)
+	AddAppointmentHook(boil.BeforeInsertHook, appointmentBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	likeBeforeInsertHooks = []LikeHook{}
+	appointmentBeforeInsertHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.AfterInsertHook, likeAfterInsertHook)
+	AddAppointmentHook(boil.AfterInsertHook, appointmentAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	likeAfterInsertHooks = []LikeHook{}
+	appointmentAfterInsertHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.AfterSelectHook, likeAfterSelectHook)
+	AddAppointmentHook(boil.AfterSelectHook, appointmentAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	likeAfterSelectHooks = []LikeHook{}
+	appointmentAfterSelectHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.BeforeUpdateHook, likeBeforeUpdateHook)
+	AddAppointmentHook(boil.BeforeUpdateHook, appointmentBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	likeBeforeUpdateHooks = []LikeHook{}
+	appointmentBeforeUpdateHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.AfterUpdateHook, likeAfterUpdateHook)
+	AddAppointmentHook(boil.AfterUpdateHook, appointmentAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	likeAfterUpdateHooks = []LikeHook{}
+	appointmentAfterUpdateHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.BeforeDeleteHook, likeBeforeDeleteHook)
+	AddAppointmentHook(boil.BeforeDeleteHook, appointmentBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	likeBeforeDeleteHooks = []LikeHook{}
+	appointmentBeforeDeleteHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.AfterDeleteHook, likeAfterDeleteHook)
+	AddAppointmentHook(boil.AfterDeleteHook, appointmentAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	likeAfterDeleteHooks = []LikeHook{}
+	appointmentAfterDeleteHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.BeforeUpsertHook, likeBeforeUpsertHook)
+	AddAppointmentHook(boil.BeforeUpsertHook, appointmentBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	likeBeforeUpsertHooks = []LikeHook{}
+	appointmentBeforeUpsertHooks = []AppointmentHook{}
 
-	AddLikeHook(boil.AfterUpsertHook, likeAfterUpsertHook)
+	AddAppointmentHook(boil.AfterUpsertHook, appointmentAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	likeAfterUpsertHooks = []LikeHook{}
+	appointmentAfterUpsertHooks = []AppointmentHook{}
 }
 
-func testLikesInsert(t *testing.T) {
+func testAppointmentsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -505,7 +505,7 @@ func testLikesInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -515,24 +515,24 @@ func testLikesInsert(t *testing.T) {
 	}
 }
 
-func testLikesInsertWhitelist(t *testing.T) {
+func testAppointmentsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(likeColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(appointmentColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -542,17 +542,17 @@ func testLikesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testLikeToOneUserUsingIDUserUser(t *testing.T) {
+func testAppointmentToOneUserUsingIDUserUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Like
+	var local Appointment
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize User struct: %s", err)
@@ -582,8 +582,8 @@ func testLikeToOneUserUsingIDUserUser(t *testing.T) {
 		return nil
 	})
 
-	slice := LikeSlice{&local}
-	if err = local.L.LoadIDUserUser(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
+	slice := AppointmentSlice{&local}
+	if err = local.L.LoadIDUserUser(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.IDUserUser == nil {
@@ -603,32 +603,32 @@ func testLikeToOneUserUsingIDUserUser(t *testing.T) {
 	}
 }
 
-func testLikeToOneProfileUsingIDProfileProfile(t *testing.T) {
+func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Like
-	var foreign Profile
+	var local Appointment
+	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Profile struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.IDProfile = foreign.ID
+	local.IDTattooArtist = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.IDProfileProfile().One(ctx, tx)
+	check, err := local.IDTattooArtistUser().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -638,24 +638,24 @@ func testLikeToOneProfileUsingIDProfileProfile(t *testing.T) {
 	}
 
 	ranAfterSelectHook := false
-	AddProfileHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Profile) error {
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
 		ranAfterSelectHook = true
 		return nil
 	})
 
-	slice := LikeSlice{&local}
-	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
+	slice := AppointmentSlice{&local}
+	if err = local.L.LoadIDTattooArtistUser(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDProfileProfile == nil {
+	if local.R.IDTattooArtistUser == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.IDProfileProfile = nil
-	if err = local.L.LoadIDProfileProfile(ctx, tx, true, &local, nil); err != nil {
+	local.R.IDTattooArtistUser = nil
+	if err = local.L.LoadIDTattooArtistUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDProfileProfile == nil {
+	if local.R.IDTattooArtistUser == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -664,79 +664,18 @@ func testLikeToOneProfileUsingIDProfileProfile(t *testing.T) {
 	}
 }
 
-func testLikeToOnePostUsingIDPostPost(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Like
-	var foreign Post
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, postDBTypes, false, postColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Post struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.IDPost = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.IDPostPost().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddPostHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Post) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := LikeSlice{&local}
-	if err = local.L.LoadIDPostPost(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDPostPost == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.IDPostPost = nil
-	if err = local.L.LoadIDPostPost(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDPostPost == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-	}
-}
-
-func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
+func testAppointmentToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Like
+	var a Appointment
 	var b, c User
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, likeDBTypes, false, strmangle.SetComplement(likePrimaryKeyColumns, likeColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
@@ -763,7 +702,7 @@ func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDUserLikes[0] != &a {
+		if x.R.IDUserAppointments[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 		if a.IDUser != x.ID {
@@ -782,24 +721,24 @@ func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
 		}
 	}
 }
-func testLikeToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
+func testAppointmentToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Like
-	var b, c Profile
+	var a Appointment
+	var b, c User
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, likeDBTypes, false, strmangle.SetComplement(likePrimaryKeyColumns, likeColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -810,101 +749,44 @@ func testLikeToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Profile{&b, &c} {
-		err = a.SetIDProfileProfile(ctx, tx, i != 0, x)
+	for i, x := range []*User{&b, &c} {
+		err = a.SetIDTattooArtistUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.IDProfileProfile != x {
+		if a.R.IDTattooArtistUser != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDProfileLikes[0] != &a {
+		if x.R.IDTattooArtistAppointments[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile)
+		if a.IDTattooArtist != x.ID {
+			t.Error("foreign key was wrong value", a.IDTattooArtist)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDProfile))
-		reflect.Indirect(reflect.ValueOf(&a.IDProfile)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.IDTattooArtist))
+		reflect.Indirect(reflect.ValueOf(&a.IDTattooArtist)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
-		}
-	}
-}
-func testLikeToOneSetOpPostUsingIDPostPost(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Like
-	var b, c Post
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, likeDBTypes, false, strmangle.SetComplement(likePrimaryKeyColumns, likeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*Post{&b, &c} {
-		err = a.SetIDPostPost(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.IDPostPost != x {
-			t.Error("relationship struct not set to correct value")
-		}
-
-		if x.R.IDPostLikes[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.IDPost != x.ID {
-			t.Error("foreign key was wrong value", a.IDPost)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(a.IDPost))
-		reflect.Indirect(reflect.ValueOf(&a.IDPost)).Set(zero)
-
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.IDPost != x.ID {
-			t.Error("foreign key was wrong value", a.IDPost, x.ID)
+		if a.IDTattooArtist != x.ID {
+			t.Error("foreign key was wrong value", a.IDTattooArtist, x.ID)
 		}
 	}
 }
 
-func testLikesReload(t *testing.T) {
+func testAppointmentsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -919,14 +801,14 @@ func testLikesReload(t *testing.T) {
 	}
 }
 
-func testLikesReloadAll(t *testing.T) {
+func testAppointmentsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -936,21 +818,21 @@ func testLikesReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := LikeSlice{o}
+	slice := AppointmentSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testLikesSelect(t *testing.T) {
+func testAppointmentsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -960,7 +842,7 @@ func testLikesSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Likes().All(ctx, tx)
+	slice, err := Appointments().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -971,25 +853,25 @@ func testLikesSelect(t *testing.T) {
 }
 
 var (
-	likeDBTypes = map[string]string{`ID`: `int8`, `IDUser`: `int8`, `IDProfile`: `int8`, `IDPost`: `int8`, `CreatedAt`: `timestamp`}
-	_           = bytes.MinRead
+	appointmentDBTypes = map[string]string{`ID`: `int8`, `IDUser`: `int8`, `IDTattooArtist`: `int8`, `Status`: `public.appointment_status`, `CreatedAt`: `timestamp`}
+	_                  = bytes.MinRead
 )
 
-func testLikesUpdate(t *testing.T) {
+func testAppointmentsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(likePrimaryKeyColumns) {
+	if 0 == len(appointmentPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(likeAllColumns) == len(likePrimaryKeyColumns) {
+	if len(appointmentAllColumns) == len(appointmentPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -999,7 +881,7 @@ func testLikesUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1008,8 +890,8 @@ func testLikesUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -1019,18 +901,18 @@ func testLikesUpdate(t *testing.T) {
 	}
 }
 
-func testLikesSliceUpdateAll(t *testing.T) {
+func testAppointmentsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(likeAllColumns) == len(likePrimaryKeyColumns) {
+	if len(appointmentAllColumns) == len(appointmentPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Like{}
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	o := &Appointment{}
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -1040,7 +922,7 @@ func testLikesSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Likes().Count(ctx, tx)
+	count, err := Appointments().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1049,18 +931,18 @@ func testLikesSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, likeDBTypes, true, likePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
+	if err = randomize.Struct(seed, o, appointmentDBTypes, true, appointmentPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(likeAllColumns, likePrimaryKeyColumns) {
-		fields = likeAllColumns
+	if strmangle.StringSliceMatch(appointmentAllColumns, appointmentPrimaryKeyColumns) {
+		fields = appointmentAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			likeAllColumns,
-			likePrimaryKeyColumns,
+			appointmentAllColumns,
+			appointmentPrimaryKeyColumns,
 		)
 	}
 
@@ -1078,7 +960,7 @@ func testLikesSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := LikeSlice{o}
+	slice := AppointmentSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {

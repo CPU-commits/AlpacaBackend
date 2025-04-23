@@ -29,21 +29,44 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/dogs": {
+        "/api/auth/login": {
             "post": {
                 "tags": [
-                    "dogs"
+                    "auth"
                 ],
-                "summary": "Insertar un perro",
+                "summary": "Loggearse dentro de la aplicación de NeoHome",
+                "parameters": [
+                    {
+                        "description": "Password y username",
+                        "name": "authDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthDto"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/controller.LoginResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Credenciales inválidas",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "La sesión no existe. Probablemente porque la eliminaron",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
                         "schema": {
                             "$ref": "#/definitions/utils.ProblemDetails"
                         }
@@ -51,18 +74,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/dogs/{idDog}": {
-            "get": {
+        "/api/auth/refresh": {
+            "post": {
                 "tags": [
-                    "dogs"
+                    "auth"
                 ],
-                "summary": "Obtener un perro por ID",
+                "summary": "Refrescar sesión",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "ID Dog",
-                        "name": "id",
-                        "in": "path",
+                        "type": "string",
+                        "description": "Token de refresco, es decir, de sesión",
+                        "name": "X-Refresh",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -70,11 +93,74 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Dog"
+                            "$ref": "#/definitions/controller.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "No es un token válido JWT",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "No está el token de refresco en el header X-Refresh",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "El token no tiene un usuario registrado en la BD",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "La sesión no existe. Probablemente porque la eliminaron",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Registrase dentro de la aplicación de AlpacaTatto",
+                "parameters": [
+                    {
+                        "description": "name, username, email, password, role",
+                        "name": "authDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.LoginResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Credenciales inválidas",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "La sesión no existe. Probablemente porque la eliminaron",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
                         "schema": {
                             "$ref": "#/definitions/utils.ProblemDetails"
                         }
@@ -84,16 +170,102 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.Dog": {
+        "controller.LoginResponse": {
             "type": "object",
             "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                }
+            }
+        },
+        "dto.AuthDto": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterDto": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "role",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "model.Role": {
+            "type": "string",
+            "enum": [
+                "user",
+                "tattooArtist",
+                "admin"
+            ],
+            "x-enum-varnames": [
+                "USER_ROLE",
+                "TATTOO_ARTIST_ROLE",
+                "ADMIN_ROLE"
+            ]
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
-                "owner": {
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Role"
+                    }
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -102,21 +274,28 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "param": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "3"
                 },
                 "pointer": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "max"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "name"
                 }
             }
         },
         "utils.ProblemDetails": {
             "type": "object",
+            "required": [
+                "title"
+            ],
             "properties": {
                 "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Detalle técnico del error"
                 },
                 "errors": {
                     "type": "array",
@@ -125,10 +304,12 @@ const docTemplate = `{
                     }
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Descripción del problema para mostrar al usuario"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "/docs/errors/errorPointer"
                 }
             }
         }

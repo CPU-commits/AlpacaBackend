@@ -16,6 +16,18 @@ import (
 
 type HttpPublicationController struct{}
 
+// Get godoc
+//
+//	@Summary	Recibir publicaciones de un usuario
+//	@Tags		publications
+//	@Success	200			{object}	controller.GetPublicationsResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		page		query		int						true	"N° page"
+//	@Failure	503			{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Failure	403			{object}	utils.ProblemDetails	"Credenciales inválidas"
+//	@Failure	409			{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
+//
+//	@Router		/api/publications/username/{username} [get]
 func (*HttpPublicationController) GetPublications(c *gin.Context) {
 	username := c.Param("username")
 	pageStr := c.DefaultQuery("page", "0")
@@ -36,6 +48,14 @@ func (*HttpPublicationController) GetPublications(c *gin.Context) {
 	c.JSON(http.StatusOK, publications)
 }
 
+// Get godoc
+//
+//	@Summary	Recibir el like de un usuario sobre una publicacion
+//	@Tags		publications
+//	@Success	200			{object}	controller.GetLikeResponse
+//	@Param		idPost	path		int					true	"id de post"
+//	@Failure	503			{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/auth/register [post]
 func (*HttpPublicationController) GetMyLike(c *gin.Context) {
 	idPostStr := c.Param("idPost")
 	idPost, err := strconv.Atoi(idPostStr)
@@ -54,8 +74,8 @@ func (*HttpPublicationController) GetMyLike(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"isLike": isLike,
+	c.JSON(http.StatusOK, GetLikeResponse{
+		Islike: isLike,
 	})
 }
 

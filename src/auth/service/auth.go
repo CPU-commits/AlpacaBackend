@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/auth_repository"
@@ -34,7 +36,10 @@ func (authService *authService) Register(
 	if existsEmailOrUsername {
 		return ErrExistsEmailOrUsername
 	}
-
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return err
+	}
 	_, err = authService.userRepository.InsertOne(user, registerDto.Password)
 	return err
 }
