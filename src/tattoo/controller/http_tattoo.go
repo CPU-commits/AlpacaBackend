@@ -87,7 +87,7 @@ func (*HttpTattooController) UploadTattoos(c *gin.Context) {
 	}
 	claims, _ := utils.NewClaimsFromContext(c)
 
-	err = tattooService.PublishTattoos(tattooDto, claims.ID)
+	_, err = tattooService.PublishTattoos(tattooDto, claims.ID)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return

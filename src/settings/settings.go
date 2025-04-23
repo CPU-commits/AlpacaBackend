@@ -21,6 +21,7 @@ type settings struct {
 	NATS_HOSTS     string
 	DB_CONNECTION  string
 	CLOUDINARY_URL string
+	KAFKA_HOSTS    string
 }
 
 func validateSettings(settings *settings) {
@@ -47,6 +48,9 @@ func validateSettings(settings *settings) {
 	if settings.CLOUDINARY_URL == "" {
 		missing = append(missing, "CLOUDINARY_URL")
 	}
+	if settings.KAFKA_HOSTS == "" {
+		missing = append(missing, "KAFKA_HOSTS")
+	}
 
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
@@ -62,6 +66,7 @@ func newSettings() *settings {
 		NATS_HOSTS:     os.Getenv("NATS_HOSTS"),
 		DB_CONNECTION:  os.Getenv("DB_CONNECTION"),
 		CLOUDINARY_URL: os.Getenv("CLOUDINARY_URL"),
+		KAFKA_HOSTS:    os.Getenv("KAFKA_HOSTS"),
 	}
 	validateSettings(settings)
 

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	authController "github.com/CPU-commits/Template_Go-EventDriven/src/auth/controller"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
@@ -89,6 +90,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		lang := ctx.DefaultQuery("lang", "es")
 		ctx.Set("localizer", utils.GetLocalizer(lang))
 	})
+	// Bus
+	kafka := queue.NewKafka()
 	// Routes
 	auth := router.Group("api/auth")
 	{
@@ -127,7 +130,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	publication := router.Group("api/publications")
 	{
 		// Controllers
-		publicationController := new(publicationController.HttpPublicationController)
+		publicationController := publicationController.NewPublicationHttpController(kafka)
 		// Define routes
 		publication.GET("/username/:username", publicationController.GetPublications)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)

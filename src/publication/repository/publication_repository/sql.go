@@ -234,9 +234,9 @@ func (sqlPR sqlPublicationRepository) includeOpts(include *Include, selectOpts *
 	if include.Tattoos {
 		mod = append(mod, Load(models.PostRels.IDPostTattoos))
 	}
-	if include.Tattoos && include.Images {
+	if include.Tattoos && include.TattoosImage {
 		mod = append(mod, Load(Rels(
-			models.PostRels.IDPostPostImages,
+			models.PostRels.IDPostTattoos,
 			models.TattooRels.IDImageImage,
 		)))
 	}
@@ -388,10 +388,14 @@ func (sqlPR sqlPublicationRepository) Delete(criteria *Criteria) error {
 	if _, err := models.Images(
 		models.ImageWhere.ID.IN(idImages),
 	).DeleteAll(context.Background(), tx); err != nil {
-		fmt.Printf("err: %v\n", err)
 		return utils.ErrRepositoryFailed
 	}
 	if _, err := models.Likes(models.LikeWhere.IDPost.IN(idPublications)).
+		DeleteAll(context.Background(), tx); err != nil {
+		tx.Rollback()
+		return utils.ErrRepositoryFailed
+	}
+	if _, err := models.PostCategories(models.PostCategoryWhere.IDPost.IN(idPublications)).
 		DeleteAll(context.Background(), tx); err != nil {
 		tx.Rollback()
 		return utils.ErrRepositoryFailed
