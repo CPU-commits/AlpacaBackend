@@ -16,6 +16,15 @@ import (
 
 type HttpTattooController struct{}
 
+// Get godoc
+//
+//	@Summary	Recibir los tatuajes de un usuario
+//	@Tags		tattoos
+//	@Success	200			{object}	controller.GetTattoosResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		page		query		int						true	"numero de pagina"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/tattoos/{username} [Get]
 func (*HttpTattooController) GetTattoos(c *gin.Context) {
 	username := c.Param("username")
 	pageStr := c.DefaultQuery("page", "0")
@@ -37,6 +46,14 @@ func (*HttpTattooController) GetTattoos(c *gin.Context) {
 	c.JSON(http.StatusOK, tattoos)
 }
 
+// Get godoc
+//
+//	@Summary	Recibir los ultimos tatuajes de un usuario
+//	@Tags		tattoos
+//	@Success	200			{object}	controller.GetTattoosResponse
+//	@Param		username	path		string					true	"username"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/tattoos/latest/{username} [Get]
 func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
 	username := c.Param("username")
 
@@ -49,6 +66,29 @@ func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
 	c.JSON(http.StatusOK, tattoos)
 }
 
+// Publish Tattoos godoc
+//
+//	@Summary		Publicar nuevos tatuajes {admin}
+//	@Tags			tattoos
+//	@description	```json
+//	@description	{
+//	@description	"tattoos": [
+//	@description	{
+//	@description	"idCategories": [1, 2],
+//	@description	"description": "Descripción del tatuaje",
+//	@description	"image": "archivo_imagen",
+//	@description	"coord": {"x": 100, "y": 200},
+//	@description	"idPublication": 123
+//	@description	}]
+//	@description	}
+//	@description	```
+//	@Accept			multipart/form-data
+//	@Param			image	formData	file	true	"Imagen del tatuaje (jpg/png/webp)"
+//	@Success		201
+//	@Failure		502	{object}	utils.ProblemDetails	"Falló el repositorio"
+//	@Failure		415	{object}	utils.ProblemDetails	"El tipo de imagen es inválido, debe ser jpg/png/webp"
+//	@Failure		400	{object}	utils.ProblemDetails	"Formulario inválido o sin datos de tatuajes"
+//	@Router			/api/tattoos [post]
 func (*HttpTattooController) UploadTattoos(c *gin.Context) {
 	var tattoosDto *dto.TattoosDto
 	if err := c.Bind(&tattoosDto); err != nil {

@@ -57,10 +57,10 @@ func (httpPC *HttpPublicationController) GetPublications(c *gin.Context) {
 //
 //	@Summary	Recibir el like de un usuario sobre una publicacion
 //	@Tags		publications
-//	@Success	200			{object}	controller.GetLikeResponse
-//	@Param		idPost	path		int					true	"id de post"
-//	@Failure	503			{object}	utils.ProblemDetails	"Error con la base de datos"
-//	@Router		/api/auth/register [post]
+//	@Success	200		{object}	controller.GetLikeResponse
+//	@Param		idPost	path		int						true	"id de post"
+//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/publications/{idPost}/like [get]
 func (httpPC *HttpPublicationController) GetMyLike(c *gin.Context) {
 	idPostStr := c.Param("idPost")
 	idPost, err := strconv.Atoi(idPostStr)
@@ -84,6 +84,14 @@ func (httpPC *HttpPublicationController) GetMyLike(c *gin.Context) {
 	})
 }
 
+// Post godoc
+//
+//	@Summary	Dar Like o dislike
+//	@Tags		publications
+//	@Success	200		{object}	controller.GetLikeResponse
+//	@Param		idPost	path		int						true	"id de post"
+//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/publications/{idPost}/like [post]
 func (httpPC *HttpPublicationController) Like(c *gin.Context) {
 	idPostStr := c.Param("idPost")
 	idPost, err := strconv.Atoi(idPostStr)
@@ -107,6 +115,15 @@ func (httpPC *HttpPublicationController) Like(c *gin.Context) {
 	})
 }
 
+// Post godoc
+//
+//	@Summary	Publicar una publicacion
+//	@Tags		publications
+//	@Success	200				{object}	controller.GetPublicationResponse
+//	@Param		PublicationDto	body		controller.PublicationDtoResponse	true	"objeto XD"
+//	@Param		images			body		object								true	"Imagenes[]"
+//	@Failure	503				object		utils.ProblemDetails				"Error con la base de datos"
+//	@Router		/api/publications [post]
 func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	var publicationDto *dto.PublicationDto
 	if err := c.Bind(&publicationDto); err != nil {
@@ -159,6 +176,14 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	c.JSON(http.StatusCreated, publication)
 }
 
+// Delete godoc
+//
+//	@Summary	Eliminar una publicacion
+//	@Tags		publications
+//	@Success	200
+//	@Param		idPublication	path		int	true	"Id de publicacion"
+//	@Failure	503				object		utils.ProblemDetails				"Error con la base de datos"
+//	@Router		/api/publications/{idPublication} [delete]
 func (httpPC *HttpPublicationController) DeletePublication(c *gin.Context) {
 	idPublicationStr := c.Param("idPublication")
 	idPublication, err := strconv.Atoi(idPublicationStr)

@@ -11,6 +11,15 @@ import (
 
 type HttpProfileController struct{}
 
+// Get godoc
+//
+//	@Summary	Recibir el perfil de un usuario
+//	@Tags		profile
+//	@Success	200			{object}	controller.GetTattoosResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		page		query		int						true	"numero de pagina"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/profiles/{username} [Get]
 func (*HttpProfileController) GetProfile(c *gin.Context) {
 	username := c.Param("username")
 
@@ -23,6 +32,14 @@ func (*HttpProfileController) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, profile)
 }
 
+// Patch godoc
+//
+//	@Summary	Actualizar el perfil de un usuario
+//	@Tags		profile
+//	@Success	200
+//	@Param		UpdateProfileDto	body	dto.UpdateProfileDto	true	"username"
+//	@Failure	503					object	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/profiles [patch]
 func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 	var updateProfileDto *dto.UpdateProfileDto
 	if err := c.BindJSON(&updateProfileDto); err != nil {
@@ -39,6 +56,16 @@ func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+// Change Avatar godoc
+//
+//	@Summary		Actualizar el avatar del perfil de un usuario
+//	@Tags			profile
+//	@Accept			multipart/form-data
+//	@Param			avatar	formData	file								true	"Imagen del avatar (jpg/png/webp)"
+//	@Success		201		{object}	controller.UpdateProfileResponse	"Clave del nuevo avatar"
+//	@Failure		400		{object}	utils.ProblemDetails				"Archivo no recibido o inválido"
+//	@Failure		503		{object}	utils.ProblemDetails				"Error con la base de datos"
+//	@Router			/api/profiles/avatar [patch]
 func (*HttpProfileController) ChangeAvatar(c *gin.Context) {
 	avatar, err := c.FormFile("avatar")
 	if err != nil {

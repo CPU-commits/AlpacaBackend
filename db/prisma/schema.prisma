@@ -64,7 +64,8 @@ model users {
   my_studios studio_admins[]
   reviews reviews[]
   likes likes[]
-  appointments appointments[] @relation(references: [id_tattoo_artist, id_user])
+	userAppointments        appointments[] @relation("UserAppointments")
+  tattooArtistAppointments appointments[] @relation("TattooArtistAppointments")
 }
 
 model token_passwords {
@@ -236,13 +237,14 @@ model likes {
 }
 
 model appointments {
-	id BigInt @id @default(sequence())
-	id_user BigInt
-	id_tattoo_artist BigInt
-	status appointment_status
-	created_at DateTime @default(now()) @db.Timestamp(6)
-	user users @relation(references: [id], fields: [id_user])
-	tattoo_artist users @relation(references: [id], fields: [id_tattoo_artist])
+  id                BigInt @id @default(sequence())
+  id_user           BigInt
+  id_tattoo_artist  BigInt
+  status            appointment_status
+  created_at        DateTime @default(now()) @db.Timestamp(6)
+
+  user          users @relation("UserAppointments", fields: [id_user], references: [id])
+  tattoo_artist users @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
 }
 
 enum appointment_status {

@@ -2,6 +2,37 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  controller.GetCategoriesResponse:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/model.Category'
+        type: array
+    type: object
+  controller.GetLikeResponse:
+    properties:
+      is_like:
+        type: boolean
+    type: object
+  controller.GetPublicationResponse:
+    properties:
+      publication:
+        $ref: '#/definitions/model.Publication'
+    type: object
+  controller.GetPublicationsResponse:
+    properties:
+      publications:
+        items:
+          $ref: '#/definitions/model.Publication'
+        type: array
+    type: object
+  controller.GetTattoosResponse:
+    properties:
+      tattoos:
+        items:
+          $ref: '#/definitions/model.Tattoo'
+        type: array
+    type: object
   controller.LoginResponse:
     properties:
       accessToken:
@@ -12,6 +43,24 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/model.User'
+    type: object
+  controller.PublicationDtoResponse:
+    properties:
+      content:
+        maxLength: 500
+        type: string
+      idCategories:
+        description: Images       []PublicationImageDto `form:"images" binding:"dive"`
+        items:
+          type: integer
+        type: array
+    required:
+    - content
+    type: object
+  controller.UpdateProfileResponse:
+    properties:
+      key:
+        type: string
     type: object
   dto.AuthDto:
     properties:
@@ -45,6 +94,95 @@ definitions:
     - role
     - username
     type: object
+  dto.UpdateProfileDto:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+    type: object
+  model.Category:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      state:
+        type: boolean
+    type: object
+  model.Coord:
+    properties:
+      x:
+        type: number
+      "y":
+        type: number
+    type: object
+  model.Image:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      key:
+        type: string
+      mime:
+        type: string
+      name:
+        type: string
+    type: object
+  model.Profile:
+    properties:
+      avatar:
+        $ref: '#/definitions/model.Image'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      idUser:
+        type: integer
+      likes:
+        type: integer
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  model.Publication:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/model.Category'
+        type: array
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      idCategories:
+        items:
+          type: integer
+        type: array
+      idProfile:
+        type: integer
+      images:
+        items:
+          $ref: '#/definitions/model.Image'
+        type: array
+      likes:
+        type: integer
+      profile:
+        $ref: '#/definitions/model.Profile'
+      tattoos:
+        items:
+          $ref: '#/definitions/model.Tattoo'
+        type: array
+    type: object
   model.Role:
     enum:
     - user
@@ -55,6 +193,35 @@ definitions:
     - USER_ROLE
     - TATTOO_ARTIST_ROLE
     - ADMIN_ROLE
+  model.Tattoo:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/model.Category'
+        type: array
+      coord:
+        $ref: '#/definitions/model.Coord'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      idCategories:
+        items:
+          type: integer
+        type: array
+      idPublication:
+        type: integer
+      image:
+        $ref: '#/definitions/model.Image'
+      likes:
+        type: integer
+      profile:
+        $ref: '#/definitions/model.Profile'
+      views:
+        type: integer
+    type: object
   model.User:
     properties:
       created_at:
@@ -205,6 +372,295 @@ paths:
       summary: Registrase dentro de la aplicación de AlpacaTatto
       tags:
       - auth
+  /api/categories:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetCategoriesResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir categorias de tatuajes
+      tags:
+      - categories
+  /api/profiles:
+    patch:
+      parameters:
+      - description: username
+        in: body
+        name: UpdateProfileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileDto'
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar el perfil de un usuario
+      tags:
+      - profile
+  /api/profiles/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: numero de pagina
+        in: query
+        name: page
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetTattoosResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir el perfil de un usuario
+      tags:
+      - profile
+  /api/profiles/avatar:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Este endpoint permite actualizar el avatar del usuario autenticado.
+        El archivo debe ser una imagen válida.
+      parameters:
+      - description: Imagen del avatar (jpg/png/webp)
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      responses:
+        "201":
+          description: Clave del nuevo avatar
+          schema:
+            $ref: '#/definitions/controller.UpdateProfileResponse'
+        "400":
+          description: Archivo no recibido o inválido
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar el avatar del perfil de un usuario
+      tags:
+      - profile
+  /api/publications:
+    post:
+      parameters:
+      - description: objeto XD
+        in: body
+        name: PublicationDto
+        required: true
+        schema:
+          $ref: '#/definitions/controller.PublicationDtoResponse'
+      - description: Imagenes[]
+        in: body
+        name: images
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetPublicationResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Publicar una publicacion
+      tags:
+      - publications
+  /api/publications/{idPost}/like:
+    get:
+      parameters:
+      - description: id de post
+        in: path
+        name: idPost
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetLikeResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir el like de un usuario sobre una publicacion
+      tags:
+      - publications
+    post:
+      parameters:
+      - description: id de post
+        in: path
+        name: idPost
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetLikeResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Dar Like o dislike
+      tags:
+      - publications
+  /api/publications/{idPublication}:
+    delete:
+      parameters:
+      - description: Id de publicacion
+        in: path
+        name: idPublication
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Eliminar una publicacion
+      tags:
+      - publications
+  /api/publications/username/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: N° page
+        in: query
+        name: page
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetPublicationsResponse'
+        "403":
+          description: Credenciales inválidas
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "409":
+          description: La sesión no existe. Probablemente porque la eliminaron
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir publicaciones de un usuario
+      tags:
+      - publications
+  /api/tattoos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: |-
+        ```json
+        {
+        "tattoos": [
+        {
+        "idCategories": [1, 2],
+        "description": "Descripción del tatuaje",
+        "image": "archivo_imagen",
+        "coord": {"x": 100, "y": 200},
+        "idPublication": 123
+        }]
+        }
+        ```
+      parameters:
+      - description: Imagen del tatuaje (jpg/png/webp)
+        in: formData
+        name: image
+        required: true
+        type: file
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Formulario inválido o sin datos de tatuajes
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "415":
+          description: El tipo de imagen es inválido, debe ser jpg/png/webp
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "502":
+          description: Falló el repositorio
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Publicar nuevos tatuajes {admin}
+      tags:
+      - tattoos
+  /api/tattoos/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: numero de pagina
+        in: query
+        name: page
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetTattoosResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir los tatuajes de un usuario
+      tags:
+      - tattoos
+  /api/tattoos/latest/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetTattoosResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir los ultimos tatuajes de un usuario
+      tags:
+      - tattoos
 produces:
 - application/json
 schemes:

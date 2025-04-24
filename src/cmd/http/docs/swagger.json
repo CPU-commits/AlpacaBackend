@@ -165,9 +165,482 @@
                     }
                 }
             }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Recibir categorias de tatuajes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetCategoriesResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/profiles": {
+            "patch": {
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Actualizar el perfil de un usuario",
+                "parameters": [
+                    {
+                        "description": "username",
+                        "name": "UpdateProfileDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateProfileDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/profiles/avatar": {
+            "patch": {
+                "description": "Este endpoint permite actualizar el avatar del usuario autenticado. El archivo debe ser una imagen válida.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Actualizar el avatar del perfil de un usuario",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Imagen del avatar (jpg/png/webp)",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Clave del nuevo avatar",
+                        "schema": {
+                            "$ref": "#/definitions/controller.UpdateProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Archivo no recibido o inválido",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/profiles/{username}": {
+            "get": {
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Recibir el perfil de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "numero de pagina",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetTattoosResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/publications": {
+            "post": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Publicar una publicacion",
+                "parameters": [
+                    {
+                        "description": "objeto XD",
+                        "name": "PublicationDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.PublicationDtoResponse"
+                        }
+                    },
+                    {
+                        "description": "Imagenes[]",
+                        "name": "images",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetPublicationResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/publications/username/{username}": {
+            "get": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Recibir publicaciones de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "N° page",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetPublicationsResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Credenciales inválidas",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "La sesión no existe. Probablemente porque la eliminaron",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/publications/{idPost}/like": {
+            "get": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Recibir el like de un usuario sobre una publicacion",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id de post",
+                        "name": "idPost",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetLikeResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Dar Like o dislike",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id de post",
+                        "name": "idPost",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetLikeResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/publications/{idPublication}": {
+            "delete": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Eliminar una publicacion",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id de publicacion",
+                        "name": "idPublication",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tattoos": {
+            "post": {
+                "description": "```json\n{\n\"tattoos\": [\n{\n\"idCategories\": [1, 2],\n\"description\": \"Descripción del tatuaje\",\n\"image\": \"archivo_imagen\",\n\"coord\": {\"x\": 100, \"y\": 200},\n\"idPublication\": 123\n}]\n}\n```",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "tattoos"
+                ],
+                "summary": "Publicar nuevos tatuajes {admin}",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Imagen del tatuaje (jpg/png/webp)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Formulario inválido o sin datos de tatuajes",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "415": {
+                        "description": "El tipo de imagen es inválido, debe ser jpg/png/webp",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "502": {
+                        "description": "Falló el repositorio",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tattoos/latest/{username}": {
+            "get": {
+                "tags": [
+                    "tattoos"
+                ],
+                "summary": "Recibir los ultimos tatuajes de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetTattoosResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tattoos/{username}": {
+            "get": {
+                "tags": [
+                    "tattoos"
+                ],
+                "summary": "Recibir los tatuajes de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "numero de pagina",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetTattoosResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "controller.GetCategoriesResponse": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Category"
+                    }
+                }
+            }
+        },
+        "controller.GetLikeResponse": {
+            "type": "object",
+            "properties": {
+                "is_like": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "controller.GetPublicationResponse": {
+            "type": "object",
+            "properties": {
+                "publication": {
+                    "$ref": "#/definitions/model.Publication"
+                }
+            }
+        },
+        "controller.GetPublicationsResponse": {
+            "type": "object",
+            "properties": {
+                "publications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Publication"
+                    }
+                }
+            }
+        },
+        "controller.GetTattoosResponse": {
+            "type": "object",
+            "properties": {
+                "tattoos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Tattoo"
+                    }
+                }
+            }
+        },
         "controller.LoginResponse": {
             "type": "object",
             "properties": {
@@ -181,6 +654,33 @@
                 },
                 "user": {
                     "$ref": "#/definitions/model.User"
+                }
+            }
+        },
+        "controller.PublicationDtoResponse": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "idCategories": {
+                    "description": "Images       []PublicationImageDto `form:\"images\" binding:\"dive\"`",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "controller.UpdateProfileResponse": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
                 }
             }
         },
@@ -229,6 +729,142 @@
                 }
             }
         },
+        "dto.UpdateProfileDto": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                }
+            }
+        },
+        "model.Category": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.Coord": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.Image": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "mime": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Profile": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/model.Image"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "idUser": {
+                    "type": "integer"
+                },
+                "likes": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                }
+            }
+        },
+        "model.Publication": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Category"
+                    }
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "idCategories": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "idProfile": {
+                    "type": "integer"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Image"
+                    }
+                },
+                "likes": {
+                    "type": "integer"
+                },
+                "profile": {
+                    "$ref": "#/definitions/model.Profile"
+                },
+                "tattoos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Tattoo"
+                    }
+                }
+            }
+        },
         "model.Role": {
             "type": "string",
             "enum": [
@@ -241,6 +877,50 @@
                 "TATTOO_ARTIST_ROLE",
                 "ADMIN_ROLE"
             ]
+        },
+        "model.Tattoo": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Category"
+                    }
+                },
+                "coord": {
+                    "$ref": "#/definitions/model.Coord"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "idCategories": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "idPublication": {
+                    "type": "integer"
+                },
+                "image": {
+                    "$ref": "#/definitions/model.Image"
+                },
+                "likes": {
+                    "type": "integer"
+                },
+                "profile": {
+                    "$ref": "#/definitions/model.Profile"
+                },
+                "views": {
+                    "type": "integer"
+                }
+            }
         },
         "model.User": {
             "type": "object",

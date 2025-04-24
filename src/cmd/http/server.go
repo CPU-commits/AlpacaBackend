@@ -91,8 +91,9 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		ctx.Set("localizer", utils.GetLocalizer(lang))
 	})
 	// Bus
-	kafka := queue.NewKafka()
-	// Routes
+
+	bus := queue.New(logger) // Rou
+	// tes
 	auth := router.Group("api/auth")
 	{
 		// Controllers
@@ -130,7 +131,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	publication := router.Group("api/publications")
 	{
 		// Controllers
-		publicationController := publicationController.NewPublicationHttpController(kafka)
+		publicationController := publicationController.NewPublicationHttpController(bus)
 		// Define routes
 		publication.GET("/username/:username", publicationController.GetPublications)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)

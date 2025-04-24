@@ -9,6 +9,13 @@ import (
 
 type HttpCategoryController struct{}
 
+// Get godoc
+//
+//	@Summary	Recibir categorias de tatuajes
+//	@Tags		categories
+//	@Success	200	{object}	controller.GetCategoriesResponse
+//	@Failure	503	object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/categories [Get]
 func (*HttpCategoryController) GetCategories(c *gin.Context) {
 	categories, err := categoryService.GetCategories()
 	if err != nil {
