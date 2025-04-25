@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
@@ -167,11 +166,9 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 	ctx := context.Background()
 	tx, err := sqlUR.db.BeginTx(ctx, nil)
 	if err != nil {
-		fmt.Printf("err1: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 	if err := sqlUser.Insert(ctx, tx, boil.Infer()); err != nil {
-		fmt.Printf("err2: %v\n", err)
 
 		tx.Rollback()
 		return nil, utils.ErrRepositoryFailed
@@ -182,7 +179,6 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 			Role:   string(role),
 		}
 		if err := sqlRole.Insert(ctx, tx, boil.Infer()); err != nil {
-			fmt.Printf("err3: %v\n", err)
 
 			tx.Rollback()
 			return nil, utils.ErrRepositoryFailed
@@ -191,7 +187,6 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 
 	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Printf("err4: %v\n", err)
 		tx.Rollback()
 		return nil, err
 	}
@@ -200,7 +195,6 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 		Password: string(passwordHashed),
 	}
 	if err := sqlAuth.Insert(ctx, tx, boil.Infer()); err != nil {
-		fmt.Printf("err5: %v\n", err)
 		tx.Rollback()
 
 		return nil, utils.ErrRepositoryFailed
@@ -209,16 +203,12 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 		IDUser: sqlUser.ID,
 	}
 	if err := sqlProfile.Insert(ctx, tx, boil.Infer()); err != nil {
-		fmt.Printf("err6: %v\n", err)
-
 		tx.Rollback()
 
 		return nil, utils.ErrRepositoryFailed
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Printf("err7: %v\n", err)
-
 		tx.Rollback()
 		return nil, utils.ErrRepositoryFailed
 	}

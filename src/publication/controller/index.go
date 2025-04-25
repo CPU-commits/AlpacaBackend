@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
@@ -35,7 +36,9 @@ var (
 		profileRepository,
 		*userService,
 		imageStore,
+		*fileService,
 	)
+	fileService     = file_service.NewFileService()
 	categoryService = tattooServices.NewCategoryService(
 		categoryRepository,
 	)

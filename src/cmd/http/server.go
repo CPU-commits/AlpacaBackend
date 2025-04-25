@@ -122,7 +122,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	profile := router.Group("api/profiles")
 	{
 		// Controllers
-		profileController := new(userController.HttpProfileController)
+		profileController := userController.NewHTTProfileController()
 		// Define routes
 		profile.GET("/:username", profileController.GetProfile)
 		profile.PATCH("/avatar", middleware.JWTMiddleware(), profileController.ChangeAvatar)

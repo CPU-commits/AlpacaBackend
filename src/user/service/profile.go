@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
@@ -17,6 +18,7 @@ type ProfileService struct {
 	profileRepository profile_repository.ProfileRepository
 	userService       authService.UserService
 	imageStore        store.ImageStore
+	fileService       file_service.FileService
 }
 
 func (profileService *ProfileService) GetProfile(username string) (*model.Profile, error) {
@@ -65,6 +67,12 @@ func (profileService *ProfileService) ChangeAvatar(
 	imageDto store.ImageDto,
 	idUser int64,
 ) (string, error) {
+	err := profileService.fileService.CheckImageMimeType(imageDto)
+
+	if err != nil {
+		return "", err
+	}
+
 	opts := profile_repository.NewFindOneOptions().
 		Load(profile_repository.LoadOpts{
 			Avatar: true,
@@ -146,12 +154,14 @@ func NewProfileService(
 	profileRepository profile_repository.ProfileRepository,
 	userService authService.UserService,
 	imageStore store.ImageStore,
+	fileService file_service.FileService,
 ) *ProfileService {
 	if profileService == nil {
 		profileService = &ProfileService{
 			profileRepository: profileRepository,
 			userService:       userService,
 			imageStore:        imageStore,
+			fileService:       fileService,
 		}
 	}
 	return profileService

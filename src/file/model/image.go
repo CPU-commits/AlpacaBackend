@@ -9,3 +9,10 @@ type Image struct {
 	MimeType  string    `json:"mime"`
 	CreatedAt time.Time `json:"createdAt"`
 }
+
+var FileImageMimeTypeList = []string{
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"image/webp",
+}

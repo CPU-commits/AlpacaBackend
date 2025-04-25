@@ -5,6 +5,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -79,5 +80,9 @@ func init() {
 	errorsService[publicationService.ErrPublicationNotAccess] = errRes{
 		StatusCode: http.StatusUnauthorized,
 		MessageId:  "publication.not_have_access",
+	}
+	errorsService[fileService.ErrInvalidMimeType] = errRes{
+		StatusCode: http.StatusUnsupportedMediaType,
+		MessageId:  "file.invalid_mime_type",
 	}
 }

@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"mime"
 	"net/http"
+	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
@@ -9,7 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HttpProfileController struct{}
+type HttpProfileController struct {
+}
 
 // Get godoc
 //
@@ -66,7 +69,7 @@ func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 //	@Failure		400		{object}	utils.ProblemDetails				"Archivo no recibido o inválido"
 //	@Failure		503		{object}	utils.ProblemDetails				"Error con la base de datos"
 //	@Router			/api/profiles/avatar [patch]
-func (*HttpProfileController) ChangeAvatar(c *gin.Context) {
+func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
 	avatar, err := c.FormFile("avatar")
 	if err != nil {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
@@ -77,10 +80,14 @@ func (*HttpProfileController) ChangeAvatar(c *gin.Context) {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
-
+	fileSplit := strings.Split(avatar.Filename, ".")
 	claims, _ := utils.NewClaimsFromContext(c)
+	mimeType := mime.TypeByExtension("." + fileSplit[len(fileSplit)-1])
+
 	key, err := profileService.ChangeAvatar(store.ImageDto{
-		File: file,
+		File:     file,
+		Name:     avatar.Filename,
+		MimeType: mimeType,
 	}, claims.ID)
 	if err != nil {
 		utils.ResFromErr(c, err)
@@ -90,4 +97,8 @@ func (*HttpProfileController) ChangeAvatar(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"key": key,
 	})
+}
+
+func NewHTTProfileController() HttpProfileController {
+	return HttpProfileController{}
 }

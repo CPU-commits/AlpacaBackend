@@ -32,5 +32,8 @@
 	"publication": {
 		"not_exists": "No existe la publicación",
 		"not_have_access": "No tienes accesso a la publicación"
+	},
+	"file": {
+		"invalid_mime_type": "El tipo de archivo es incorrecto"
 	}
 }
