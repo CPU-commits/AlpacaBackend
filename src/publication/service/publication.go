@@ -280,6 +280,44 @@ func (publicationService *PublicationService) Publish(
 	return publication, nil
 }
 
+func (publicationService *PublicationService) TestPublish(
+	publicationDto *dto.TestPublicationDto,
+	images []store.ImageDto,
+	idUser int64,
+) (*model.Publication, error) {
+	idProfile, err := publicationService.profileService.GetProfileIDFromIDUser(
+		idUser,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err := publicationService.categoryService.ExistsCategories(
+		publicationDto.IDCategories,
+	); err != nil {
+		return nil, err
+	}
+
+	imagesUploaded, err := utils.ConcurrentMap(images, func(image store.ImageDto) (fileModel.Image, error) {
+		imageUploaded, err := publicationService.imageStore.Upload(image, "publication")
+		if err != nil {
+			return fileModel.Image{}, nil
+		}
+		return *imageUploaded, nil
+	}, nil)
+	if err != nil {
+		return &model.Publication{}, err
+	}
+	publication := publicationDto.PruebaToModel()
+	publication.Images = imagesUploaded
+
+	newPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
+	if err != nil {
+		return &model.Publication{}, err
+	}
+
+	return newPublication, nil
+}
+
 func (publicationService *PublicationService) DeletePublication(
 	idPublication int64,
 	idUser int64,

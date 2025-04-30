@@ -136,6 +136,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.GET("/username/:username", publicationController.GetPublications)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
+		publication.POST("/test", middleware.JWTMiddleware(), publicationController.TestPublish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
 	}
