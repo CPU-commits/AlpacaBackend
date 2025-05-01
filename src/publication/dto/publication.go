@@ -19,18 +19,6 @@ type PublicationDto struct {
 	IDCategories []int64               `form:"idCategories"`
 }
 
-type TestPublicationDto struct {
-	Content      string  `form:"content" binding:"required,max=500"`
-	IDCategories []int64 `form:"idCategories"`
-}
-
-func (publicationDto *TestPublicationDto) PruebaToModel() *model.Publication {
-	return &model.Publication{
-		Content:      publicationDto.Content,
-		IDCategories: publicationDto.IDCategories,
-	}
-}
-
 func (publicationDto *PublicationDto) ToTattoos(idPublication int64) []dto.TattooDto {
 	return utils.MapNoError(utils.FilterNoError(publicationDto.Images, func(image PublicationImageDto) bool {
 		return *image.IsTattoo

@@ -135,6 +135,7 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 		return
 	}
 	// Load images
+	fmt.Printf("publicationDto.Images: %v\n", publicationDto.Images)
 	i := 0
 	imagesDto, err := domainUtils.Map(
 		publicationDto.Images,
@@ -172,50 +173,6 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 
 	claims, _ := utils.NewClaimsFromContext(c)
 	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
-	if err != nil {
-		utils.ResFromErr(c, err)
-		return
-	}
-
-	c.JSON(http.StatusCreated, publication)
-}
-
-// Post godoc
-//
-//	@Summary	Publicar una publicacion
-//	@Tags		publications
-//	@Success	200				{object}	controller.GetPublicationResponse
-//	@Param		PublicationDto	body		controller.PublicationDtoResponse	true	"objeto XD"
-//	@Param		images			body		object								true	"Imagenes[]"
-//	@Failure	503				object		utils.ProblemDetails				"Error con la base de datos"
-//	@Router		/api/publications [post]
-func (httpPC *HttpPublicationController) TestPublish(c *gin.Context) {
-	var publicationDto *dto.TestPublicationDto
-	if err := c.Bind(&publicationDto); err != nil {
-		utils.ResErrValidators(c, err)
-		return
-	}
-
-	form, _ := c.MultipartForm()
-	images := form.File["images[]"]
-	var imagesDto []store.ImageDto
-	for _, image := range images {
-		imageOpened, err := image.Open()
-		if err != nil {
-			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest)
-			return
-		}
-		fileSplit := strings.Split(image.Filename, ".")
-
-		imagesDto = append(imagesDto, store.ImageDto{
-			Name:     image.Filename,
-			File:     imageOpened,
-			MimeType: mime.TypeByExtension("." + fileSplit[len(fileSplit)-1]),
-		})
-	}
-
-	claims, _ := utils.NewClaimsFromContext(c)
-	publication, err := httpPC.publicationService.TestPublish(publicationDto, imagesDto, claims.ID)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
