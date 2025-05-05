@@ -23,9 +23,10 @@ import (
 
 // PostCategory is an object representing the database table.
 type PostCategory struct {
-	ID         int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDPost     int64 `boil:"id_post" json:"id_post" toml:"id_post" yaml:"id_post"`
-	IDCategory int64 `boil:"id_category" json:"id_category" toml:"id_category" yaml:"id_category"`
+	ID         int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDPost     int64     `boil:"id_post" json:"id_post" toml:"id_post" yaml:"id_post"`
+	IDCategory int64     `boil:"id_category" json:"id_category" toml:"id_category" yaml:"id_category"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *postCategoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postCategoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +36,24 @@ var PostCategoryColumns = struct {
 	ID         string
 	IDPost     string
 	IDCategory string
+	CreatedAt  string
 }{
 	ID:         "id",
 	IDPost:     "id_post",
 	IDCategory: "id_category",
+	CreatedAt:  "created_at",
 }
 
 var PostCategoryTableColumns = struct {
 	ID         string
 	IDPost     string
 	IDCategory string
+	CreatedAt  string
 }{
 	ID:         "post_categories.id",
 	IDPost:     "post_categories.id_post",
 	IDCategory: "post_categories.id_category",
+	CreatedAt:  "post_categories.created_at",
 }
 
 // Generated where
@@ -57,10 +62,12 @@ var PostCategoryWhere = struct {
 	ID         whereHelperint64
 	IDPost     whereHelperint64
 	IDCategory whereHelperint64
+	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperint64{field: "\"post_categories\".\"id\""},
 	IDPost:     whereHelperint64{field: "\"post_categories\".\"id_post\""},
 	IDCategory: whereHelperint64{field: "\"post_categories\".\"id_category\""},
+	CreatedAt:  whereHelpertime_Time{field: "\"post_categories\".\"created_at\""},
 }
 
 // PostCategoryRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *postCategoryR) GetIDCategoryCategory() *Category {
 type postCategoryL struct{}
 
 var (
-	postCategoryAllColumns            = []string{"id", "id_post", "id_category"}
+	postCategoryAllColumns            = []string{"id", "id_post", "id_category", "created_at"}
 	postCategoryColumnsWithoutDefault = []string{"id_post", "id_category"}
-	postCategoryColumnsWithDefault    = []string{"id"}
+	postCategoryColumnsWithDefault    = []string{"id", "created_at"}
 	postCategoryPrimaryKeyColumns     = []string{"id"}
 	postCategoryGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *PostCategory) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *PostCategory) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 func (o *PostCategory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no post_categories provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

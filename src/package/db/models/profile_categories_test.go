@@ -853,7 +853,7 @@ func testProfileCategoriesSelect(t *testing.T) {
 }
 
 var (
-	profileCategoryDBTypes = map[string]string{`ID`: `int8`, `IDProfile`: `int8`, `IDCategories`: `int8`}
+	profileCategoryDBTypes = map[string]string{`ID`: `int8`, `IDProfile`: `int8`, `IDCategories`: `int8`, `CreatedAt`: `timestamp`}
 	_                      = bytes.MinRead
 )
 

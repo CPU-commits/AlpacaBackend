@@ -853,7 +853,7 @@ func testStudioAdminsSelect(t *testing.T) {
 }
 
 var (
-	studioAdminDBTypes = map[string]string{`ID`: `int8`, `IDStudio`: `int8`, `IDOwner`: `int8`}
+	studioAdminDBTypes = map[string]string{`ID`: `int8`, `IDStudio`: `int8`, `IDOwner`: `int8`, `CreatedAt`: `timestamp`}
 	_                  = bytes.MinRead
 )
 

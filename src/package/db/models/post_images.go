@@ -23,44 +23,51 @@ import (
 
 // PostImage is an object representing the database table.
 type PostImage struct {
-	ID      int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDImage int64 `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
-	IDPost  int64 `boil:"id_post" json:"id_post" toml:"id_post" yaml:"id_post"`
+	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDImage   int64     `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
+	IDPost    int64     `boil:"id_post" json:"id_post" toml:"id_post" yaml:"id_post"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *postImageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postImageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PostImageColumns = struct {
-	ID      string
-	IDImage string
-	IDPost  string
+	ID        string
+	IDImage   string
+	IDPost    string
+	CreatedAt string
 }{
-	ID:      "id",
-	IDImage: "id_image",
-	IDPost:  "id_post",
+	ID:        "id",
+	IDImage:   "id_image",
+	IDPost:    "id_post",
+	CreatedAt: "created_at",
 }
 
 var PostImageTableColumns = struct {
-	ID      string
-	IDImage string
-	IDPost  string
+	ID        string
+	IDImage   string
+	IDPost    string
+	CreatedAt string
 }{
-	ID:      "post_images.id",
-	IDImage: "post_images.id_image",
-	IDPost:  "post_images.id_post",
+	ID:        "post_images.id",
+	IDImage:   "post_images.id_image",
+	IDPost:    "post_images.id_post",
+	CreatedAt: "post_images.created_at",
 }
 
 // Generated where
 
 var PostImageWhere = struct {
-	ID      whereHelperint64
-	IDImage whereHelperint64
-	IDPost  whereHelperint64
+	ID        whereHelperint64
+	IDImage   whereHelperint64
+	IDPost    whereHelperint64
+	CreatedAt whereHelpertime_Time
 }{
-	ID:      whereHelperint64{field: "\"post_images\".\"id\""},
-	IDImage: whereHelperint64{field: "\"post_images\".\"id_image\""},
-	IDPost:  whereHelperint64{field: "\"post_images\".\"id_post\""},
+	ID:        whereHelperint64{field: "\"post_images\".\"id\""},
+	IDImage:   whereHelperint64{field: "\"post_images\".\"id_image\""},
+	IDPost:    whereHelperint64{field: "\"post_images\".\"id_post\""},
+	CreatedAt: whereHelpertime_Time{field: "\"post_images\".\"created_at\""},
 }
 
 // PostImageRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *postImageR) GetIDImageImage() *Image {
 type postImageL struct{}
 
 var (
-	postImageAllColumns            = []string{"id", "id_image", "id_post"}
+	postImageAllColumns            = []string{"id", "id_image", "id_post", "created_at"}
 	postImageColumnsWithoutDefault = []string{"id_image", "id_post"}
-	postImageColumnsWithDefault    = []string{"id"}
+	postImageColumnsWithDefault    = []string{"id", "created_at"}
 	postImagePrimaryKeyColumns     = []string{"id"}
 	postImageGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *PostImage) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *PostImage) Exists(ctx context.Context, exec boil.ContextExecutor) (bool
 func (o *PostImage) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no post_images provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -105,6 +105,8 @@ model profile_categories {
 	id_categories BigInt
 	profile profiles @relation(fields: [id_profile], references: [id])
 	category categories @relation(fields: [id_categories], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model profiles {
@@ -139,6 +141,8 @@ model tattoo_categories {
 	id_category BigInt
 	tattoo tattoos @relation(fields: [id_tattoo], references: [id])
 	category categories @relation(fields: [id_category], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model tattoos {
@@ -164,6 +168,8 @@ model studio_tattoo_artists {
 	id_tattoo_artist BigInt
 	studio studios @relation(fields: [id_studio], references: [id])
 	tattoo_artist users @relation(fields: [id_tattoo_artist], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model studio_admins {
@@ -172,6 +178,8 @@ model studio_admins {
 	id_owner BigInt
 	studio studios @relation(fields: [id_studio], references: [id])
 	owner users @relation(fields: [id_owner], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model studios {
@@ -202,6 +210,8 @@ model post_images {
 	id_post BigInt
 	image images @relation(references: [id], fields: [id_image], onDelete: Cascade)
 	post posts @relation(references: [id], fields: [id_post])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model post_categories {
@@ -210,6 +220,8 @@ model post_categories {
 	id_category BigInt
 	post posts @relation(references: [id], fields: [id_post])
 	category categories @relation(fields: [id_category], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
+
 }
 
 model posts {

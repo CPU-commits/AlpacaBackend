@@ -5,6 +5,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
@@ -28,6 +29,7 @@ type PublicationService struct {
 	publicationRepository publication_repository.PublicationRepository
 	likeRepository        like_repository.LikeRepository
 	tattooRepository      tattoo_repository.TattooRepository
+	fileService           file_service.FileService
 	bus                   bus.Bus
 }
 
@@ -249,8 +251,11 @@ func (publicationService *PublicationService) Publish(
 	}
 
 	publication, imagesDto := publicationDto.ToModel()
-	fmt.Printf("imagesDto: %v\n", imagesDto)
 	images, err := utils.ConcurrentMap(imagesDto, func(imageDto store.ImageDto) (fileModel.Image, error) {
+		err := publicationService.fileService.CheckImageMimeType(imageDto)
+		if err != nil {
+			return fileModel.Image{}, err
+		}
 		image, err := publicationService.imageStore.Upload(imageDto, fmt.Sprintf("publications/%d", idUser))
 		if err != nil {
 			return fileModel.Image{}, err
@@ -261,7 +266,6 @@ func (publicationService *PublicationService) Publish(
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("images: %v\n", images)
 	publication.Images = images
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
 	if err != nil {

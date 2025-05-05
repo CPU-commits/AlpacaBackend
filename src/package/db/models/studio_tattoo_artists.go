@@ -23,9 +23,10 @@ import (
 
 // StudioTattooArtist is an object representing the database table.
 type StudioTattooArtist struct {
-	ID             int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDStudio       int64 `boil:"id_studio" json:"id_studio" toml:"id_studio" yaml:"id_studio"`
-	IDTattooArtist int64 `boil:"id_tattoo_artist" json:"id_tattoo_artist" toml:"id_tattoo_artist" yaml:"id_tattoo_artist"`
+	ID             int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDStudio       int64     `boil:"id_studio" json:"id_studio" toml:"id_studio" yaml:"id_studio"`
+	IDTattooArtist int64     `boil:"id_tattoo_artist" json:"id_tattoo_artist" toml:"id_tattoo_artist" yaml:"id_tattoo_artist"`
+	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *studioTattooArtistR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioTattooArtistL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +36,24 @@ var StudioTattooArtistColumns = struct {
 	ID             string
 	IDStudio       string
 	IDTattooArtist string
+	CreatedAt      string
 }{
 	ID:             "id",
 	IDStudio:       "id_studio",
 	IDTattooArtist: "id_tattoo_artist",
+	CreatedAt:      "created_at",
 }
 
 var StudioTattooArtistTableColumns = struct {
 	ID             string
 	IDStudio       string
 	IDTattooArtist string
+	CreatedAt      string
 }{
 	ID:             "studio_tattoo_artists.id",
 	IDStudio:       "studio_tattoo_artists.id_studio",
 	IDTattooArtist: "studio_tattoo_artists.id_tattoo_artist",
+	CreatedAt:      "studio_tattoo_artists.created_at",
 }
 
 // Generated where
@@ -57,10 +62,12 @@ var StudioTattooArtistWhere = struct {
 	ID             whereHelperint64
 	IDStudio       whereHelperint64
 	IDTattooArtist whereHelperint64
+	CreatedAt      whereHelpertime_Time
 }{
 	ID:             whereHelperint64{field: "\"studio_tattoo_artists\".\"id\""},
 	IDStudio:       whereHelperint64{field: "\"studio_tattoo_artists\".\"id_studio\""},
 	IDTattooArtist: whereHelperint64{field: "\"studio_tattoo_artists\".\"id_tattoo_artist\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"studio_tattoo_artists\".\"created_at\""},
 }
 
 // StudioTattooArtistRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *studioTattooArtistR) GetIDStudioStudio() *Studio {
 type studioTattooArtistL struct{}
 
 var (
-	studioTattooArtistAllColumns            = []string{"id", "id_studio", "id_tattoo_artist"}
+	studioTattooArtistAllColumns            = []string{"id", "id_studio", "id_tattoo_artist", "created_at"}
 	studioTattooArtistColumnsWithoutDefault = []string{"id_studio", "id_tattoo_artist"}
-	studioTattooArtistColumnsWithDefault    = []string{"id"}
+	studioTattooArtistColumnsWithDefault    = []string{"id", "created_at"}
 	studioTattooArtistPrimaryKeyColumns     = []string{"id"}
 	studioTattooArtistGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *StudioTattooArtist) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *StudioTattooArtist) Exists(ctx context.Context, exec boil.ContextExecut
 func (o *StudioTattooArtist) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no studio_tattoo_artists provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

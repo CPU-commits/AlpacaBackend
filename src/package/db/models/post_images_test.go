@@ -853,7 +853,7 @@ func testPostImagesSelect(t *testing.T) {
 }
 
 var (
-	postImageDBTypes = map[string]string{`ID`: `int8`, `IDImage`: `int8`, `IDPost`: `int8`}
+	postImageDBTypes = map[string]string{`ID`: `int8`, `IDImage`: `int8`, `IDPost`: `int8`, `CreatedAt`: `timestamp`}
 	_                = bytes.MinRead
 )
 

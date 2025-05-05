@@ -23,9 +23,10 @@ import (
 
 // TattooCategory is an object representing the database table.
 type TattooCategory struct {
-	ID         int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDTattoo   int64 `boil:"id_tattoo" json:"id_tattoo" toml:"id_tattoo" yaml:"id_tattoo"`
-	IDCategory int64 `boil:"id_category" json:"id_category" toml:"id_category" yaml:"id_category"`
+	ID         int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDTattoo   int64     `boil:"id_tattoo" json:"id_tattoo" toml:"id_tattoo" yaml:"id_tattoo"`
+	IDCategory int64     `boil:"id_category" json:"id_category" toml:"id_category" yaml:"id_category"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *tattooCategoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tattooCategoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +36,24 @@ var TattooCategoryColumns = struct {
 	ID         string
 	IDTattoo   string
 	IDCategory string
+	CreatedAt  string
 }{
 	ID:         "id",
 	IDTattoo:   "id_tattoo",
 	IDCategory: "id_category",
+	CreatedAt:  "created_at",
 }
 
 var TattooCategoryTableColumns = struct {
 	ID         string
 	IDTattoo   string
 	IDCategory string
+	CreatedAt  string
 }{
 	ID:         "tattoo_categories.id",
 	IDTattoo:   "tattoo_categories.id_tattoo",
 	IDCategory: "tattoo_categories.id_category",
+	CreatedAt:  "tattoo_categories.created_at",
 }
 
 // Generated where
@@ -57,10 +62,12 @@ var TattooCategoryWhere = struct {
 	ID         whereHelperint64
 	IDTattoo   whereHelperint64
 	IDCategory whereHelperint64
+	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperint64{field: "\"tattoo_categories\".\"id\""},
 	IDTattoo:   whereHelperint64{field: "\"tattoo_categories\".\"id_tattoo\""},
 	IDCategory: whereHelperint64{field: "\"tattoo_categories\".\"id_category\""},
+	CreatedAt:  whereHelpertime_Time{field: "\"tattoo_categories\".\"created_at\""},
 }
 
 // TattooCategoryRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *tattooCategoryR) GetIDCategoryCategory() *Category {
 type tattooCategoryL struct{}
 
 var (
-	tattooCategoryAllColumns            = []string{"id", "id_tattoo", "id_category"}
+	tattooCategoryAllColumns            = []string{"id", "id_tattoo", "id_category", "created_at"}
 	tattooCategoryColumnsWithoutDefault = []string{"id_tattoo", "id_category"}
-	tattooCategoryColumnsWithDefault    = []string{"id"}
+	tattooCategoryColumnsWithDefault    = []string{"id", "created_at"}
 	tattooCategoryPrimaryKeyColumns     = []string{"id"}
 	tattooCategoryGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *TattooCategory) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *TattooCategory) Exists(ctx context.Context, exec boil.ContextExecutor) 
 func (o *TattooCategory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no tattoo_categories provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -135,7 +135,6 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 		return
 	}
 	// Load images
-	fmt.Printf("publicationDto.Images: %v\n", publicationDto.Images)
 	i := 0
 	imagesDto, err := domainUtils.Map(
 		publicationDto.Images,
@@ -159,9 +158,9 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 			image.Image = store.ImageDto{
 				File:     openedFile,
 				Name:     file.Filename,
-				MimeType: mime.TypeByExtension(splitName[len(splitName)-1]),
+				MimeType: mime.TypeByExtension("." + splitName[len(splitName)-1]),
 			}
-
+			fmt.Printf("image: %v\n", image)
 			return image, nil
 		},
 	)

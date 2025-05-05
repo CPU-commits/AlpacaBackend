@@ -853,7 +853,7 @@ func testPostCategoriesSelect(t *testing.T) {
 }
 
 var (
-	postCategoryDBTypes = map[string]string{`ID`: `int8`, `IDPost`: `int8`, `IDCategory`: `int8`}
+	postCategoryDBTypes = map[string]string{`ID`: `int8`, `IDPost`: `int8`, `IDCategory`: `int8`, `CreatedAt`: `timestamp`}
 	_                   = bytes.MinRead
 )
 

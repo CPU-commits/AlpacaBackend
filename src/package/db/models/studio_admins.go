@@ -23,44 +23,51 @@ import (
 
 // StudioAdmin is an object representing the database table.
 type StudioAdmin struct {
-	ID       int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDStudio int64 `boil:"id_studio" json:"id_studio" toml:"id_studio" yaml:"id_studio"`
-	IDOwner  int64 `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
+	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDStudio  int64     `boil:"id_studio" json:"id_studio" toml:"id_studio" yaml:"id_studio"`
+	IDOwner   int64     `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *studioAdminR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioAdminL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var StudioAdminColumns = struct {
-	ID       string
-	IDStudio string
-	IDOwner  string
+	ID        string
+	IDStudio  string
+	IDOwner   string
+	CreatedAt string
 }{
-	ID:       "id",
-	IDStudio: "id_studio",
-	IDOwner:  "id_owner",
+	ID:        "id",
+	IDStudio:  "id_studio",
+	IDOwner:   "id_owner",
+	CreatedAt: "created_at",
 }
 
 var StudioAdminTableColumns = struct {
-	ID       string
-	IDStudio string
-	IDOwner  string
+	ID        string
+	IDStudio  string
+	IDOwner   string
+	CreatedAt string
 }{
-	ID:       "studio_admins.id",
-	IDStudio: "studio_admins.id_studio",
-	IDOwner:  "studio_admins.id_owner",
+	ID:        "studio_admins.id",
+	IDStudio:  "studio_admins.id_studio",
+	IDOwner:   "studio_admins.id_owner",
+	CreatedAt: "studio_admins.created_at",
 }
 
 // Generated where
 
 var StudioAdminWhere = struct {
-	ID       whereHelperint64
-	IDStudio whereHelperint64
-	IDOwner  whereHelperint64
+	ID        whereHelperint64
+	IDStudio  whereHelperint64
+	IDOwner   whereHelperint64
+	CreatedAt whereHelpertime_Time
 }{
-	ID:       whereHelperint64{field: "\"studio_admins\".\"id\""},
-	IDStudio: whereHelperint64{field: "\"studio_admins\".\"id_studio\""},
-	IDOwner:  whereHelperint64{field: "\"studio_admins\".\"id_owner\""},
+	ID:        whereHelperint64{field: "\"studio_admins\".\"id\""},
+	IDStudio:  whereHelperint64{field: "\"studio_admins\".\"id_studio\""},
+	IDOwner:   whereHelperint64{field: "\"studio_admins\".\"id_owner\""},
+	CreatedAt: whereHelpertime_Time{field: "\"studio_admins\".\"created_at\""},
 }
 
 // StudioAdminRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *studioAdminR) GetIDOwnerUser() *User {
 type studioAdminL struct{}
 
 var (
-	studioAdminAllColumns            = []string{"id", "id_studio", "id_owner"}
+	studioAdminAllColumns            = []string{"id", "id_studio", "id_owner", "created_at"}
 	studioAdminColumnsWithoutDefault = []string{"id_studio", "id_owner"}
-	studioAdminColumnsWithDefault    = []string{"id"}
+	studioAdminColumnsWithDefault    = []string{"id", "created_at"}
 	studioAdminPrimaryKeyColumns     = []string{"id"}
 	studioAdminGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *StudioAdmin) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *StudioAdmin) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 func (o *StudioAdmin) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no studio_admins provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

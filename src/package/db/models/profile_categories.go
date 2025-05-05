@@ -23,9 +23,10 @@ import (
 
 // ProfileCategory is an object representing the database table.
 type ProfileCategory struct {
-	ID           int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDProfile    int64 `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	IDCategories int64 `boil:"id_categories" json:"id_categories" toml:"id_categories" yaml:"id_categories"`
+	ID           int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDProfile    int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	IDCategories int64     `boil:"id_categories" json:"id_categories" toml:"id_categories" yaml:"id_categories"`
+	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *profileCategoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L profileCategoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +36,24 @@ var ProfileCategoryColumns = struct {
 	ID           string
 	IDProfile    string
 	IDCategories string
+	CreatedAt    string
 }{
 	ID:           "id",
 	IDProfile:    "id_profile",
 	IDCategories: "id_categories",
+	CreatedAt:    "created_at",
 }
 
 var ProfileCategoryTableColumns = struct {
 	ID           string
 	IDProfile    string
 	IDCategories string
+	CreatedAt    string
 }{
 	ID:           "profile_categories.id",
 	IDProfile:    "profile_categories.id_profile",
 	IDCategories: "profile_categories.id_categories",
+	CreatedAt:    "profile_categories.created_at",
 }
 
 // Generated where
@@ -57,10 +62,12 @@ var ProfileCategoryWhere = struct {
 	ID           whereHelperint64
 	IDProfile    whereHelperint64
 	IDCategories whereHelperint64
+	CreatedAt    whereHelpertime_Time
 }{
 	ID:           whereHelperint64{field: "\"profile_categories\".\"id\""},
 	IDProfile:    whereHelperint64{field: "\"profile_categories\".\"id_profile\""},
 	IDCategories: whereHelperint64{field: "\"profile_categories\".\"id_categories\""},
+	CreatedAt:    whereHelpertime_Time{field: "\"profile_categories\".\"created_at\""},
 }
 
 // ProfileCategoryRels is where relationship names are stored.
@@ -101,9 +108,9 @@ func (r *profileCategoryR) GetIDCategory() *Category {
 type profileCategoryL struct{}
 
 var (
-	profileCategoryAllColumns            = []string{"id", "id_profile", "id_categories"}
+	profileCategoryAllColumns            = []string{"id", "id_profile", "id_categories", "created_at"}
 	profileCategoryColumnsWithoutDefault = []string{"id_profile", "id_categories"}
-	profileCategoryColumnsWithDefault    = []string{"id"}
+	profileCategoryColumnsWithDefault    = []string{"id", "created_at"}
 	profileCategoryPrimaryKeyColumns     = []string{"id"}
 	profileCategoryGeneratedColumns      = []string{}
 )
@@ -818,6 +825,13 @@ func (o *ProfileCategory) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1194,6 +1208,13 @@ func (o *ProfileCategory) Exists(ctx context.Context, exec boil.ContextExecutor)
 func (o *ProfileCategory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no profile_categories provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

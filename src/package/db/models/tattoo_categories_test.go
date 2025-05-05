@@ -853,7 +853,7 @@ func testTattooCategoriesSelect(t *testing.T) {
 }
 
 var (
-	tattooCategoryDBTypes = map[string]string{`ID`: `int8`, `IDTattoo`: `int8`, `IDCategory`: `int8`}
+	tattooCategoryDBTypes = map[string]string{`ID`: `int8`, `IDTattoo`: `int8`, `IDCategory`: `int8`, `CreatedAt`: `timestamp`}
 	_                     = bytes.MinRead
 )
 
