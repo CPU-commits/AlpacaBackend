@@ -168,28 +168,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/categories": {
-            "get": {
-                "tags": [
-                    "categories"
-                ],
-                "summary": "Recibir categorias de tatuajes",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.GetCategoriesResponse"
-                        }
-                    },
-                    "503": {
-                        "description": "Error con la base de datos",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
         "/api/profiles": {
             "patch": {
                 "tags": [
@@ -222,7 +200,6 @@ const docTemplate = `{
         },
         "/api/profiles/avatar": {
             "patch": {
-                "description": "Este endpoint permite actualizar el avatar del usuario autenticado. El archivo debe ser una imagen válida.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -481,7 +458,7 @@ const docTemplate = `{
         },
         "/api/tattoos": {
             "post": {
-                "description": "` + "`" + `` + "`" + `` + "`" + `json\n{\n\"tattoos\": [\n{\n\"idCategories\": [1, 2],\n\"description\": \"Descripción del tatuaje\",\n\"image\": \"archivo_imagen\",\n\"coord\": {\"x\": 100, \"y\": 200},\n\"idPublication\": 123\n}]\n}\n` + "`" + `` + "`" + `` + "`" + `",
+                "description": "` + "`" + `` + "`" + `` + "`" + `json\n{\n\"tattoos\": [\n{\n\"description\": \"Descripción del tatuaje\",\n\"image\": \"archivo_imagen\",\n\"coord\": {\"x\": 100, \"y\": 200},\n}]\n}\n` + "`" + `` + "`" + `` + "`" + `",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -594,17 +571,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controller.GetCategoriesResponse": {
-            "type": "object",
-            "properties": {
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Category"
-                    }
-                }
-            }
-        },
         "controller.GetLikeResponse": {
             "type": "object",
             "properties": {
@@ -740,29 +706,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Category": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "boolean"
-                }
-            }
-        },
         "model.Coord": {
             "type": "object",
             "properties": {
@@ -826,7 +769,7 @@ const docTemplate = `{
                 "categories": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Category"
+                        "type": "string"
                     }
                 },
                 "content": {
@@ -837,12 +780,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
-                },
-                "idCategories": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "idProfile": {
                     "type": "integer"
@@ -855,6 +792,12 @@ const docTemplate = `{
                 },
                 "likes": {
                     "type": "integer"
+                },
+                "mentions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "profile": {
                     "$ref": "#/definitions/model.Profile"
@@ -886,7 +829,7 @@ const docTemplate = `{
                 "categories": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Category"
+                        "type": "string"
                     }
                 },
                 "coord": {
@@ -900,12 +843,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
-                },
-                "idCategories": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "idPublication": {
                     "type": "integer"

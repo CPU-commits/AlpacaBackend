@@ -77,7 +77,6 @@ func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
 //	@description	"description": "Descripción del tatuaje",
 //	@description	"image": "archivo_imagen",
 //	@description	"coord": {"x": 100, "y": 200},
-//	@description	"idPublication": 123
 //	@description	}]
 //	@description	}
 //	@description	```

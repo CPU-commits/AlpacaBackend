@@ -2,13 +2,6 @@ basePath: /api
 consumes:
 - application/json
 definitions:
-  controller.GetCategoriesResponse:
-    properties:
-      categories:
-        items:
-          $ref: '#/definitions/model.Category'
-        type: array
-    type: object
   controller.GetLikeResponse:
     properties:
       is_like:
@@ -100,21 +93,6 @@ definitions:
         maxLength: 500
         type: string
     type: object
-  model.Category:
-    properties:
-      createdAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      slug:
-        type: string
-      state:
-        type: boolean
-    type: object
   model.Coord:
     properties:
       x:
@@ -156,7 +134,7 @@ definitions:
     properties:
       categories:
         items:
-          $ref: '#/definitions/model.Category'
+          type: string
         type: array
       content:
         type: string
@@ -164,10 +142,6 @@ definitions:
         type: string
       id:
         type: integer
-      idCategories:
-        items:
-          type: integer
-        type: array
       idProfile:
         type: integer
       images:
@@ -176,6 +150,10 @@ definitions:
         type: array
       likes:
         type: integer
+      mentions:
+        items:
+          type: integer
+        type: array
       profile:
         $ref: '#/definitions/model.Profile'
       tattoos:
@@ -197,7 +175,7 @@ definitions:
     properties:
       categories:
         items:
-          $ref: '#/definitions/model.Category'
+          type: string
         type: array
       coord:
         $ref: '#/definitions/model.Coord'
@@ -207,10 +185,6 @@ definitions:
         type: string
       id:
         type: integer
-      idCategories:
-        items:
-          type: integer
-        type: array
       idPublication:
         type: integer
       image:
@@ -372,20 +346,6 @@ paths:
       summary: Registrase dentro de la aplicación de AlpacaTatto
       tags:
       - auth
-  /api/categories:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.GetCategoriesResponse'
-        "503":
-          description: Error con la base de datos
-          schema:
-            $ref: '#/definitions/utils.ProblemDetails'
-      summary: Recibir categorias de tatuajes
-      tags:
-      - categories
   /api/profiles:
     patch:
       parameters:
@@ -434,8 +394,6 @@ paths:
     patch:
       consumes:
       - multipart/form-data
-      description: Este endpoint permite actualizar el avatar del usuario autenticado.
-        El archivo debe ser una imagen válida.
       parameters:
       - description: Imagen del avatar (jpg/png/webp)
         in: formData
@@ -584,11 +542,9 @@ paths:
         {
         "tattoos": [
         {
-        "idCategories": [1, 2],
         "description": "Descripción del tatuaje",
         "image": "archivo_imagen",
         "coord": {"x": 100, "y": 200},
-        "idPublication": 123
         }]
         }
         ```

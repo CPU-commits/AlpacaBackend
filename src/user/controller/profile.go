@@ -61,14 +61,14 @@ func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 
 // Change Avatar godoc
 //
-//	@Summary		Actualizar el avatar del perfil de un usuario
-//	@Tags			profile
-//	@Accept			multipart/form-data
-//	@Param			avatar	formData	file								true	"Imagen del avatar (jpg/png/webp)"
-//	@Success		201		{object}	controller.UpdateProfileResponse	"Clave del nuevo avatar"
-//	@Failure		400		{object}	utils.ProblemDetails				"Archivo no recibido o inválido"
-//	@Failure		503		{object}	utils.ProblemDetails				"Error con la base de datos"
-//	@Router			/api/profiles/avatar [patch]
+//	@Summary	Actualizar el avatar del perfil de un usuario
+//	@Tags		profile
+//	@Accept		multipart/form-data
+//	@Param		avatar	formData	file								true	"Imagen del avatar (jpg/png/webp)"
+//	@Success	201		{object}	controller.UpdateProfileResponse	"Clave del nuevo avatar"
+//	@Failure	400		{object}	utils.ProblemDetails				"Archivo no recibido o inválido"
+//	@Failure	503		{object}	utils.ProblemDetails				"Error con la base de datos"
+//	@Router		/api/profiles/avatar [patch]
 func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
 	avatar, err := c.FormFile("avatar")
 	if err != nil {
