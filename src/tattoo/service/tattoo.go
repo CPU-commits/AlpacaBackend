@@ -17,7 +17,6 @@ type TattooService struct {
 	imageStore       store.ImageStore
 	profileService   service.ProfileService
 	tattooRepository tattoo_repository.TattooRepository
-	categoryService  CategoryService
 }
 
 func (tattooService *TattooService) updateViews(idTattoos []int64) {
@@ -108,7 +107,7 @@ func (tattooService *TattooService) PublishTattoos(
 		return nil, err
 	}
 	if err := utils.ForEach(tattoosDto, func(tattooDto dto.TattooDto) error {
-		return tattooService.categoryService.ExistsCategories(tattooDto.IDCategories)
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -132,14 +131,12 @@ func NewTattooService(
 	imageStore store.ImageStore,
 	profileService service.ProfileService,
 	tattooRepository tattoo_repository.TattooRepository,
-	categoryService CategoryService,
 ) *TattooService {
 	if tattooService == nil {
 		tattooService = &TattooService{
 			imageStore:       imageStore,
 			profileService:   profileService,
 			tattooRepository: tattooRepository,
-			categoryService:  categoryService,
 		}
 	}
 

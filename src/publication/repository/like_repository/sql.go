@@ -71,6 +71,16 @@ func (sqlLR sqlLikeRepository) Exists(criteria *Criteria) (bool, error) {
 	return exists, nil
 }
 
+func (sqlLR sqlLikeRepository) Count(criteria *Criteria) (int64, error) {
+	where := sqlLR.criteriaToWhere(criteria)
+
+	count, err := models.Likes(where...).Count(context.Background(), sqlLR.db)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func NewSqlLikeRepository(db *sql.DB) LikeRepository {
 	return sqlLikeRepository{
 		db: db,

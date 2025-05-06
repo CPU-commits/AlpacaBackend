@@ -169,35 +169,32 @@ var ProfileWhere = struct {
 
 // ProfileRels is where relationship names are stored.
 var ProfileRels = struct {
-	IDUserUser                 string
-	IDAvatarImage              string
-	IDProfileFollows           string
-	IDProfileLikes             string
-	IDProfilePosts             string
-	IDProfileProfileCategories string
-	IDProfileReviews           string
-	IDProfileTattoos           string
+	IDUserUser       string
+	IDAvatarImage    string
+	IDProfileFollows string
+	IDProfileLikes   string
+	IDProfilePosts   string
+	IDProfileReviews string
+	IDProfileTattoos string
 }{
-	IDUserUser:                 "IDUserUser",
-	IDAvatarImage:              "IDAvatarImage",
-	IDProfileFollows:           "IDProfileFollows",
-	IDProfileLikes:             "IDProfileLikes",
-	IDProfilePosts:             "IDProfilePosts",
-	IDProfileProfileCategories: "IDProfileProfileCategories",
-	IDProfileReviews:           "IDProfileReviews",
-	IDProfileTattoos:           "IDProfileTattoos",
+	IDUserUser:       "IDUserUser",
+	IDAvatarImage:    "IDAvatarImage",
+	IDProfileFollows: "IDProfileFollows",
+	IDProfileLikes:   "IDProfileLikes",
+	IDProfilePosts:   "IDProfilePosts",
+	IDProfileReviews: "IDProfileReviews",
+	IDProfileTattoos: "IDProfileTattoos",
 }
 
 // profileR is where relationships are stored.
 type profileR struct {
-	IDUserUser                 *User                `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
-	IDAvatarImage              *Image               `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
-	IDProfileFollows           FollowSlice          `boil:"IDProfileFollows" json:"IDProfileFollows" toml:"IDProfileFollows" yaml:"IDProfileFollows"`
-	IDProfileLikes             LikeSlice            `boil:"IDProfileLikes" json:"IDProfileLikes" toml:"IDProfileLikes" yaml:"IDProfileLikes"`
-	IDProfilePosts             PostSlice            `boil:"IDProfilePosts" json:"IDProfilePosts" toml:"IDProfilePosts" yaml:"IDProfilePosts"`
-	IDProfileProfileCategories ProfileCategorySlice `boil:"IDProfileProfileCategories" json:"IDProfileProfileCategories" toml:"IDProfileProfileCategories" yaml:"IDProfileProfileCategories"`
-	IDProfileReviews           ReviewSlice          `boil:"IDProfileReviews" json:"IDProfileReviews" toml:"IDProfileReviews" yaml:"IDProfileReviews"`
-	IDProfileTattoos           TattooSlice          `boil:"IDProfileTattoos" json:"IDProfileTattoos" toml:"IDProfileTattoos" yaml:"IDProfileTattoos"`
+	IDUserUser       *User       `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+	IDAvatarImage    *Image      `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
+	IDProfileFollows FollowSlice `boil:"IDProfileFollows" json:"IDProfileFollows" toml:"IDProfileFollows" yaml:"IDProfileFollows"`
+	IDProfileLikes   LikeSlice   `boil:"IDProfileLikes" json:"IDProfileLikes" toml:"IDProfileLikes" yaml:"IDProfileLikes"`
+	IDProfilePosts   PostSlice   `boil:"IDProfilePosts" json:"IDProfilePosts" toml:"IDProfilePosts" yaml:"IDProfilePosts"`
+	IDProfileReviews ReviewSlice `boil:"IDProfileReviews" json:"IDProfileReviews" toml:"IDProfileReviews" yaml:"IDProfileReviews"`
+	IDProfileTattoos TattooSlice `boil:"IDProfileTattoos" json:"IDProfileTattoos" toml:"IDProfileTattoos" yaml:"IDProfileTattoos"`
 }
 
 // NewStruct creates a new relationship struct
@@ -238,13 +235,6 @@ func (r *profileR) GetIDProfilePosts() PostSlice {
 		return nil
 	}
 	return r.IDProfilePosts
-}
-
-func (r *profileR) GetIDProfileProfileCategories() ProfileCategorySlice {
-	if r == nil {
-		return nil
-	}
-	return r.IDProfileProfileCategories
 }
 
 func (r *profileR) GetIDProfileReviews() ReviewSlice {
@@ -639,20 +629,6 @@ func (o *Profile) IDProfilePosts(mods ...qm.QueryMod) postQuery {
 	)
 
 	return Posts(queryMods...)
-}
-
-// IDProfileProfileCategories retrieves all the profile_category's ProfileCategories with an executor via id_profile column.
-func (o *Profile) IDProfileProfileCategories(mods ...qm.QueryMod) profileCategoryQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"profile_categories\".\"id_profile\"=?", o.ID),
-	)
-
-	return ProfileCategories(queryMods...)
 }
 
 // IDProfileReviews retrieves all the review's Reviews with an executor via id_profile column.
@@ -1266,119 +1242,6 @@ func (profileL) LoadIDProfilePosts(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadIDProfileProfileCategories allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (profileL) LoadIDProfileProfileCategories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProfile interface{}, mods queries.Applicator) error {
-	var slice []*Profile
-	var object *Profile
-
-	if singular {
-		var ok bool
-		object, ok = maybeProfile.(*Profile)
-		if !ok {
-			object = new(Profile)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeProfile)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProfile))
-			}
-		}
-	} else {
-		s, ok := maybeProfile.(*[]*Profile)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeProfile)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProfile))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &profileR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &profileR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`profile_categories`),
-		qm.WhereIn(`profile_categories.id_profile in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load profile_categories")
-	}
-
-	var resultSlice []*ProfileCategory
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice profile_categories")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on profile_categories")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for profile_categories")
-	}
-
-	if len(profileCategoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.IDProfileProfileCategories = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &profileCategoryR{}
-			}
-			foreign.R.IDProfileProfile = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.IDProfile {
-				local.R.IDProfileProfileCategories = append(local.R.IDProfileProfileCategories, foreign)
-				if foreign.R == nil {
-					foreign.R = &profileCategoryR{}
-				}
-				foreign.R.IDProfileProfile = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // LoadIDProfileReviews allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (profileL) LoadIDProfileReviews(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProfile interface{}, mods queries.Applicator) error {
@@ -1871,59 +1734,6 @@ func (o *Profile) AddIDProfilePosts(ctx context.Context, exec boil.ContextExecut
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &postR{
-				IDProfileProfile: o,
-			}
-		} else {
-			rel.R.IDProfileProfile = o
-		}
-	}
-	return nil
-}
-
-// AddIDProfileProfileCategories adds the given related objects to the existing relationships
-// of the profile, optionally inserting them as new records.
-// Appends related to o.R.IDProfileProfileCategories.
-// Sets related.R.IDProfileProfile appropriately.
-func (o *Profile) AddIDProfileProfileCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProfileCategory) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.IDProfile = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"profile_categories\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"id_profile"}),
-				strmangle.WhereClause("\"", "\"", 2, profileCategoryPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.IDProfile = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &profileR{
-			IDProfileProfileCategories: related,
-		}
-	} else {
-		o.R.IDProfileProfileCategories = append(o.R.IDProfileProfileCategories, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &profileCategoryR{
 				IDProfileProfile: o,
 			}
 		} else {

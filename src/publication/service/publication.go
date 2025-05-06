@@ -23,7 +23,6 @@ var publicationService *PublicationService
 
 type PublicationService struct {
 	tattooService         service.TattooService
-	categoryService       service.CategoryService
 	profileService        userService.ProfileService
 	imageStore            store.ImageStore
 	publicationRepository publication_repository.PublicationRepository
@@ -31,6 +30,7 @@ type PublicationService struct {
 	tattooRepository      tattoo_repository.TattooRepository
 	fileService           file_service.FileService
 	bus                   bus.Bus
+	userRepository        user_repository.UserRepository
 }
 
 type PublicationsMetadata struct {
@@ -244,11 +244,6 @@ func (publicationService *PublicationService) Publish(
 	if err != nil {
 		return nil, err
 	}
-	if err := publicationService.categoryService.ExistsCategories(
-		publicationDto.IDCategories,
-	); err != nil {
-		return nil, err
-	}
 
 	publication, imagesDto := publicationDto.ToModel()
 	images, err := utils.ConcurrentMap(imagesDto, func(imageDto store.ImageDto) (fileModel.Image, error) {
@@ -267,6 +262,36 @@ func (publicationService *PublicationService) Publish(
 		return nil, err
 	}
 	publication.Images = images
+
+	categories := utils.ExtractWords[string](publication.Content, "#")
+	dirtyMentions := utils.ExtractWords[string](publication.Content, "@")
+
+	publication.Categories = categories
+
+	mentions, err := utils.Map(dirtyMentions, func(mention string) (id int64, err error) {
+		userBool, err := publicationService.userRepository.Exists(&user_repository.Criteria{
+			Username: mention,
+		})
+		if err != nil {
+			return 0, err
+		}
+		if !userBool {
+			return 0, err
+		}
+		idProfileUser, err := publicationService.profileService.GetProfileIdFromUsername(mention)
+		if err != nil {
+			return 0, err
+		}
+		return idProfileUser, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	// Elimina los 0
+	publication.Mentions = utils.FilterNoError(mentions, func(x int64) bool {
+		return x != 0
+	})
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
 	if err != nil {
 		return nil, err
@@ -354,23 +379,23 @@ func (publicationService *PublicationService) DeletePublication(
 
 func NewPublicationService(
 	tattooService service.TattooService,
-	categoryService service.CategoryService,
 	profileService userService.ProfileService,
 	imageStore store.ImageStore,
 	publicationRepository publication_repository.PublicationRepository,
 	likeRepository like_repository.LikeRepository,
 	tattooRepository tattoo_repository.TattooRepository,
+	userRepository user_repository.UserRepository,
 	busS bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
 		publicationService = &PublicationService{
 			tattooService:         tattooService,
-			categoryService:       categoryService,
 			profileService:        profileService,
 			imageStore:            imageStore,
 			publicationRepository: publicationRepository,
 			likeRepository:        likeRepository,
 			tattooRepository:      tattooRepository,
+			userRepository:        userRepository,
 			bus:                   busS,
 		}
 	}

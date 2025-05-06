@@ -41,23 +41,7 @@ func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tat
 
 		tattoo.Image = image
 	}
-	if sqlTattoo.R != nil && sqlTattoo.R.IDTattooTattooCategories != nil {
-		var categories []model.Category
 
-		for _, sqlCategoryTattoo := range sqlTattoo.R.IDTattooTattooCategories {
-			sqlCategory := sqlCategoryTattoo.R.IDCategoryCategory
-
-			categories = append(categories, model.Category{
-				ID:          sqlCategory.ID,
-				Name:        sqlCategory.Name,
-				Description: sqlCategory.Description,
-				Slug:        sqlCategory.Slug,
-				CreatedAt:   sqlCategory.CreatedAt,
-				State:       sqlCategory.State,
-			})
-		}
-		tattoo.Categories = categories
-	}
 	if sqlTattoo.R != nil && sqlTattoo.R.IDProfileProfile != nil {
 		tattoo.Profile = &userModel.Profile{}
 
@@ -148,18 +132,6 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 		tattoo.ID = sqlTattoo.ID
 		tattoo.CreatedAt = sqlTattoo.CreatedAt
 
-		for _, idCategory := range tattoo.IDCategories {
-			sqlCategoryTattoo := models.TattooCategory{
-				IDTattoo:   sqlTattoo.ID,
-				IDCategory: idCategory,
-			}
-			if err := sqlCategoryTattoo.Insert(ctx, tx, boil.Infer()); err != nil {
-				tx.Rollback()
-
-				return nil, utils.ErrRepositoryFailed
-			}
-		}
-
 		newTattoos[i] = tattoo
 	}
 	if err := tx.Commit(); err != nil {
@@ -178,12 +150,6 @@ func (sqlTattooRepository) includeOpts(include *Include) []QueryMod {
 	}
 	if include.Image {
 		mod = append(mod, Load(models.TattooRels.IDImageImage))
-	}
-	if include.Categories {
-		mod = append(mod, Load(Rels(
-			models.TattooRels.IDTattooTattooCategories,
-			models.TattooCategoryRels.IDCategoryCategory,
-		)))
 	}
 	if include.ProfileAvatar || include.ProfileUser {
 		mod = append(mod, Load(

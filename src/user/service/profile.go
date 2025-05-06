@@ -145,11 +145,6 @@ func (profileService *ProfileService) GetProfileIDFromIDUser(idUser int64) (int6
 	return profile.ID, nil
 }
 
-// Buscar perfil por nombre de usuario, Mas valoraciones?,
-func (ProfileService *ProfileService) getProfiles() {
-
-}
-
 func NewProfileService(
 	profileRepository profile_repository.ProfileRepository,
 	userService authService.UserService,

@@ -12,4 +12,5 @@ type LikeRepository interface {
 	Insert(like model.Like) error
 	Exists(criteria *Criteria) (bool, error)
 	Delete(criteria *Criteria) error
+	Count(criteria *Criteria) (int64, error)
 }

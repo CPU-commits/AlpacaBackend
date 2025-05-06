@@ -16,8 +16,8 @@ type CoordDto struct {
 }
 
 type TattooDto struct {
-	IDCategories  []int64 `form:"idCategories"`
-	Description   string  `form:"description" binding:"omitempty,max=250"`
+	Categories    []string `form:"categories"`
+	Description   string   `form:"description" binding:"omitempty,max=250"`
 	Image         store.ImageDto
 	Coord         *CoordDto
 	IDPublication int64
@@ -27,7 +27,7 @@ func (tattooDto *TattooDto) ToModel(image fileModel.Image) model.Tattoo {
 	tattoo := model.Tattoo{
 		Likes:         0,
 		Image:         image,
-		IDCategories:  tattooDto.IDCategories,
+		Categories:    tattooDto.Categories,
 		Description:   tattooDto.Description,
 		IDPublication: tattooDto.IDPublication,
 	}

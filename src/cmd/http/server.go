@@ -103,13 +103,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		auth.POST("/refresh", middleware.JWTMiddleware(), authController.Refresh)
 		auth.POST("/register", authController.Register)
 	}
-	category := router.Group("api/categories")
-	{
-		// Controllers
-		categoryController := new(tattooController.HttpCategoryController)
-		// Define routes
-		category.GET("", categoryController.GetCategories)
-	}
+
 	tattoo := router.Group("api/tattoos")
 	{
 		// Controllers

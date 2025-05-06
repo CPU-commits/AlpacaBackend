@@ -160,7 +160,6 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 				Name:     file.Filename,
 				MimeType: mime.TypeByExtension("." + splitName[len(splitName)-1]),
 			}
-			fmt.Printf("image: %v\n", image)
 			return image, nil
 		},
 	)
@@ -213,12 +212,12 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		bus: bus,
 		publicationService: service.NewPublicationService(
 			*tattooService,
-			*categoryService,
 			*profileService,
 			imageStore,
 			publicationRepository,
 			likeRepository,
 			tattooRepository,
+			userRepository,
 			bus,
 		),
 	}

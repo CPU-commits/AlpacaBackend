@@ -18,47 +18,58 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Post is an object representing the database table.
 type Post struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDProfile int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	Content   string    `boil:"content" json:"content" toml:"content" yaml:"content"`
-	Likes     int       `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID         int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDProfile  int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	Content    string            `boil:"content" json:"content" toml:"content" yaml:"content"`
+	Likes      int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
+	Categories types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	CreatedAt  time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Mentions   types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PostColumns = struct {
-	ID        string
-	IDProfile string
-	Content   string
-	Likes     string
-	CreatedAt string
+	ID         string
+	IDProfile  string
+	Content    string
+	Likes      string
+	Categories string
+	CreatedAt  string
+	Mentions   string
 }{
-	ID:        "id",
-	IDProfile: "id_profile",
-	Content:   "content",
-	Likes:     "likes",
-	CreatedAt: "created_at",
+	ID:         "id",
+	IDProfile:  "id_profile",
+	Content:    "content",
+	Likes:      "likes",
+	Categories: "categories",
+	CreatedAt:  "created_at",
+	Mentions:   "mentions",
 }
 
 var PostTableColumns = struct {
-	ID        string
-	IDProfile string
-	Content   string
-	Likes     string
-	CreatedAt string
+	ID         string
+	IDProfile  string
+	Content    string
+	Likes      string
+	Categories string
+	CreatedAt  string
+	Mentions   string
 }{
-	ID:        "posts.id",
-	IDProfile: "posts.id_profile",
-	Content:   "posts.content",
-	Likes:     "posts.likes",
-	CreatedAt: "posts.created_at",
+	ID:         "posts.id",
+	IDProfile:  "posts.id_profile",
+	Content:    "posts.content",
+	Likes:      "posts.likes",
+	Categories: "posts.categories",
+	CreatedAt:  "posts.created_at",
+	Mentions:   "posts.mentions",
 }
 
 // Generated where
@@ -86,42 +97,93 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelpertypes_StringArray struct{ field string }
+
+func (w whereHelpertypes_StringArray) EQ(x types.StringArray) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpertypes_StringArray) NEQ(x types.StringArray) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpertypes_StringArray) LT(x types.StringArray) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_StringArray) LTE(x types.StringArray) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_StringArray) GT(x types.StringArray) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_StringArray) GTE(x types.StringArray) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpertypes_StringArray) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
+
+type whereHelpertypes_Int64Array struct{ field string }
+
+func (w whereHelpertypes_Int64Array) EQ(x types.Int64Array) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpertypes_Int64Array) NEQ(x types.Int64Array) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpertypes_Int64Array) LT(x types.Int64Array) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_Int64Array) LTE(x types.Int64Array) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_Int64Array) GT(x types.Int64Array) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_Int64Array) GTE(x types.Int64Array) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpertypes_Int64Array) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpertypes_Int64Array) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var PostWhere = struct {
-	ID        whereHelperint64
-	IDProfile whereHelperint64
-	Content   whereHelperstring
-	Likes     whereHelperint
-	CreatedAt whereHelpertime_Time
+	ID         whereHelperint64
+	IDProfile  whereHelperint64
+	Content    whereHelperstring
+	Likes      whereHelperint
+	Categories whereHelpertypes_StringArray
+	CreatedAt  whereHelpertime_Time
+	Mentions   whereHelpertypes_Int64Array
 }{
-	ID:        whereHelperint64{field: "\"posts\".\"id\""},
-	IDProfile: whereHelperint64{field: "\"posts\".\"id_profile\""},
-	Content:   whereHelperstring{field: "\"posts\".\"content\""},
-	Likes:     whereHelperint{field: "\"posts\".\"likes\""},
-	CreatedAt: whereHelpertime_Time{field: "\"posts\".\"created_at\""},
+	ID:         whereHelperint64{field: "\"posts\".\"id\""},
+	IDProfile:  whereHelperint64{field: "\"posts\".\"id_profile\""},
+	Content:    whereHelperstring{field: "\"posts\".\"content\""},
+	Likes:      whereHelperint{field: "\"posts\".\"likes\""},
+	Categories: whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
+	CreatedAt:  whereHelpertime_Time{field: "\"posts\".\"created_at\""},
+	Mentions:   whereHelpertypes_Int64Array{field: "\"posts\".\"mentions\""},
 }
 
 // PostRels is where relationship names are stored.
 var PostRels = struct {
-	IDProfileProfile     string
-	IDPostLikes          string
-	IDPostPostCategories string
-	IDPostPostImages     string
-	IDPostTattoos        string
+	IDProfileProfile string
+	IDPostLikes      string
+	IDPostPostImages string
+	IDPostTattoos    string
 }{
-	IDProfileProfile:     "IDProfileProfile",
-	IDPostLikes:          "IDPostLikes",
-	IDPostPostCategories: "IDPostPostCategories",
-	IDPostPostImages:     "IDPostPostImages",
-	IDPostTattoos:        "IDPostTattoos",
+	IDProfileProfile: "IDProfileProfile",
+	IDPostLikes:      "IDPostLikes",
+	IDPostPostImages: "IDPostPostImages",
+	IDPostTattoos:    "IDPostTattoos",
 }
 
 // postR is where relationships are stored.
 type postR struct {
-	IDProfileProfile     *Profile          `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
-	IDPostLikes          LikeSlice         `boil:"IDPostLikes" json:"IDPostLikes" toml:"IDPostLikes" yaml:"IDPostLikes"`
-	IDPostPostCategories PostCategorySlice `boil:"IDPostPostCategories" json:"IDPostPostCategories" toml:"IDPostPostCategories" yaml:"IDPostPostCategories"`
-	IDPostPostImages     PostImageSlice    `boil:"IDPostPostImages" json:"IDPostPostImages" toml:"IDPostPostImages" yaml:"IDPostPostImages"`
-	IDPostTattoos        TattooSlice       `boil:"IDPostTattoos" json:"IDPostTattoos" toml:"IDPostTattoos" yaml:"IDPostTattoos"`
+	IDProfileProfile *Profile       `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDPostLikes      LikeSlice      `boil:"IDPostLikes" json:"IDPostLikes" toml:"IDPostLikes" yaml:"IDPostLikes"`
+	IDPostPostImages PostImageSlice `boil:"IDPostPostImages" json:"IDPostPostImages" toml:"IDPostPostImages" yaml:"IDPostPostImages"`
+	IDPostTattoos    TattooSlice    `boil:"IDPostTattoos" json:"IDPostTattoos" toml:"IDPostTattoos" yaml:"IDPostTattoos"`
 }
 
 // NewStruct creates a new relationship struct
@@ -143,13 +205,6 @@ func (r *postR) GetIDPostLikes() LikeSlice {
 	return r.IDPostLikes
 }
 
-func (r *postR) GetIDPostPostCategories() PostCategorySlice {
-	if r == nil {
-		return nil
-	}
-	return r.IDPostPostCategories
-}
-
 func (r *postR) GetIDPostPostImages() PostImageSlice {
 	if r == nil {
 		return nil
@@ -168,9 +223,9 @@ func (r *postR) GetIDPostTattoos() TattooSlice {
 type postL struct{}
 
 var (
-	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at"}
+	postAllColumns            = []string{"id", "id_profile", "content", "likes", "categories", "created_at", "mentions"}
 	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "created_at"}
+	postColumnsWithDefault    = []string{"id", "categories", "created_at", "mentions"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )
@@ -505,20 +560,6 @@ func (o *Post) IDPostLikes(mods ...qm.QueryMod) likeQuery {
 	return Likes(queryMods...)
 }
 
-// IDPostPostCategories retrieves all the post_category's PostCategories with an executor via id_post column.
-func (o *Post) IDPostPostCategories(mods ...qm.QueryMod) postCategoryQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"post_categories\".\"id_post\"=?", o.ID),
-	)
-
-	return PostCategories(queryMods...)
-}
-
 // IDPostPostImages retrieves all the post_image's PostImages with an executor via id_post column.
 func (o *Post) IDPostPostImages(mods ...qm.QueryMod) postImageQuery {
 	var queryMods []qm.QueryMod
@@ -770,119 +811,6 @@ func (postL) LoadIDPostLikes(ctx context.Context, e boil.ContextExecutor, singul
 				local.R.IDPostLikes = append(local.R.IDPostLikes, foreign)
 				if foreign.R == nil {
 					foreign.R = &likeR{}
-				}
-				foreign.R.IDPostPost = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadIDPostPostCategories allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (postL) LoadIDPostPostCategories(ctx context.Context, e boil.ContextExecutor, singular bool, maybePost interface{}, mods queries.Applicator) error {
-	var slice []*Post
-	var object *Post
-
-	if singular {
-		var ok bool
-		object, ok = maybePost.(*Post)
-		if !ok {
-			object = new(Post)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybePost)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePost))
-			}
-		}
-	} else {
-		s, ok := maybePost.(*[]*Post)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybePost)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePost))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &postR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &postR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`post_categories`),
-		qm.WhereIn(`post_categories.id_post in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load post_categories")
-	}
-
-	var resultSlice []*PostCategory
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice post_categories")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on post_categories")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for post_categories")
-	}
-
-	if len(postCategoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.IDPostPostCategories = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &postCategoryR{}
-			}
-			foreign.R.IDPostPost = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.IDPost {
-				local.R.IDPostPostCategories = append(local.R.IDPostPostCategories, foreign)
-				if foreign.R == nil {
-					foreign.R = &postCategoryR{}
 				}
 				foreign.R.IDPostPost = local
 				break
@@ -1210,59 +1138,6 @@ func (o *Post) AddIDPostLikes(ctx context.Context, exec boil.ContextExecutor, in
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &likeR{
-				IDPostPost: o,
-			}
-		} else {
-			rel.R.IDPostPost = o
-		}
-	}
-	return nil
-}
-
-// AddIDPostPostCategories adds the given related objects to the existing relationships
-// of the post, optionally inserting them as new records.
-// Appends related to o.R.IDPostPostCategories.
-// Sets related.R.IDPostPost appropriately.
-func (o *Post) AddIDPostPostCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PostCategory) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.IDPost = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"post_categories\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"id_post"}),
-				strmangle.WhereClause("\"", "\"", 2, postCategoryPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.IDPost = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &postR{
-			IDPostPostCategories: related,
-		}
-	} else {
-		o.R.IDPostPostCategories = append(o.R.IDPostPostCategories, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &postCategoryR{
 				IDPostPost: o,
 			}
 		} else {

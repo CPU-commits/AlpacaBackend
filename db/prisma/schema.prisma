@@ -76,18 +76,6 @@ model token_passwords {
   users          users      @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model categories {
-	id BigInt @id @default(sequence())
-	name String
-	state Boolean @default(true)
-	description String
-	slug String @unique
-	created_at DateTime @default(now()) @db.Timestamp(6)
-	profiles profile_categories[]
-	tattoos tattoo_categories[]
-	posts post_categories[]
-}
-
 model images {
 	id BigInt @id @default(sequence())
 	key String @unique
@@ -99,15 +87,6 @@ model images {
 	post post_images?
 }
 
-model profile_categories {
-	id BigInt @id @default(sequence())
-	id_profile BigInt
-	id_categories BigInt
-	profile profiles @relation(fields: [id_profile], references: [id])
-	category categories @relation(fields: [id_categories], references: [id])
-	created_at DateTime @default(now()) @db.Timestamp(6)
-
-}
 
 model profiles {
 	id BigInt @id @default(sequence())
@@ -118,7 +97,6 @@ model profiles {
 	id_user BigInt @unique
 	user users @relation(fields: [id_user], references: [id])
 	created_at DateTime @default(now()) @db.Timestamp(6)
-	categories profile_categories[]
 	follows follows[]
 	tattoos tattoos[]
 	reviews reviews[]
@@ -135,22 +113,13 @@ model follows {
 	profile profiles @relation(fields: [id_profile], references: [id])
 }
 
-model tattoo_categories {
-	id BigInt @id @default(sequence())
-	id_tattoo BigInt
-	id_category BigInt
-	tattoo tattoos @relation(fields: [id_tattoo], references: [id])
-	category categories @relation(fields: [id_category], references: [id])
-	created_at DateTime @default(now()) @db.Timestamp(6)
-
-}
-
 model tattoos {
 	id BigInt @id @default(sequence())
 	id_profile BigInt
 	id_image BigInt @unique
 	likes Int @default(0)
 	description String?
+	categories String[]
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	popularity Int @default(0)
 	id_post BigInt?
@@ -159,7 +128,6 @@ model tattoos {
 	post posts? @relation(fields: [id_post], references: [id])
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
-	categories tattoo_categories[]
 }
 
 model studio_tattoo_artists {
@@ -211,17 +179,6 @@ model post_images {
 	image images @relation(references: [id], fields: [id_image], onDelete: Cascade)
 	post posts @relation(references: [id], fields: [id_post])
 	created_at DateTime @default(now()) @db.Timestamp(6)
-
-}
-
-model post_categories {
-	id BigInt @id @default(sequence())
-	id_post BigInt
-	id_category BigInt
-	post posts @relation(references: [id], fields: [id_post])
-	category categories @relation(fields: [id_category], references: [id])
-	created_at DateTime @default(now()) @db.Timestamp(6)
-
 }
 
 model posts {
@@ -229,12 +186,13 @@ model posts {
 	id_profile BigInt
 	content String
 	likes Int
+	categories String[]
+	mentions Int[]
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	profile profiles @relation(fields: [id_profile], references: [id])
 	tattoos tattoos[]
 	images post_images[]
 	like likes[]
-	categories post_categories[]
 }
 
 model likes {

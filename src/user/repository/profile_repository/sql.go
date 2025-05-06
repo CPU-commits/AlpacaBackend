@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
@@ -35,7 +36,6 @@ func (sqlProfileRepository) sqlProfileToProfile(
 			CreatedAt: sqlAvatar.CreatedAt,
 		}
 	}
-
 	return model.Profile{
 		ID:          profile.ID,
 		IDUser:      profile.IDUser,
@@ -166,6 +166,49 @@ func (sqlPR sqlProfileRepository) UpdateOne(criteria *Criteria, data UpdateData)
 	}
 
 	return nil
+}
+
+func (sqlPR sqlProfileRepository) Find(opts *FindOneOptions) (*[]model.Profile, error) {
+
+	queryStr := `
+		SELECT p.*
+		FROM profiles p
+		LEFT JOIN (
+			SELECT
+				id_profile,
+				COUNT(*) AS total_posts,
+				COALESCE(SUM(likes), 0) AS total_post_likes,
+				MAX(created_at) AS last_post_date
+			FROM posts
+			GROUP BY id_profile
+		) AS post_stats ON post_stats.id_profile = p.id
+		ORDER BY
+			post_stats.total_post_likes DESC,
+			post_stats.total_posts DESC,
+			post_stats.last_post_date DESC NULLS LAST;
+	`
+	if opts != nil {
+		if opts.SelectOpts.Limit != nil {
+			queryStr += fmt.Sprintf(" LIMIT %d", *opts.SelectOpts.Limit)
+		}
+		if opts.SelectOpts.OffSet != nil {
+			queryStr += fmt.Sprintf(" OFFSET %d", *opts.SelectOpts.OffSet)
+		}
+	}
+
+	query := SQL(queryStr)
+	profilesSQl, err := models.Profiles(query).All(context.Background(), sqlPR.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	profiles := utils.MapNoError(profilesSQl, func(profile *models.Profile) model.Profile {
+		return sqlPR.sqlProfileToProfile(profile)
+	})
+	return &profiles, nil
+
 }
 
 func NewSqlProfileRepository(db *sql.DB) ProfileRepository {

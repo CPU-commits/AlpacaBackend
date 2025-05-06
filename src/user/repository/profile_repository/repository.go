@@ -13,6 +13,8 @@ type Criteria struct {
 type SelectOpts struct {
 	ID     *bool
 	Avatar *bool
+	Limit  *int
+	OffSet *int
 }
 
 type LoadOpts struct {
@@ -48,4 +50,5 @@ type UpdateData struct {
 type ProfileRepository interface {
 	FindOne(criteria *Criteria, opts *FindOneOptions) (*model.Profile, error)
 	UpdateOne(criteria *Criteria, data UpdateData) error
+	Find(opts *FindOneOptions) (*[]model.Profile, error)
 }

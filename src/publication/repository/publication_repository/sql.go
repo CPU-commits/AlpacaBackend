@@ -28,7 +28,6 @@ func (sqlPublicationRepository) sqlPostToPublication(
 ) *model.Publication {
 	var images []fileModel.Image
 	var tattoos []tattooModel.Tattoo
-	var categories []tattooModel.Category
 	var profile *userModel.Profile
 
 	if post.R != nil && post.R.IDPostPostImages != nil {
@@ -66,19 +65,7 @@ func (sqlPublicationRepository) sqlPostToPublication(
 			tattoos = append(tattoos, tattoo)
 		}
 	}
-	if post.R != nil && post.R.IDPostPostCategories != nil {
-		for _, postCategory := range post.R.IDPostPostCategories {
-			sqlCategory := postCategory.R.IDCategoryCategory
 
-			categories = append(categories, tattooModel.Category{
-				ID:          sqlCategory.ID,
-				Name:        sqlCategory.Name,
-				State:       sqlCategory.State,
-				Slug:        sqlCategory.Slug,
-				Description: sqlCategory.Description,
-			})
-		}
-	}
 	if post.R != nil && post.R.IDProfileProfile != nil {
 		sqlProfile := post.R.IDProfileProfile
 		profile = &userModel.Profile{
@@ -112,8 +99,9 @@ func (sqlPublicationRepository) sqlPostToPublication(
 		Likes:      post.Likes,
 		Images:     images,
 		CreatedAt:  post.CreatedAt,
+		Categories: post.Categories,
+		Mentions:   post.Mentions,
 		Tattoos:    tattoos,
-		Categories: categories,
 		Profile:    profile,
 		IDProfile:  post.IDProfile,
 	}
@@ -149,8 +137,10 @@ func (sqlPR sqlPublicationRepository) Insert(
 	idProfile int64,
 ) (*model.Publication, error) {
 	sqlPost := models.Post{
-		IDProfile: idProfile,
-		Content:   publication.Content,
+		IDProfile:  idProfile,
+		Content:    publication.Content,
+		Categories: publication.Categories,
+		Mentions:   publication.Mentions,
 	}
 
 	ctx := context.Background()
@@ -180,17 +170,6 @@ func (sqlPR sqlPublicationRepository) Insert(
 			IDPost:  sqlPost.ID,
 		}
 		if err := sqlPostImage.Insert(ctx, tx, boil.Infer()); err != nil {
-			tx.Rollback()
-
-			return nil, utils.ErrRepositoryFailed
-		}
-	}
-	for _, idCategory := range publication.IDCategories {
-		sqlPostCategory := models.PostCategory{
-			IDPost:     sqlPost.ID,
-			IDCategory: idCategory,
-		}
-		if err := sqlPostCategory.Insert(ctx, tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
 			return nil, utils.ErrRepositoryFailed
@@ -240,12 +219,7 @@ func (sqlPR sqlPublicationRepository) includeOpts(include *Include, selectOpts *
 			models.TattooRels.IDImageImage,
 		)))
 	}
-	if include.Categories {
-		mod = append(mod, Load(Rels(
-			models.PostRels.IDPostPostCategories,
-			models.PostCategoryRels.IDCategoryCategory,
-		)))
-	}
+
 	if include.Profile {
 		mod = append(mod, Load(
 			models.PostRels.IDProfileProfile,
@@ -391,11 +365,6 @@ func (sqlPR sqlPublicationRepository) Delete(criteria *Criteria) error {
 		return utils.ErrRepositoryFailed
 	}
 	if _, err := models.Likes(models.LikeWhere.IDPost.IN(idPublications)).
-		DeleteAll(context.Background(), tx); err != nil {
-		tx.Rollback()
-		return utils.ErrRepositoryFailed
-	}
-	if _, err := models.PostCategories(models.PostCategoryWhere.IDPost.IN(idPublications)).
 		DeleteAll(context.Background(), tx); err != nil {
 		tx.Rollback()
 		return utils.ErrRepositoryFailed

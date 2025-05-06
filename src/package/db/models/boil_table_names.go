@@ -7,14 +7,11 @@ var TableNames = struct {
 	Accesses            string
 	Appointments        string
 	Auths               string
-	Categories          string
 	Follows             string
 	Images              string
 	Likes               string
-	PostCategories      string
 	PostImages          string
 	Posts               string
-	ProfileCategories   string
 	Profiles            string
 	Reviews             string
 	RolesUsers          string
@@ -22,7 +19,6 @@ var TableNames = struct {
 	StudioAdmins        string
 	StudioTattooArtists string
 	Studios             string
-	TattooCategories    string
 	Tattoos             string
 	TokenPasswords      string
 	Users               string
@@ -30,14 +26,11 @@ var TableNames = struct {
 	Accesses:            "accesses",
 	Appointments:        "appointments",
 	Auths:               "auths",
-	Categories:          "categories",
 	Follows:             "follows",
 	Images:              "images",
 	Likes:               "likes",
-	PostCategories:      "post_categories",
 	PostImages:          "post_images",
 	Posts:               "posts",
-	ProfileCategories:   "profile_categories",
 	Profiles:            "profiles",
 	Reviews:             "reviews",
 	RolesUsers:          "roles_users",
@@ -45,7 +38,6 @@ var TableNames = struct {
 	StudioAdmins:        "studio_admins",
 	StudioTattooArtists: "studio_tattoo_artists",
 	Studios:             "studios",
-	TattooCategories:    "tattoo_categories",
 	Tattoos:             "tattoos",
 	TokenPasswords:      "token_passwords",
 	Users:               "users",

@@ -19,21 +19,23 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Tattoo is an object representing the database table.
 type Tattoo struct {
-	ID          int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDProfile   int64       `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	IDImage     int64       `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
-	Likes       int         `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Popularity  int         `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
-	IDPost      null.Int64  `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
-	Views       int         `boil:"views" json:"views" toml:"views" yaml:"views"`
-	Coordinate  null.String `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
+	ID          int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDProfile   int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
+	Likes       int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
+	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Popularity  int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
+	IDPost      null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
+	Views       int               `boil:"views" json:"views" toml:"views" yaml:"views"`
+	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
 
 	R *tattooR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tattooL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,6 +47,7 @@ var TattooColumns = struct {
 	IDImage     string
 	Likes       string
 	Description string
+	Categories  string
 	CreatedAt   string
 	Popularity  string
 	IDPost      string
@@ -56,6 +59,7 @@ var TattooColumns = struct {
 	IDImage:     "id_image",
 	Likes:       "likes",
 	Description: "description",
+	Categories:  "categories",
 	CreatedAt:   "created_at",
 	Popularity:  "popularity",
 	IDPost:      "id_post",
@@ -69,6 +73,7 @@ var TattooTableColumns = struct {
 	IDImage     string
 	Likes       string
 	Description string
+	Categories  string
 	CreatedAt   string
 	Popularity  string
 	IDPost      string
@@ -80,6 +85,7 @@ var TattooTableColumns = struct {
 	IDImage:     "tattoos.id_image",
 	Likes:       "tattoos.likes",
 	Description: "tattoos.description",
+	Categories:  "tattoos.categories",
 	CreatedAt:   "tattoos.created_at",
 	Popularity:  "tattoos.popularity",
 	IDPost:      "tattoos.id_post",
@@ -95,6 +101,7 @@ var TattooWhere = struct {
 	IDImage     whereHelperint64
 	Likes       whereHelperint
 	Description whereHelpernull_String
+	Categories  whereHelpertypes_StringArray
 	CreatedAt   whereHelpertime_Time
 	Popularity  whereHelperint
 	IDPost      whereHelpernull_Int64
@@ -106,6 +113,7 @@ var TattooWhere = struct {
 	IDImage:     whereHelperint64{field: "\"tattoos\".\"id_image\""},
 	Likes:       whereHelperint{field: "\"tattoos\".\"likes\""},
 	Description: whereHelpernull_String{field: "\"tattoos\".\"description\""},
+	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
 	Popularity:  whereHelperint{field: "\"tattoos\".\"popularity\""},
 	IDPost:      whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
@@ -115,23 +123,20 @@ var TattooWhere = struct {
 
 // TattooRels is where relationship names are stored.
 var TattooRels = struct {
-	IDProfileProfile         string
-	IDPostPost               string
-	IDImageImage             string
-	IDTattooTattooCategories string
+	IDProfileProfile string
+	IDPostPost       string
+	IDImageImage     string
 }{
-	IDProfileProfile:         "IDProfileProfile",
-	IDPostPost:               "IDPostPost",
-	IDImageImage:             "IDImageImage",
-	IDTattooTattooCategories: "IDTattooTattooCategories",
+	IDProfileProfile: "IDProfileProfile",
+	IDPostPost:       "IDPostPost",
+	IDImageImage:     "IDImageImage",
 }
 
 // tattooR is where relationships are stored.
 type tattooR struct {
-	IDProfileProfile         *Profile            `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
-	IDPostPost               *Post               `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
-	IDImageImage             *Image              `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
-	IDTattooTattooCategories TattooCategorySlice `boil:"IDTattooTattooCategories" json:"IDTattooTattooCategories" toml:"IDTattooTattooCategories" yaml:"IDTattooTattooCategories"`
+	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDPostPost       *Post    `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
+	IDImageImage     *Image   `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
 }
 
 // NewStruct creates a new relationship struct
@@ -160,20 +165,13 @@ func (r *tattooR) GetIDImageImage() *Image {
 	return r.IDImageImage
 }
 
-func (r *tattooR) GetIDTattooTattooCategories() TattooCategorySlice {
-	if r == nil {
-		return nil
-	}
-	return r.IDTattooTattooCategories
-}
-
 // tattooL is where Load methods for each relationship are stored.
 type tattooL struct{}
 
 var (
-	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "description", "created_at", "popularity", "id_post", "views", "coordinate"}
+	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate"}
 	tattooColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	tattooColumnsWithDefault    = []string{"id", "likes", "description", "created_at", "popularity", "id_post", "views", "coordinate"}
+	tattooColumnsWithDefault    = []string{"id", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate"}
 	tattooPrimaryKeyColumns     = []string{"id"}
 	tattooGeneratedColumns      = []string{}
 )
@@ -514,20 +512,6 @@ func (o *Tattoo) IDImageImage(mods ...qm.QueryMod) imageQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Images(queryMods...)
-}
-
-// IDTattooTattooCategories retrieves all the tattoo_category's TattooCategories with an executor via id_tattoo column.
-func (o *Tattoo) IDTattooTattooCategories(mods ...qm.QueryMod) tattooCategoryQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"tattoo_categories\".\"id_tattoo\"=?", o.ID),
-	)
-
-	return TattooCategories(queryMods...)
 }
 
 // LoadIDProfileProfile allows an eager lookup of values, cached into the
@@ -894,119 +878,6 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// LoadIDTattooTattooCategories allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (tattooL) LoadIDTattooTattooCategories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
-	var slice []*Tattoo
-	var object *Tattoo
-
-	if singular {
-		var ok bool
-		object, ok = maybeTattoo.(*Tattoo)
-		if !ok {
-			object = new(Tattoo)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeTattoo)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTattoo))
-			}
-		}
-	} else {
-		s, ok := maybeTattoo.(*[]*Tattoo)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeTattoo)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTattoo))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &tattooR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &tattooR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`tattoo_categories`),
-		qm.WhereIn(`tattoo_categories.id_tattoo in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load tattoo_categories")
-	}
-
-	var resultSlice []*TattooCategory
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice tattoo_categories")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on tattoo_categories")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tattoo_categories")
-	}
-
-	if len(tattooCategoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.IDTattooTattooCategories = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &tattooCategoryR{}
-			}
-			foreign.R.IDTattooTattoo = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.IDTattoo {
-				local.R.IDTattooTattooCategories = append(local.R.IDTattooTattooCategories, foreign)
-				if foreign.R == nil {
-					foreign.R = &tattooCategoryR{}
-				}
-				foreign.R.IDTattooTattoo = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // SetIDProfileProfile of the tattoo to the related item.
 // Sets o.R.IDProfileProfile to related.
 // Adds o to related.R.IDProfileTattoos.
@@ -1178,59 +1049,6 @@ func (o *Tattoo) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor,
 		related.R.IDImageTattoo = o
 	}
 
-	return nil
-}
-
-// AddIDTattooTattooCategories adds the given related objects to the existing relationships
-// of the tattoo, optionally inserting them as new records.
-// Appends related to o.R.IDTattooTattooCategories.
-// Sets related.R.IDTattooTattoo appropriately.
-func (o *Tattoo) AddIDTattooTattooCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*TattooCategory) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.IDTattoo = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"tattoo_categories\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo"}),
-				strmangle.WhereClause("\"", "\"", 2, tattooCategoryPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.IDTattoo = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &tattooR{
-			IDTattooTattooCategories: related,
-		}
-	} else {
-		o.R.IDTattooTattooCategories = append(o.R.IDTattooTattooCategories, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &tattooCategoryR{
-				IDTattooTattoo: o,
-			}
-		} else {
-			rel.R.IDTattooTattoo = o
-		}
-	}
 	return nil
 }
 

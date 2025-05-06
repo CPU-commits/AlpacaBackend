@@ -8,7 +8,6 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/category_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	tattooServices "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
@@ -22,7 +21,6 @@ var (
 	profileRepository     = profile_repository.NewSqlProfileRepository(db.DB)
 	userRepository        = user_repository.NewSQLUserRepository(db.DB)
 	tattooRepository      = tattoo_repository.NewSqlTattooRepository(db.DB)
-	categoryRepository    = category_repository.NewSQLAccessRepository(db.DB)
 	publicationRepository = publication_repository.NewSqlPublicationRepository(db.DB)
 	likeRepository        = like_repository.NewSqlLikeRepository(db.DB)
 )
@@ -38,14 +36,11 @@ var (
 		imageStore,
 		*fileService,
 	)
-	fileService     = file_service.NewFileService()
-	categoryService = tattooServices.NewCategoryService(
-		categoryRepository,
-	)
+	fileService = file_service.NewFileService()
+
 	tattooService = tattooServices.NewTattooService(
 		imageStore,
 		*profileService,
 		tattooRepository,
-		*categoryService,
 	)
 )
