@@ -42,5 +42,6 @@ var (
 		imageStore,
 		*profileService,
 		tattooRepository,
+		*fileService,
 	)
 )

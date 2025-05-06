@@ -74,7 +74,6 @@ func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
 //	@description	{
 //	@description	"tattoos": [
 //	@description	{
-//	@description	"idCategories": [1, 2],
 //	@description	"description": "Descripción del tatuaje",
 //	@description	"image": "archivo_imagen",
 //	@description	"coord": {"x": 100, "y": 200},
@@ -99,6 +98,7 @@ func (*HttpTattooController) UploadTattoos(c *gin.Context) {
 	tattooDto, err := domainUtils.Map(tattoosDto.TattooDto, func(tattoo dto.TattooDto) (dto.TattooDto, error) {
 		file, err := c.FormFile(fmt.Sprintf("image[%d]", i))
 		if err != nil {
+
 			return dto.TattooDto{}, err
 		}
 		i++
@@ -116,7 +116,7 @@ func (*HttpTattooController) UploadTattoos(c *gin.Context) {
 		tattoo.Image = store.ImageDto{
 			File:     openedFile,
 			Name:     file.Filename,
-			MimeType: mime.TypeByExtension(splitName[len(splitName)-1]),
+			MimeType: mime.TypeByExtension("." + splitName[len(splitName)-1]),
 		}
 
 		return tattoo, nil

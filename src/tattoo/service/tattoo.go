@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
@@ -17,6 +18,7 @@ type TattooService struct {
 	imageStore       store.ImageStore
 	profileService   service.ProfileService
 	tattooRepository tattoo_repository.TattooRepository
+	fileService      file_service.FileService
 }
 
 func (tattooService *TattooService) updateViews(idTattoos []int64) {
@@ -113,12 +115,20 @@ func (tattooService *TattooService) PublishTattoos(
 	}
 
 	tattoos, err := utils.ConcurrentMap(tattoosDto, func(tattooDto dto.TattooDto) (model.Tattoo, error) {
-		image, err := tattooService.imageStore.Upload(tattooDto.Image, fmt.Sprintf("tattoos/%d", idUser))
+		err := tattooService.fileService.CheckImageMimeType(tattooDto.Image)
 		if err != nil {
 			return model.Tattoo{}, err
 		}
 
-		return tattooDto.ToModel(*image), nil
+		image, err := tattooService.imageStore.Upload(tattooDto.Image, fmt.Sprintf("tattoos/%d", idUser))
+		if err != nil {
+			return model.Tattoo{}, err
+		}
+		tattoo := tattooDto.ToModel(*image)
+
+		tattoo.Categories = utils.ExtractWords[string](tattoo.Description, "#")
+
+		return tattoo, nil
 	}, nil)
 	if err != nil {
 		return nil, err
@@ -131,12 +141,15 @@ func NewTattooService(
 	imageStore store.ImageStore,
 	profileService service.ProfileService,
 	tattooRepository tattoo_repository.TattooRepository,
+	fileService file_service.FileService,
+
 ) *TattooService {
 	if tattooService == nil {
 		tattooService = &TattooService{
 			imageStore:       imageStore,
 			profileService:   profileService,
 			tattooRepository: tattooRepository,
+			fileService:      fileService,
 		}
 	}
 

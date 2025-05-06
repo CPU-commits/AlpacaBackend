@@ -28,6 +28,7 @@ func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tat
 		CreatedAt:   sqlTattoo.CreatedAt,
 		Views:       sqlTattoo.Views,
 		Description: sqlTattoo.Description.String,
+		Categories:  sqlTattoo.Categories,
 	}
 	if sqlTattoo.R != nil && sqlTattoo.R.IDImageImage != nil {
 		sqlImage := sqlTattoo.R.IDImageImage
@@ -110,9 +111,10 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 		}
 
 		sqlTattoo := models.Tattoo{
-			Likes:     tattoo.Likes,
-			IDProfile: idProfile,
-			IDImage:   sqlImage.ID,
+			Likes:      tattoo.Likes,
+			IDProfile:  idProfile,
+			IDImage:    sqlImage.ID,
+			Categories: tattoo.Categories,
 		}
 		if tattoo.Description != "" {
 			sqlTattoo.Description = null.StringFrom(tattoo.Description)
