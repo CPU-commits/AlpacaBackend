@@ -9,45 +9,8 @@ services:
       - 8000:8080
     depends_on:
       - nats-js
-      - crdb
-      - kafka
-    networks:
-      - alpaca_network
-  kafka-ui:
-    image: kafbat/kafka-ui:main
-    ports:
-      - 8083:8080
-    environment:
-      DYNAMIC_CONFIG_ENABLED: "true"
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
-    depends_on:
-      - kafka
-    networks:
-      - alpaca_network
-  kafka:
-    image: apache/kafka-native
-    ports:
-      - "9092:9092"
-    expose:
-      - 9093
-    environment:
-      # Configure listeners for both docker and host communication
-      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
-
-      # Settings required for KRaft mode
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
-
-      # Listener to use for broker-to-broker communication
-      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
-
-      # Required for a single node cluster
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      - pg
+      - typesense
     networks:
       - alpaca_network
   nats-js:
@@ -57,14 +20,27 @@ services:
     command: '-js'
     networks:
       - alpaca_network
-  crdb:
-    image: cockroachdb/cockroach:v24.2.3
+  pg:
+    image: postgis/postgis
     ports:
-     - "26257:26257"
-     - "8090:8080"
-    command: start-single-node --insecure
+     - 5432:5432
+    container_name: pg
     volumes:
-      - "db:/cockroach/cockroach-data"
+      - "pg_db:/var/lib/postgresql/data"
+    networks:
+      - alpaca_network
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: defaultdb
+  typesense:
+    image: typesense/typesense:28.0
+    restart: on-failure
+    ports:
+      - "8108:8108"
+    volumes:
+      - typesense:/data
+    command: '--data-dir /data --api-key=xyz --enable-cors'
     networks:
       - alpaca_network
 
@@ -74,3 +50,5 @@ networks:
 
 volumes:
   db:
+  typesense:
+  pg_db:

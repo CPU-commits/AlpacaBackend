@@ -1,5 +1,5 @@
 package service
 
 const (
-	NEW_PUBLICATION = "new_publication"
+	NEW_PUBLICATION = "publication.new_publication"
 )

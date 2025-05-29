@@ -13,6 +13,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 )
@@ -46,7 +47,7 @@ func newConnectionNatsCore() *nats.Conn {
 
 func (natsClient *NatsClient) addStreams() {
 	natsClient.streams = make(map[string]jetstream.Stream)
-	streams := []string{"DOGS"}
+	streams := []string{"PUBLICATION"}
 	// Exists stream
 	contextList, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -235,16 +236,24 @@ func (natsClient *NatsClient) Subscribe(
 				if err != nil {
 					return
 				}
+				// Enter msg
+				m, _ := uuid.NewUUID()
+				natsClient.logger.Info(
+					fmt.Sprintf("NATS MSG consumer %s: %s [%s]", m.String(), string(name), info.Config.Name),
+				)
+
 				err = msg.InProgress()
 				if err != nil {
 					return
 				}
 				// TODO
+				type Headers struct{}
+
 				err = handler(bus.Context{
 					EventTrigger: msg.Subject(),
 					Kill: func(reason string) error {
 						natsClient.logger.Error(
-							fmt.Sprintf("NATS TERM consumer: %s [%s]: %s", string(name), info.Config.Name, reason),
+							fmt.Sprintf("NATS TERM consumer %s: %s [%s]: %s", m.String(), string(name), info.Config.Name, reason),
 						)
 						return msg.Term()
 					},

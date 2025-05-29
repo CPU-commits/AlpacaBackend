@@ -14,14 +14,15 @@ var lock = &sync.Mutex{}
 var singleSettingsInstace *settings
 
 type settings struct {
-	JWT_SECRET_KEY string
-	CLIENT_DOMAIN  string
-	CORS_DOMAINS   string
-	GO_ENV         string
-	NATS_HOSTS     string
-	DB_CONNECTION  string
-	CLOUDINARY_URL string
-	KAFKA_HOSTS    string
+	JWT_SECRET_KEY   string
+	CLIENT_DOMAIN    string
+	CORS_DOMAINS     string
+	GO_ENV           string
+	NATS_HOSTS       string
+	DB_CONNECTION    string
+	CLOUDINARY_URL   string
+	TYPESENSE_HOSTS  string
+	TYPESENS_API_KEY string
 }
 
 func validateSettings(settings *settings) {
@@ -48,8 +49,11 @@ func validateSettings(settings *settings) {
 	if settings.CLOUDINARY_URL == "" {
 		missing = append(missing, "CLOUDINARY_URL")
 	}
-	if settings.KAFKA_HOSTS == "" {
-		missing = append(missing, "KAFKA_HOSTS")
+	if settings.TYPESENSE_HOSTS == "" {
+		missing = append(missing, "TYPESENSE_HOSTS")
+	}
+	if settings.TYPESENS_API_KEY == "" {
+		missing = append(missing, "TYPESENS_API_KEY")
 	}
 
 	if len(missing) > 0 {
@@ -59,14 +63,15 @@ func validateSettings(settings *settings) {
 
 func newSettings() *settings {
 	settings := &settings{
-		JWT_SECRET_KEY: os.Getenv("JWT_SECRET_KEY"),
-		CLIENT_DOMAIN:  os.Getenv("CLIENT_DOMAIN"),
-		GO_ENV:         os.Getenv("GO_ENV"),
-		CORS_DOMAINS:   os.Getenv("CORS_DOMAINS"),
-		NATS_HOSTS:     os.Getenv("NATS_HOSTS"),
-		DB_CONNECTION:  os.Getenv("DB_CONNECTION"),
-		CLOUDINARY_URL: os.Getenv("CLOUDINARY_URL"),
-		KAFKA_HOSTS:    os.Getenv("KAFKA_HOSTS"),
+		JWT_SECRET_KEY:   os.Getenv("JWT_SECRET_KEY"),
+		CLIENT_DOMAIN:    os.Getenv("CLIENT_DOMAIN"),
+		GO_ENV:           os.Getenv("GO_ENV"),
+		CORS_DOMAINS:     os.Getenv("CORS_DOMAINS"),
+		NATS_HOSTS:       os.Getenv("NATS_HOSTS"),
+		DB_CONNECTION:    os.Getenv("DB_CONNECTION"),
+		CLOUDINARY_URL:   os.Getenv("CLOUDINARY_URL"),
+		TYPESENSE_HOSTS:  os.Getenv("TYPESENSE_HOSTS"),
+		TYPESENS_API_KEY: os.Getenv("TYPESENS_API_KEY"),
 	}
 	validateSettings(settings)
 

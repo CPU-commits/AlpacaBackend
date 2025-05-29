@@ -9,17 +9,20 @@ import (
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type sqlPublicationRepository struct {
 	db                *sql.DB
+	ts                *typesense.Client
 	sqlUserRepository user_repository.SqlUserRepository
 }
 
@@ -435,11 +438,12 @@ func (sqlPR sqlPublicationRepository) UpdateOne(criteria *Criteria, data UpdateD
 	return nil
 }
 
-func NewSqlPublicationRepository(db *sql.DB) PublicationRepository {
+func NewSqlPublicationRepository(sqlDb *sql.DB) PublicationRepository {
 	return sqlPublicationRepository{
-		db: db,
+		db: sqlDb,
 		sqlUserRepository: user_repository.SqlExplicitUserRepository(
-			db,
+			sqlDb,
 		),
+		ts: db.TSClient,
 	}
 }

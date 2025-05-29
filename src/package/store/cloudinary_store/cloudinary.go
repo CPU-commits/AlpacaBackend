@@ -3,6 +3,8 @@ package cloudinary_store
 import (
 	"context"
 	"errors"
+	"io"
+	"net/http"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
@@ -49,6 +51,32 @@ func (cloudImageStore cloudinaryImageStore) Delete(key string) error {
 		PublicID: key,
 	})
 	return err
+}
+
+func (cloudinaryImageStore cloudinaryImageStore) Download(key string) ([]byte, error) {
+	image, err := cloudinaryImageStore.cld.Image(key)
+	if err != nil {
+		return nil, err
+	}
+	imageURL, err := image.String()
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Get(imageURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	imageBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return imageBytes, nil
 }
 
 func NewCloudinaryImageStore() store.ImageStore {

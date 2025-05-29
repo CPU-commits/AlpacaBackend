@@ -18,11 +18,12 @@ var imageStore = cloudinary_store.NewCloudinaryImageStore()
 
 // Repositories
 var (
-	profileRepository     = profile_repository.NewSqlProfileRepository(db.DB)
-	userRepository        = user_repository.NewSQLUserRepository(db.DB)
-	tattooRepository      = tattoo_repository.NewSqlTattooRepository(db.DB)
-	publicationRepository = publication_repository.NewSqlPublicationRepository(db.DB)
-	likeRepository        = like_repository.NewSqlLikeRepository(db.DB)
+	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
+	userRepository          = user_repository.NewSQLUserRepository(db.DB)
+	tattooRepository        = tattoo_repository.NewSqlTattooRepository(db.DB)
+	publicationRepository   = publication_repository.NewSqlPublicationRepository(db.DB)
+	likeRepository          = like_repository.NewSqlLikeRepository(db.DB)
+	publicationTSRepository = publication_repository.NewTsPublicationRepository()
 )
 
 // Services

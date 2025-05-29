@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "cockroachdb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model accesses {
-  id         BigInt   @id @default(sequence())
+  id         BigInt   @id @default(autoincrement())
   token      String
   expires_at DateTime @db.Date
   is_revoked Boolean  @default(false)
@@ -18,7 +18,7 @@ model accesses {
 }
 
 model auths {
-  id         BigInt     @id @default(sequence())
+  id         BigInt     @id @default(autoincrement())
   password   String
   id_user    BigInt     @unique
   created_at DateTime   @default(now()) @db.Timestamp(6)
@@ -27,7 +27,7 @@ model auths {
 }
 
 model roles_users {
-  id         BigInt    @id @default(sequence())
+  id         BigInt    @id @default(autoincrement())
   id_user    BigInt
   role       role_name
   created_at DateTime @default(now()) @db.Timestamp(6)
@@ -35,7 +35,7 @@ model roles_users {
 }
 
 model sessions {
-  id         BigInt     @id @default(sequence())
+  id         BigInt     @id @default(autoincrement())
   token      String
   id_auth    BigInt
   device     String?
@@ -49,7 +49,7 @@ model sessions {
 }
 
 model users {
-  id                 BigInt               @id @default(sequence())
+  id                 BigInt               @id @default(autoincrement())
   email              String               @unique
   name               String
   username String @unique
@@ -69,7 +69,7 @@ model users {
 }
 
 model token_passwords {
-  id             BigInt    @id @default(sequence())
+  id             BigInt    @id @default(autoincrement())
   token          String
   id_user        BigInt     @unique
   created_at     DateTime @default(now()) @db.Timestamp(6)
@@ -77,7 +77,7 @@ model token_passwords {
 }
 
 model images {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	key String @unique
 	name String
 	mimeType String
@@ -89,7 +89,7 @@ model images {
 
 
 model profiles {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	description String?
 	id_avatar BigInt? @unique
 	avatar images? @relation(fields: [id_avatar], references: [id])
@@ -105,7 +105,7 @@ model profiles {
 }
 
 model follows {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_user BigInt
 	id_profile BigInt
 	created_at DateTime @default(now()) @db.Timestamp(6)
@@ -114,7 +114,7 @@ model follows {
 }
 
 model tattoos {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_profile BigInt
 	id_image BigInt @unique
 	likes Int @default(0)
@@ -131,7 +131,7 @@ model tattoos {
 }
 
 model studio_tattoo_artists {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_studio BigInt
 	id_tattoo_artist BigInt
 	studio studios @relation(fields: [id_studio], references: [id])
@@ -141,7 +141,7 @@ model studio_tattoo_artists {
 }
 
 model studio_admins {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_studio BigInt
 	id_owner BigInt
 	studio studios @relation(fields: [id_studio], references: [id])
@@ -151,7 +151,7 @@ model studio_admins {
 }
 
 model studios {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	description String
 	direction Json
 	email String
@@ -162,7 +162,7 @@ model studios {
 }
 
 model reviews {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_user BigInt
 	id_profile BigInt
 	content String
@@ -173,7 +173,7 @@ model reviews {
 }
 
 model post_images {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_image BigInt @unique
 	id_post BigInt
 	image images @relation(references: [id], fields: [id_image], onDelete: Cascade)
@@ -182,7 +182,7 @@ model post_images {
 }
 
 model posts {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_profile BigInt
 	content String
 	likes Int
@@ -196,7 +196,7 @@ model posts {
 }
 
 model likes {
-	id BigInt @id @default(sequence())
+	id BigInt @id @default(autoincrement())
 	id_user BigInt
 	id_profile BigInt
 	id_post BigInt
@@ -207,7 +207,7 @@ model likes {
 }
 
 model appointments {
-  id                BigInt @id @default(sequence())
+  id                BigInt @id @default(autoincrement())
   id_user           BigInt
   id_tattoo_artist  BigInt
   status            appointment_status

@@ -307,6 +307,10 @@ func (publicationService *PublicationService) Publish(
 	if err != nil {
 		return nil, err
 	}
+	go publicationService.bus.Publish(bus.Event{
+		Name:    NEW_PUBLICATION,
+		Payload: utils.Payload(publication),
+	})
 
 	return publication, nil
 }

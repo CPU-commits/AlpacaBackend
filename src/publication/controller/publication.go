@@ -172,6 +172,7 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	claims, _ := utils.NewClaimsFromContext(c)
 	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		utils.ResFromErr(c, err)
 		return
 	}
