@@ -29,13 +29,13 @@ type Tattoo struct {
 	IDProfile   int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
 	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
 	Likes       int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Popularity  int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
 	IDPost      null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
+	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Popularity  int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
 	Views       int               `boil:"views" json:"views" toml:"views" yaml:"views"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
+	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 
 	R *tattooR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tattooL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -46,25 +46,25 @@ var TattooColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Likes       string
-	Description string
-	Categories  string
 	CreatedAt   string
-	Popularity  string
 	IDPost      string
+	Description string
+	Popularity  string
 	Views       string
 	Coordinate  string
+	Categories  string
 }{
 	ID:          "id",
 	IDProfile:   "id_profile",
 	IDImage:     "id_image",
 	Likes:       "likes",
-	Description: "description",
-	Categories:  "categories",
 	CreatedAt:   "created_at",
-	Popularity:  "popularity",
 	IDPost:      "id_post",
+	Description: "description",
+	Popularity:  "popularity",
 	Views:       "views",
 	Coordinate:  "coordinate",
+	Categories:  "categories",
 }
 
 var TattooTableColumns = struct {
@@ -72,25 +72,25 @@ var TattooTableColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Likes       string
-	Description string
-	Categories  string
 	CreatedAt   string
-	Popularity  string
 	IDPost      string
+	Description string
+	Popularity  string
 	Views       string
 	Coordinate  string
+	Categories  string
 }{
 	ID:          "tattoos.id",
 	IDProfile:   "tattoos.id_profile",
 	IDImage:     "tattoos.id_image",
 	Likes:       "tattoos.likes",
-	Description: "tattoos.description",
-	Categories:  "tattoos.categories",
 	CreatedAt:   "tattoos.created_at",
-	Popularity:  "tattoos.popularity",
 	IDPost:      "tattoos.id_post",
+	Description: "tattoos.description",
+	Popularity:  "tattoos.popularity",
 	Views:       "tattoos.views",
 	Coordinate:  "tattoos.coordinate",
+	Categories:  "tattoos.categories",
 }
 
 // Generated where
@@ -100,62 +100,48 @@ var TattooWhere = struct {
 	IDProfile   whereHelperint64
 	IDImage     whereHelperint64
 	Likes       whereHelperint
-	Description whereHelpernull_String
-	Categories  whereHelpertypes_StringArray
 	CreatedAt   whereHelpertime_Time
-	Popularity  whereHelperint
 	IDPost      whereHelpernull_Int64
+	Description whereHelpernull_String
+	Popularity  whereHelperint
 	Views       whereHelperint
 	Coordinate  whereHelpernull_String
+	Categories  whereHelpertypes_StringArray
 }{
 	ID:          whereHelperint64{field: "\"tattoos\".\"id\""},
 	IDProfile:   whereHelperint64{field: "\"tattoos\".\"id_profile\""},
 	IDImage:     whereHelperint64{field: "\"tattoos\".\"id_image\""},
 	Likes:       whereHelperint{field: "\"tattoos\".\"likes\""},
-	Description: whereHelpernull_String{field: "\"tattoos\".\"description\""},
-	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
-	Popularity:  whereHelperint{field: "\"tattoos\".\"popularity\""},
 	IDPost:      whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
+	Description: whereHelpernull_String{field: "\"tattoos\".\"description\""},
+	Popularity:  whereHelperint{field: "\"tattoos\".\"popularity\""},
 	Views:       whereHelperint{field: "\"tattoos\".\"views\""},
 	Coordinate:  whereHelpernull_String{field: "\"tattoos\".\"coordinate\""},
+	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
 }
 
 // TattooRels is where relationship names are stored.
 var TattooRels = struct {
-	IDProfileProfile string
-	IDPostPost       string
 	IDImageImage     string
+	IDPostPost       string
+	IDProfileProfile string
 }{
-	IDProfileProfile: "IDProfileProfile",
-	IDPostPost:       "IDPostPost",
 	IDImageImage:     "IDImageImage",
+	IDPostPost:       "IDPostPost",
+	IDProfileProfile: "IDProfileProfile",
 }
 
 // tattooR is where relationships are stored.
 type tattooR struct {
-	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
-	IDPostPost       *Post    `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
 	IDImageImage     *Image   `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
+	IDPostPost       *Post    `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
+	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
 }
 
 // NewStruct creates a new relationship struct
 func (*tattooR) NewStruct() *tattooR {
 	return &tattooR{}
-}
-
-func (r *tattooR) GetIDProfileProfile() *Profile {
-	if r == nil {
-		return nil
-	}
-	return r.IDProfileProfile
-}
-
-func (r *tattooR) GetIDPostPost() *Post {
-	if r == nil {
-		return nil
-	}
-	return r.IDPostPost
 }
 
 func (r *tattooR) GetIDImageImage() *Image {
@@ -165,13 +151,27 @@ func (r *tattooR) GetIDImageImage() *Image {
 	return r.IDImageImage
 }
 
+func (r *tattooR) GetIDPostPost() *Post {
+	if r == nil {
+		return nil
+	}
+	return r.IDPostPost
+}
+
+func (r *tattooR) GetIDProfileProfile() *Profile {
+	if r == nil {
+		return nil
+	}
+	return r.IDProfileProfile
+}
+
 // tattooL is where Load methods for each relationship are stored.
 type tattooL struct{}
 
 var (
-	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate"}
+	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories"}
 	tattooColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	tattooColumnsWithDefault    = []string{"id", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate"}
+	tattooColumnsWithDefault    = []string{"id", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories"}
 	tattooPrimaryKeyColumns     = []string{"id"}
 	tattooGeneratedColumns      = []string{}
 )
@@ -481,15 +481,15 @@ func (q tattooQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (boo
 	return count > 0, nil
 }
 
-// IDProfileProfile pointed to by the foreign key.
-func (o *Tattoo) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
+// IDImageImage pointed to by the foreign key.
+func (o *Tattoo) IDImageImage(mods ...qm.QueryMod) imageQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.IDProfile),
+		qm.Where("\"id\" = ?", o.IDImage),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	return Profiles(queryMods...)
+	return Images(queryMods...)
 }
 
 // IDPostPost pointed to by the foreign key.
@@ -503,20 +503,20 @@ func (o *Tattoo) IDPostPost(mods ...qm.QueryMod) postQuery {
 	return Posts(queryMods...)
 }
 
-// IDImageImage pointed to by the foreign key.
-func (o *Tattoo) IDImageImage(mods ...qm.QueryMod) imageQuery {
+// IDProfileProfile pointed to by the foreign key.
+func (o *Tattoo) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.IDImage),
+		qm.Where("\"id\" = ?", o.IDProfile),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	return Images(queryMods...)
+	return Profiles(queryMods...)
 }
 
-// LoadIDProfileProfile allows an eager lookup of values, cached into the
+// LoadIDImageImage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
+func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
 	var slice []*Tattoo
 	var object *Tattoo
 
@@ -547,7 +547,7 @@ func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &tattooR{}
 		}
-		args[object.IDProfile] = struct{}{}
+		args[object.IDImage] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -555,7 +555,7 @@ func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 				obj.R = &tattooR{}
 			}
 
-			args[obj.IDProfile] = struct{}{}
+			args[obj.IDImage] = struct{}{}
 
 		}
 	}
@@ -572,8 +572,8 @@ func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 	}
 
 	query := NewQuery(
-		qm.From(`profiles`),
-		qm.WhereIn(`profiles.id in ?`, argsSlice...),
+		qm.From(`images`),
+		qm.WhereIn(`images.id in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -581,22 +581,22 @@ func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load Profile")
+		return errors.Wrap(err, "failed to eager load Image")
 	}
 
-	var resultSlice []*Profile
+	var resultSlice []*Image
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Profile")
+		return errors.Wrap(err, "failed to bind eager loaded slice Image")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for profiles")
+		return errors.Wrap(err, "failed to close results of eager load for images")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for profiles")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for images")
 	}
 
-	if len(profileAfterSelectHooks) != 0 {
+	if len(imageAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -610,22 +610,22 @@ func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.IDProfileProfile = foreign
+		object.R.IDImageImage = foreign
 		if foreign.R == nil {
-			foreign.R = &profileR{}
+			foreign.R = &imageR{}
 		}
-		foreign.R.IDProfileTattoos = append(foreign.R.IDProfileTattoos, object)
+		foreign.R.IDImageTattoo = object
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.IDProfile == foreign.ID {
-				local.R.IDProfileProfile = foreign
+			if local.IDImage == foreign.ID {
+				local.R.IDImageImage = foreign
 				if foreign.R == nil {
-					foreign.R = &profileR{}
+					foreign.R = &imageR{}
 				}
-				foreign.R.IDProfileTattoos = append(foreign.R.IDProfileTattoos, local)
+				foreign.R.IDImageTattoo = local
 				break
 			}
 		}
@@ -758,9 +758,9 @@ func (tattooL) LoadIDPostPost(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
-// LoadIDImageImage allows an eager lookup of values, cached into the
+// LoadIDProfileProfile allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
+func (tattooL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
 	var slice []*Tattoo
 	var object *Tattoo
 
@@ -791,7 +791,7 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &tattooR{}
 		}
-		args[object.IDImage] = struct{}{}
+		args[object.IDProfile] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -799,7 +799,7 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 				obj.R = &tattooR{}
 			}
 
-			args[obj.IDImage] = struct{}{}
+			args[obj.IDProfile] = struct{}{}
 
 		}
 	}
@@ -816,8 +816,8 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 	}
 
 	query := NewQuery(
-		qm.From(`images`),
-		qm.WhereIn(`images.id in ?`, argsSlice...),
+		qm.From(`profiles`),
+		qm.WhereIn(`profiles.id in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -825,22 +825,22 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load Image")
+		return errors.Wrap(err, "failed to eager load Profile")
 	}
 
-	var resultSlice []*Image
+	var resultSlice []*Profile
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Image")
+		return errors.Wrap(err, "failed to bind eager loaded slice Profile")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for images")
+		return errors.Wrap(err, "failed to close results of eager load for profiles")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for images")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for profiles")
 	}
 
-	if len(imageAfterSelectHooks) != 0 {
+	if len(profileAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -854,22 +854,22 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.IDImageImage = foreign
+		object.R.IDProfileProfile = foreign
 		if foreign.R == nil {
-			foreign.R = &imageR{}
+			foreign.R = &profileR{}
 		}
-		foreign.R.IDImageTattoo = object
+		foreign.R.IDProfileTattoos = append(foreign.R.IDProfileTattoos, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.IDImage == foreign.ID {
-				local.R.IDImageImage = foreign
+			if local.IDProfile == foreign.ID {
+				local.R.IDProfileProfile = foreign
 				if foreign.R == nil {
-					foreign.R = &imageR{}
+					foreign.R = &profileR{}
 				}
-				foreign.R.IDImageTattoo = local
+				foreign.R.IDProfileTattoos = append(foreign.R.IDProfileTattoos, local)
 				break
 			}
 		}
@@ -878,10 +878,10 @@ func (tattooL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// SetIDProfileProfile of the tattoo to the related item.
-// Sets o.R.IDProfileProfile to related.
-// Adds o to related.R.IDProfileTattoos.
-func (o *Tattoo) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Profile) error {
+// SetIDImageImage of the tattoo to the related item.
+// Sets o.R.IDImageImage to related.
+// Adds o to related.R.IDImageTattoo.
+func (o *Tattoo) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Image) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -891,7 +891,7 @@ func (o *Tattoo) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"tattoos\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"id_profile"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_image"}),
 		strmangle.WhereClause("\"", "\"", 2, tattooPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -905,21 +905,21 @@ func (o *Tattoo) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.IDProfile = related.ID
+	o.IDImage = related.ID
 	if o.R == nil {
 		o.R = &tattooR{
-			IDProfileProfile: related,
+			IDImageImage: related,
 		}
 	} else {
-		o.R.IDProfileProfile = related
+		o.R.IDImageImage = related
 	}
 
 	if related.R == nil {
-		related.R = &profileR{
-			IDProfileTattoos: TattooSlice{o},
+		related.R = &imageR{
+			IDImageTattoo: o,
 		}
 	} else {
-		related.R.IDProfileTattoos = append(related.R.IDProfileTattoos, o)
+		related.R.IDImageTattoo = o
 	}
 
 	return nil
@@ -1005,10 +1005,10 @@ func (o *Tattoo) RemoveIDPostPost(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// SetIDImageImage of the tattoo to the related item.
-// Sets o.R.IDImageImage to related.
-// Adds o to related.R.IDImageTattoo.
-func (o *Tattoo) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Image) error {
+// SetIDProfileProfile of the tattoo to the related item.
+// Sets o.R.IDProfileProfile to related.
+// Adds o to related.R.IDProfileTattoos.
+func (o *Tattoo) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Profile) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1018,7 +1018,7 @@ func (o *Tattoo) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor,
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"tattoos\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"id_image"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_profile"}),
 		strmangle.WhereClause("\"", "\"", 2, tattooPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1032,21 +1032,21 @@ func (o *Tattoo) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.IDImage = related.ID
+	o.IDProfile = related.ID
 	if o.R == nil {
 		o.R = &tattooR{
-			IDImageImage: related,
+			IDProfileProfile: related,
 		}
 	} else {
-		o.R.IDImageImage = related
+		o.R.IDProfileProfile = related
 	}
 
 	if related.R == nil {
-		related.R = &imageR{
-			IDImageTattoo: o,
+		related.R = &profileR{
+			IDProfileTattoos: TattooSlice{o},
 		}
 	} else {
-		related.R.IDImageTattoo = o
+		related.R.IDProfileTattoos = append(related.R.IDProfileTattoos, o)
 	}
 
 	return nil
@@ -1307,6 +1307,135 @@ func (o TattooSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 	return rowsAff, nil
 }
 
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *Tattoo) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
+	if o == nil {
+		return errors.New("models: no tattoos provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(tattooColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	tattooUpsertCacheMut.RLock()
+	cache, cached := tattooUpsertCache[key]
+	tattooUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, _ := insertColumns.InsertColumnSet(
+			tattooAllColumns,
+			tattooColumnsWithDefault,
+			tattooColumnsWithoutDefault,
+			nzDefaults,
+		)
+
+		update := updateColumns.UpdateColumnSet(
+			tattooAllColumns,
+			tattooPrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert tattoos, could not build update column list")
+		}
+
+		ret := strmangle.SetComplement(tattooAllColumns, strmangle.SetIntersect(insert, update))
+
+		conflict := conflictColumns
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len(tattooPrimaryKeyColumns) == 0 {
+				return errors.New("models: unable to upsert tattoos, could not build conflict column list")
+			}
+
+			conflict = make([]string, len(tattooPrimaryKeyColumns))
+			copy(conflict, tattooPrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryPostgres(dialect, "\"tattoos\"", updateOnConflict, ret, update, conflict, insert, opts...)
+
+		cache.valueMapping, err = queries.BindMapping(tattooType, tattooMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(tattooType, tattooMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, cache.query)
+		fmt.Fprintln(writer, vals)
+	}
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // Postgres doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return errors.Wrap(err, "models: unable to upsert tattoos")
+	}
+
+	if !cached {
+		tattooUpsertCacheMut.Lock()
+		tattooUpsertCache[key] = cache
+		tattooUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
+}
+
 // Delete deletes a single Tattoo record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Tattoo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1477,126 +1606,4 @@ func TattooExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (boo
 // Exists checks if the Tattoo row exists.
 func (o *Tattoo) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return TattooExists(ctx, exec, o.ID)
-}
-
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Tattoo) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
-	if o == nil {
-		return errors.New("models: no tattoos provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(tattooColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	tattooUpsertCacheMut.RLock()
-	cache, cached := tattooUpsertCache[key]
-	tattooUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
-			tattooAllColumns,
-			tattooColumnsWithDefault,
-			tattooColumnsWithoutDefault,
-			nzDefaults,
-		)
-		update := updateColumns.UpdateColumnSet(
-			tattooAllColumns,
-			tattooPrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert tattoos, could not build update column list")
-		}
-
-		conflict := conflictColumns
-		if len(conflict) == 0 {
-			conflict = make([]string, len(tattooPrimaryKeyColumns))
-			copy(conflict, tattooPrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryCockroachDB(dialect, "\"tattoos\"", updateOnConflict, ret, update, conflict, insert)
-
-		cache.valueMapping, err = queries.BindMapping(tattooType, tattooMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(tattooType, tattooMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.DebugMode {
-		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
-		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
-	}
-
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // CockcorachDB doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return fmt.Errorf("models: unable to upsert tattoos: %w", err)
-	}
-
-	if !cached {
-		tattooUpsertCacheMut.Lock()
-		tattooUpsertCache[key] = cache
-		tattooUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
 }

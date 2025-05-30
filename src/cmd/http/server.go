@@ -8,10 +8,12 @@ import (
 	"strings"
 	"time"
 
+	appointmentController "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/controller"
 	authController "github.com/CPU-commits/Template_Go-EventDriven/src/auth/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
+	httpUtils "github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
@@ -35,6 +37,8 @@ var settingsData = settings.GetSettings()
 
 func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	router := gin.New()
+	// Custom validators
+	httpUtils.RegisterCustomValidators()
 	// Proxies
 	router.SetTrustedProxies([]string{"localhost"})
 	// Logger
@@ -132,6 +136,13 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
+	}
+	appointment := router.Group("api/appointments")
+	{
+		// Controllers
+		appointmentController := appointmentController.NewHTTPAppointmentController()
+		// Define routes
+		appointment.POST("", appointmentController.RequestAppointment)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

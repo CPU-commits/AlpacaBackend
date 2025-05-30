@@ -69,50 +69,6 @@ var ProfileTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" LIKE ?", x)
-}
-func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 type whereHelpernull_Int64 struct{ field string }
 
 func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
@@ -169,16 +125,16 @@ var ProfileWhere = struct {
 
 // ProfileRels is where relationship names are stored.
 var ProfileRels = struct {
-	IDUserUser       string
 	IDAvatarImage    string
+	IDUserUser       string
 	IDProfileFollows string
 	IDProfileLikes   string
 	IDProfilePosts   string
 	IDProfileReviews string
 	IDProfileTattoos string
 }{
-	IDUserUser:       "IDUserUser",
 	IDAvatarImage:    "IDAvatarImage",
+	IDUserUser:       "IDUserUser",
 	IDProfileFollows: "IDProfileFollows",
 	IDProfileLikes:   "IDProfileLikes",
 	IDProfilePosts:   "IDProfilePosts",
@@ -188,8 +144,8 @@ var ProfileRels = struct {
 
 // profileR is where relationships are stored.
 type profileR struct {
-	IDUserUser       *User       `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 	IDAvatarImage    *Image      `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
+	IDUserUser       *User       `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 	IDProfileFollows FollowSlice `boil:"IDProfileFollows" json:"IDProfileFollows" toml:"IDProfileFollows" yaml:"IDProfileFollows"`
 	IDProfileLikes   LikeSlice   `boil:"IDProfileLikes" json:"IDProfileLikes" toml:"IDProfileLikes" yaml:"IDProfileLikes"`
 	IDProfilePosts   PostSlice   `boil:"IDProfilePosts" json:"IDProfilePosts" toml:"IDProfilePosts" yaml:"IDProfilePosts"`
@@ -202,18 +158,18 @@ func (*profileR) NewStruct() *profileR {
 	return &profileR{}
 }
 
-func (r *profileR) GetIDUserUser() *User {
-	if r == nil {
-		return nil
-	}
-	return r.IDUserUser
-}
-
 func (r *profileR) GetIDAvatarImage() *Image {
 	if r == nil {
 		return nil
 	}
 	return r.IDAvatarImage
+}
+
+func (r *profileR) GetIDUserUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.IDUserUser
 }
 
 func (r *profileR) GetIDProfileFollows() FollowSlice {
@@ -567,17 +523,6 @@ func (q profileQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// IDUserUser pointed to by the foreign key.
-func (o *Profile) IDUserUser(mods ...qm.QueryMod) userQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.IDUser),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Users(queryMods...)
-}
-
 // IDAvatarImage pointed to by the foreign key.
 func (o *Profile) IDAvatarImage(mods ...qm.QueryMod) imageQuery {
 	queryMods := []qm.QueryMod{
@@ -587,6 +532,17 @@ func (o *Profile) IDAvatarImage(mods ...qm.QueryMod) imageQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Images(queryMods...)
+}
+
+// IDUserUser pointed to by the foreign key.
+func (o *Profile) IDUserUser(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDUser),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
 }
 
 // IDProfileFollows retrieves all the follow's Follows with an executor via id_profile column.
@@ -657,126 +613,6 @@ func (o *Profile) IDProfileTattoos(mods ...qm.QueryMod) tattooQuery {
 	)
 
 	return Tattoos(queryMods...)
-}
-
-// LoadIDUserUser allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (profileL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProfile interface{}, mods queries.Applicator) error {
-	var slice []*Profile
-	var object *Profile
-
-	if singular {
-		var ok bool
-		object, ok = maybeProfile.(*Profile)
-		if !ok {
-			object = new(Profile)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeProfile)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProfile))
-			}
-		}
-	} else {
-		s, ok := maybeProfile.(*[]*Profile)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeProfile)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProfile))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &profileR{}
-		}
-		args[object.IDUser] = struct{}{}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &profileR{}
-			}
-
-			args[obj.IDUser] = struct{}{}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`users`),
-		qm.WhereIn(`users.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
-	}
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for users")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.IDUserUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.IDUserProfile = object
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.IDUser == foreign.ID {
-				local.R.IDUserUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.IDUserProfile = local
-				break
-			}
-		}
-	}
-
-	return nil
 }
 
 // LoadIDAvatarImage allows an eager lookup of values, cached into the
@@ -895,6 +731,126 @@ func (profileL) LoadIDAvatarImage(ctx context.Context, e boil.ContextExecutor, s
 					foreign.R = &imageR{}
 				}
 				foreign.R.IDAvatarProfile = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDUserUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (profileL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProfile interface{}, mods queries.Applicator) error {
+	var slice []*Profile
+	var object *Profile
+
+	if singular {
+		var ok bool
+		object, ok = maybeProfile.(*Profile)
+		if !ok {
+			object = new(Profile)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProfile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProfile))
+			}
+		}
+	} else {
+		s, ok := maybeProfile.(*[]*Profile)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProfile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProfile))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &profileR{}
+		}
+		args[object.IDUser] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &profileR{}
+			}
+
+			args[obj.IDUser] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDUserUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.IDUserProfile = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDUser == foreign.ID {
+				local.R.IDUserUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.IDUserProfile = local
 				break
 			}
 		}
@@ -1468,53 +1424,6 @@ func (profileL) LoadIDProfileTattoos(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// SetIDUserUser of the profile to the related item.
-// Sets o.R.IDUserUser to related.
-// Adds o to related.R.IDUserProfile.
-func (o *Profile) SetIDUserUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"profiles\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
-		strmangle.WhereClause("\"", "\"", 2, profilePrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.IDUser = related.ID
-	if o.R == nil {
-		o.R = &profileR{
-			IDUserUser: related,
-		}
-	} else {
-		o.R.IDUserUser = related
-	}
-
-	if related.R == nil {
-		related.R = &userR{
-			IDUserProfile: o,
-		}
-	} else {
-		related.R.IDUserProfile = o
-	}
-
-	return nil
-}
-
 // SetIDAvatarImage of the profile to the related item.
 // Sets o.R.IDAvatarImage to related.
 // Adds o to related.R.IDAvatarProfile.
@@ -1581,6 +1490,53 @@ func (o *Profile) RemoveIDAvatarImage(ctx context.Context, exec boil.ContextExec
 	}
 
 	related.R.IDAvatarProfile = nil
+	return nil
+}
+
+// SetIDUserUser of the profile to the related item.
+// Sets o.R.IDUserUser to related.
+// Adds o to related.R.IDUserProfile.
+func (o *Profile) SetIDUserUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"profiles\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+		strmangle.WhereClause("\"", "\"", 2, profilePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.IDUser = related.ID
+	if o.R == nil {
+		o.R = &profileR{
+			IDUserUser: related,
+		}
+	} else {
+		o.R.IDUserUser = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			IDUserProfile: o,
+		}
+	} else {
+		related.R.IDUserProfile = o
+	}
+
 	return nil
 }
 
@@ -2104,6 +2060,135 @@ func (o ProfileSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 	return rowsAff, nil
 }
 
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *Profile) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
+	if o == nil {
+		return errors.New("models: no profiles provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(profileColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	profileUpsertCacheMut.RLock()
+	cache, cached := profileUpsertCache[key]
+	profileUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, _ := insertColumns.InsertColumnSet(
+			profileAllColumns,
+			profileColumnsWithDefault,
+			profileColumnsWithoutDefault,
+			nzDefaults,
+		)
+
+		update := updateColumns.UpdateColumnSet(
+			profileAllColumns,
+			profilePrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert profiles, could not build update column list")
+		}
+
+		ret := strmangle.SetComplement(profileAllColumns, strmangle.SetIntersect(insert, update))
+
+		conflict := conflictColumns
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len(profilePrimaryKeyColumns) == 0 {
+				return errors.New("models: unable to upsert profiles, could not build conflict column list")
+			}
+
+			conflict = make([]string, len(profilePrimaryKeyColumns))
+			copy(conflict, profilePrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryPostgres(dialect, "\"profiles\"", updateOnConflict, ret, update, conflict, insert, opts...)
+
+		cache.valueMapping, err = queries.BindMapping(profileType, profileMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(profileType, profileMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, cache.query)
+		fmt.Fprintln(writer, vals)
+	}
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // Postgres doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return errors.Wrap(err, "models: unable to upsert profiles")
+	}
+
+	if !cached {
+		profileUpsertCacheMut.Lock()
+		profileUpsertCache[key] = cache
+		profileUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
+}
+
 // Delete deletes a single Profile record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Profile) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -2274,126 +2359,4 @@ func ProfileExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bo
 // Exists checks if the Profile row exists.
 func (o *Profile) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return ProfileExists(ctx, exec, o.ID)
-}
-
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Profile) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
-	if o == nil {
-		return errors.New("models: no profiles provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(profileColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	profileUpsertCacheMut.RLock()
-	cache, cached := profileUpsertCache[key]
-	profileUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
-			profileAllColumns,
-			profileColumnsWithDefault,
-			profileColumnsWithoutDefault,
-			nzDefaults,
-		)
-		update := updateColumns.UpdateColumnSet(
-			profileAllColumns,
-			profilePrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert profiles, could not build update column list")
-		}
-
-		conflict := conflictColumns
-		if len(conflict) == 0 {
-			conflict = make([]string, len(profilePrimaryKeyColumns))
-			copy(conflict, profilePrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryCockroachDB(dialect, "\"profiles\"", updateOnConflict, ret, update, conflict, insert)
-
-		cache.valueMapping, err = queries.BindMapping(profileType, profileMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(profileType, profileMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.DebugMode {
-		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
-		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
-	}
-
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // CockcorachDB doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return fmt.Errorf("models: unable to upsert profiles: %w", err)
-	}
-
-	if !cached {
-		profileUpsertCacheMut.Lock()
-		profileUpsertCache[key] = cache
-		profileUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
 }

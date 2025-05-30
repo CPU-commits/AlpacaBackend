@@ -13,6 +13,7 @@ import "testing"
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
 	t.Run("Accesses", testAccesses)
+	t.Run("AppointmentImages", testAppointmentImages)
 	t.Run("Appointments", testAppointments)
 	t.Run("Auths", testAuths)
 	t.Run("Follows", testFollows)
@@ -34,6 +35,7 @@ func TestParent(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Run("Accesses", testAccessesDelete)
+	t.Run("AppointmentImages", testAppointmentImagesDelete)
 	t.Run("Appointments", testAppointmentsDelete)
 	t.Run("Auths", testAuthsDelete)
 	t.Run("Follows", testFollowsDelete)
@@ -55,6 +57,7 @@ func TestDelete(t *testing.T) {
 
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Accesses", testAccessesQueryDeleteAll)
+	t.Run("AppointmentImages", testAppointmentImagesQueryDeleteAll)
 	t.Run("Appointments", testAppointmentsQueryDeleteAll)
 	t.Run("Auths", testAuthsQueryDeleteAll)
 	t.Run("Follows", testFollowsQueryDeleteAll)
@@ -76,6 +79,7 @@ func TestQueryDeleteAll(t *testing.T) {
 
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Accesses", testAccessesSliceDeleteAll)
+	t.Run("AppointmentImages", testAppointmentImagesSliceDeleteAll)
 	t.Run("Appointments", testAppointmentsSliceDeleteAll)
 	t.Run("Auths", testAuthsSliceDeleteAll)
 	t.Run("Follows", testFollowsSliceDeleteAll)
@@ -97,6 +101,7 @@ func TestSliceDeleteAll(t *testing.T) {
 
 func TestExists(t *testing.T) {
 	t.Run("Accesses", testAccessesExists)
+	t.Run("AppointmentImages", testAppointmentImagesExists)
 	t.Run("Appointments", testAppointmentsExists)
 	t.Run("Auths", testAuthsExists)
 	t.Run("Follows", testFollowsExists)
@@ -118,6 +123,7 @@ func TestExists(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	t.Run("Accesses", testAccessesFind)
+	t.Run("AppointmentImages", testAppointmentImagesFind)
 	t.Run("Appointments", testAppointmentsFind)
 	t.Run("Auths", testAuthsFind)
 	t.Run("Follows", testFollowsFind)
@@ -139,6 +145,7 @@ func TestFind(t *testing.T) {
 
 func TestBind(t *testing.T) {
 	t.Run("Accesses", testAccessesBind)
+	t.Run("AppointmentImages", testAppointmentImagesBind)
 	t.Run("Appointments", testAppointmentsBind)
 	t.Run("Auths", testAuthsBind)
 	t.Run("Follows", testFollowsBind)
@@ -160,6 +167,7 @@ func TestBind(t *testing.T) {
 
 func TestOne(t *testing.T) {
 	t.Run("Accesses", testAccessesOne)
+	t.Run("AppointmentImages", testAppointmentImagesOne)
 	t.Run("Appointments", testAppointmentsOne)
 	t.Run("Auths", testAuthsOne)
 	t.Run("Follows", testFollowsOne)
@@ -181,6 +189,7 @@ func TestOne(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	t.Run("Accesses", testAccessesAll)
+	t.Run("AppointmentImages", testAppointmentImagesAll)
 	t.Run("Appointments", testAppointmentsAll)
 	t.Run("Auths", testAuthsAll)
 	t.Run("Follows", testFollowsAll)
@@ -202,6 +211,7 @@ func TestAll(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	t.Run("Accesses", testAccessesCount)
+	t.Run("AppointmentImages", testAppointmentImagesCount)
 	t.Run("Appointments", testAppointmentsCount)
 	t.Run("Auths", testAuthsCount)
 	t.Run("Follows", testFollowsCount)
@@ -223,6 +233,7 @@ func TestCount(t *testing.T) {
 
 func TestHooks(t *testing.T) {
 	t.Run("Accesses", testAccessesHooks)
+	t.Run("AppointmentImages", testAppointmentImagesHooks)
 	t.Run("Appointments", testAppointmentsHooks)
 	t.Run("Auths", testAuthsHooks)
 	t.Run("Follows", testFollowsHooks)
@@ -245,6 +256,8 @@ func TestHooks(t *testing.T) {
 func TestInsert(t *testing.T) {
 	t.Run("Accesses", testAccessesInsert)
 	t.Run("Accesses", testAccessesInsertWhitelist)
+	t.Run("AppointmentImages", testAppointmentImagesInsert)
+	t.Run("AppointmentImages", testAppointmentImagesInsertWhitelist)
 	t.Run("Appointments", testAppointmentsInsert)
 	t.Run("Appointments", testAppointmentsInsertWhitelist)
 	t.Run("Auths", testAuthsInsert)
@@ -283,6 +296,7 @@ func TestInsert(t *testing.T) {
 
 func TestReload(t *testing.T) {
 	t.Run("Accesses", testAccessesReload)
+	t.Run("AppointmentImages", testAppointmentImagesReload)
 	t.Run("Appointments", testAppointmentsReload)
 	t.Run("Auths", testAuthsReload)
 	t.Run("Follows", testFollowsReload)
@@ -304,6 +318,7 @@ func TestReload(t *testing.T) {
 
 func TestReloadAll(t *testing.T) {
 	t.Run("Accesses", testAccessesReloadAll)
+	t.Run("AppointmentImages", testAppointmentImagesReloadAll)
 	t.Run("Appointments", testAppointmentsReloadAll)
 	t.Run("Auths", testAuthsReloadAll)
 	t.Run("Follows", testFollowsReloadAll)
@@ -325,6 +340,7 @@ func TestReloadAll(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	t.Run("Accesses", testAccessesSelect)
+	t.Run("AppointmentImages", testAppointmentImagesSelect)
 	t.Run("Appointments", testAppointmentsSelect)
 	t.Run("Auths", testAuthsSelect)
 	t.Run("Follows", testFollowsSelect)
@@ -346,6 +362,7 @@ func TestSelect(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	t.Run("Accesses", testAccessesUpdate)
+	t.Run("AppointmentImages", testAppointmentImagesUpdate)
 	t.Run("Appointments", testAppointmentsUpdate)
 	t.Run("Auths", testAuthsUpdate)
 	t.Run("Follows", testFollowsUpdate)
@@ -367,6 +384,7 @@ func TestUpdate(t *testing.T) {
 
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Accesses", testAccessesSliceUpdateAll)
+	t.Run("AppointmentImages", testAppointmentImagesSliceUpdateAll)
 	t.Run("Appointments", testAppointmentsSliceUpdateAll)
 	t.Run("Auths", testAuthsSliceUpdateAll)
 	t.Run("Follows", testFollowsSliceUpdateAll)

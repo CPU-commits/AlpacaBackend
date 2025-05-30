@@ -28,8 +28,8 @@ type Post struct {
 	IDProfile  int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
 	Content    string            `boil:"content" json:"content" toml:"content" yaml:"content"`
 	Likes      int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	Categories types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	CreatedAt  time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Categories types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Mentions   types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,16 +41,16 @@ var PostColumns = struct {
 	IDProfile  string
 	Content    string
 	Likes      string
-	Categories string
 	CreatedAt  string
+	Categories string
 	Mentions   string
 }{
 	ID:         "id",
 	IDProfile:  "id_profile",
 	Content:    "content",
 	Likes:      "likes",
-	Categories: "categories",
 	CreatedAt:  "created_at",
+	Categories: "categories",
 	Mentions:   "mentions",
 }
 
@@ -59,16 +59,16 @@ var PostTableColumns = struct {
 	IDProfile  string
 	Content    string
 	Likes      string
-	Categories string
 	CreatedAt  string
+	Categories string
 	Mentions   string
 }{
 	ID:         "posts.id",
 	IDProfile:  "posts.id_profile",
 	Content:    "posts.content",
 	Likes:      "posts.likes",
-	Categories: "posts.categories",
 	CreatedAt:  "posts.created_at",
+	Categories: "posts.categories",
 	Mentions:   "posts.mentions",
 }
 
@@ -152,16 +152,16 @@ var PostWhere = struct {
 	IDProfile  whereHelperint64
 	Content    whereHelperstring
 	Likes      whereHelperint
-	Categories whereHelpertypes_StringArray
 	CreatedAt  whereHelpertime_Time
+	Categories whereHelpertypes_StringArray
 	Mentions   whereHelpertypes_Int64Array
 }{
 	ID:         whereHelperint64{field: "\"posts\".\"id\""},
 	IDProfile:  whereHelperint64{field: "\"posts\".\"id_profile\""},
 	Content:    whereHelperstring{field: "\"posts\".\"content\""},
 	Likes:      whereHelperint{field: "\"posts\".\"likes\""},
-	Categories: whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
 	CreatedAt:  whereHelpertime_Time{field: "\"posts\".\"created_at\""},
+	Categories: whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
 	Mentions:   whereHelpertypes_Int64Array{field: "\"posts\".\"mentions\""},
 }
 
@@ -223,9 +223,9 @@ func (r *postR) GetIDPostTattoos() TattooSlice {
 type postL struct{}
 
 var (
-	postAllColumns            = []string{"id", "id_profile", "content", "likes", "categories", "created_at", "mentions"}
+	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at", "categories", "mentions"}
 	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "categories", "created_at", "mentions"}
+	postColumnsWithDefault    = []string{"id", "created_at", "categories", "mentions"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )
@@ -1582,6 +1582,135 @@ func (o PostSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 	return rowsAff, nil
 }
 
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *Post) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
+	if o == nil {
+		return errors.New("models: no posts provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(postColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	postUpsertCacheMut.RLock()
+	cache, cached := postUpsertCache[key]
+	postUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, _ := insertColumns.InsertColumnSet(
+			postAllColumns,
+			postColumnsWithDefault,
+			postColumnsWithoutDefault,
+			nzDefaults,
+		)
+
+		update := updateColumns.UpdateColumnSet(
+			postAllColumns,
+			postPrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert posts, could not build update column list")
+		}
+
+		ret := strmangle.SetComplement(postAllColumns, strmangle.SetIntersect(insert, update))
+
+		conflict := conflictColumns
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len(postPrimaryKeyColumns) == 0 {
+				return errors.New("models: unable to upsert posts, could not build conflict column list")
+			}
+
+			conflict = make([]string, len(postPrimaryKeyColumns))
+			copy(conflict, postPrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryPostgres(dialect, "\"posts\"", updateOnConflict, ret, update, conflict, insert, opts...)
+
+		cache.valueMapping, err = queries.BindMapping(postType, postMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(postType, postMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, cache.query)
+		fmt.Fprintln(writer, vals)
+	}
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // Postgres doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return errors.Wrap(err, "models: unable to upsert posts")
+	}
+
+	if !cached {
+		postUpsertCacheMut.Lock()
+		postUpsertCache[key] = cache
+		postUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
+}
+
 // Delete deletes a single Post record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Post) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1752,126 +1881,4 @@ func PostExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool,
 // Exists checks if the Post row exists.
 func (o *Post) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return PostExists(ctx, exec, o.ID)
-}
-
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Post) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
-	if o == nil {
-		return errors.New("models: no posts provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(postColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	postUpsertCacheMut.RLock()
-	cache, cached := postUpsertCache[key]
-	postUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
-			postAllColumns,
-			postColumnsWithDefault,
-			postColumnsWithoutDefault,
-			nzDefaults,
-		)
-		update := updateColumns.UpdateColumnSet(
-			postAllColumns,
-			postPrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert posts, could not build update column list")
-		}
-
-		conflict := conflictColumns
-		if len(conflict) == 0 {
-			conflict = make([]string, len(postPrimaryKeyColumns))
-			copy(conflict, postPrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryCockroachDB(dialect, "\"posts\"", updateOnConflict, ret, update, conflict, insert)
-
-		cache.valueMapping, err = queries.BindMapping(postType, postMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(postType, postMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.DebugMode {
-		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
-		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
-	}
-
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // CockcorachDB doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return fmt.Errorf("models: unable to upsert posts: %w", err)
-	}
-
-	if !cached {
-		postUpsertCacheMut.Lock()
-		postUpsertCache[key] = cache
-		postUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
 }

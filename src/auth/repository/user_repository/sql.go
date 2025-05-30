@@ -50,6 +50,9 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria == nil {
 		return nil
 	}
+	if criteria.ID != 0 {
+		mod = append(mod, Where("id = ?", criteria.ID))
+	}
 	if criteria.Email != "" {
 		mod = append(mod, Where("email = ?", criteria.Email))
 	}

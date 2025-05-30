@@ -15,54 +15,6 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-func testTattoosUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(tattooAllColumns) == len(tattooPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := Tattoo{}
-	if err = randomize.Struct(seed, &o, tattooDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Tattoo: %s", err)
-	}
-
-	count, err := Tattoos().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, tattooDBTypes, false, tattooPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Tattoo: %s", err)
-	}
-
-	count, err = Tattoos().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-}
-
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -542,32 +494,32 @@ func testTattoosInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
+func testTattooToOneImageUsingIDImageImage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local Tattoo
-	var foreign Profile
+	var foreign Image
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Tattoo struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Profile struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, imageDBTypes, false, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.IDProfile = foreign.ID
+	local.IDImage = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.IDProfileProfile().One(ctx, tx)
+	check, err := local.IDImageImage().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -577,24 +529,24 @@ func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
 	}
 
 	ranAfterSelectHook := false
-	AddProfileHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Profile) error {
+	AddImageHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Image) error {
 		ranAfterSelectHook = true
 		return nil
 	})
 
 	slice := TattooSlice{&local}
-	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
+	if err = local.L.LoadIDImageImage(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDProfileProfile == nil {
+	if local.R.IDImageImage == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.IDProfileProfile = nil
-	if err = local.L.LoadIDProfileProfile(ctx, tx, true, &local, nil); err != nil {
+	local.R.IDImageImage = nil
+	if err = local.L.LoadIDImageImage(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDProfileProfile == nil {
+	if local.R.IDImageImage == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -664,32 +616,32 @@ func testTattooToOnePostUsingIDPostPost(t *testing.T) {
 	}
 }
 
-func testTattooToOneImageUsingIDImageImage(t *testing.T) {
+func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local Tattoo
-	var foreign Image
+	var foreign Profile
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Tattoo struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, imageDBTypes, false, imageColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Image struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Profile struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.IDImage = foreign.ID
+	local.IDProfile = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.IDImageImage().One(ctx, tx)
+	check, err := local.IDProfileProfile().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -699,24 +651,24 @@ func testTattooToOneImageUsingIDImageImage(t *testing.T) {
 	}
 
 	ranAfterSelectHook := false
-	AddImageHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Image) error {
+	AddProfileHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Profile) error {
 		ranAfterSelectHook = true
 		return nil
 	})
 
 	slice := TattooSlice{&local}
-	if err = local.L.LoadIDImageImage(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
+	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDImageImage == nil {
+	if local.R.IDProfileProfile == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.IDImageImage = nil
-	if err = local.L.LoadIDImageImage(ctx, tx, true, &local, nil); err != nil {
+	local.R.IDProfileProfile = nil
+	if err = local.L.LoadIDProfileProfile(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDImageImage == nil {
+	if local.R.IDProfileProfile == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -725,7 +677,7 @@ func testTattooToOneImageUsingIDImageImage(t *testing.T) {
 	}
 }
 
-func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
+func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -733,16 +685,16 @@ func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Tattoo
-	var b, c Profile
+	var b, c Image
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -753,32 +705,32 @@ func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Profile{&b, &c} {
-		err = a.SetIDProfileProfile(ctx, tx, i != 0, x)
+	for i, x := range []*Image{&b, &c} {
+		err = a.SetIDImageImage(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.IDProfileProfile != x {
+		if a.R.IDImageImage != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDProfileTattoos[0] != &a {
+		if x.R.IDImageTattoo != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile)
+		if a.IDImage != x.ID {
+			t.Error("foreign key was wrong value", a.IDImage)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDProfile))
-		reflect.Indirect(reflect.ValueOf(&a.IDProfile)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.IDImage))
+		reflect.Indirect(reflect.ValueOf(&a.IDImage)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
+		if a.IDImage != x.ID {
+			t.Error("foreign key was wrong value", a.IDImage, x.ID)
 		}
 	}
 }
@@ -891,7 +843,7 @@ func testTattooToOneRemoveOpPostUsingIDPostPost(t *testing.T) {
 	}
 }
 
-func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
+func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -899,16 +851,16 @@ func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Tattoo
-	var b, c Image
+	var b, c Profile
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -919,32 +871,32 @@ func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Image{&b, &c} {
-		err = a.SetIDImageImage(ctx, tx, i != 0, x)
+	for i, x := range []*Profile{&b, &c} {
+		err = a.SetIDProfileProfile(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.IDImageImage != x {
+		if a.R.IDProfileProfile != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDImageTattoo != &a {
+		if x.R.IDProfileTattoos[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDImage != x.ID {
-			t.Error("foreign key was wrong value", a.IDImage)
+		if a.IDProfile != x.ID {
+			t.Error("foreign key was wrong value", a.IDProfile)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDImage))
-		reflect.Indirect(reflect.ValueOf(&a.IDImage)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.IDProfile))
+		reflect.Indirect(reflect.ValueOf(&a.IDProfile)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDImage != x.ID {
-			t.Error("foreign key was wrong value", a.IDImage, x.ID)
+		if a.IDProfile != x.ID {
+			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
 		}
 	}
 }
@@ -1023,7 +975,7 @@ func testTattoosSelect(t *testing.T) {
 }
 
 var (
-	tattooDBTypes = map[string]string{`ID`: `int8`, `IDProfile`: `int8`, `IDImage`: `int8`, `Likes`: `int4`, `Description`: `string`, `Categories`: `ARRAYstring`, `CreatedAt`: `timestamp`, `Popularity`: `int4`, `IDPost`: `int8`, `Views`: `int4`, `Coordinate`: `geometry`}
+	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Likes`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDPost`: `bigint`, `Description`: `text`, `Popularity`: `integer`, `Views`: `integer`, `Coordinate`: `geometry`, `Categories`: `ARRAY_text`}
 	_             = bytes.MinRead
 )
 
@@ -1135,5 +1087,53 @@ func testTattoosSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
+	}
+}
+
+func testTattoosUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(tattooAllColumns) == len(tattooPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := Tattoo{}
+	if err = randomize.Struct(seed, &o, tattooDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Tattoo: %s", err)
+	}
+
+	count, err := Tattoos().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, tattooDBTypes, false, tattooPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Tattoo: %s", err)
+	}
+
+	count, err = Tattoos().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
 	}
 }

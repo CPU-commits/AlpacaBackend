@@ -5,6 +5,7 @@ import (
 )
 
 type Criteria struct {
+	ID       int64
 	Username string
 	Email    string
 	Or       []Criteria
