@@ -19,6 +19,7 @@ type SelectOpts struct {
 
 type LoadOpts struct {
 	Avatar bool
+	User   bool
 }
 
 type FindOneOptions struct {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
@@ -25,17 +26,23 @@ func (sqlProfileRepository) sqlProfileToProfile(
 	profile *models.Profile,
 ) model.Profile {
 	var avatar *fileModel.Image
-	if profile.R != nil && profile.R.IDAvatarImage != nil {
-		sqlAvatar := profile.R.IDAvatarImage
+	var user *authModel.User
+	if profile.R != nil {
+		if profile.R.IDAvatarImage != nil {
+			sqlAvatar := profile.R.IDAvatarImage
 
-		avatar = &fileModel.Image{
-			ID:        sqlAvatar.ID,
-			Key:       sqlAvatar.Key,
-			MimeType:  sqlAvatar.MimeType,
-			Name:      sqlAvatar.Name,
-			CreatedAt: sqlAvatar.CreatedAt,
+			avatar = &fileModel.Image{
+				ID:        sqlAvatar.ID,
+				Key:       sqlAvatar.Key,
+				MimeType:  sqlAvatar.MimeType,
+				Name:      sqlAvatar.Name,
+				CreatedAt: sqlAvatar.CreatedAt,
+			}
+
 		}
+
 	}
+
 	return model.Profile{
 		ID:          profile.ID,
 		IDUser:      profile.IDUser,
@@ -43,6 +50,7 @@ func (sqlProfileRepository) sqlProfileToProfile(
 		CreatedAt:   profile.CreatedAt,
 		Description: profile.Description.String,
 		Avatar:      avatar,
+		User:        user,
 	}
 }
 
@@ -69,6 +77,9 @@ func (sqlProfileRepository) loadOpts(load *LoadOpts) []QueryMod {
 	}
 	if load.Avatar {
 		mod = append(mod, Load(models.ProfileRels.IDAvatarImage))
+	}
+	if load.User {
+		mod = append(mod, Load(models.ProfileRels.IDUserUser))
 	}
 
 	return mod
@@ -109,6 +120,7 @@ func (sqlPR sqlProfileRepository) FindOne(criteria *Criteria, opts *FindOneOptio
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
+		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 

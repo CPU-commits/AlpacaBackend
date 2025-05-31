@@ -7,48 +7,22 @@ import "testing"
 
 func TestUpsert(t *testing.T) {
 	t.Run("Accesses", testAccessesUpsert)
-
-<<<<<<< HEAD
-=======
 	t.Run("AppointmentImages", testAppointmentImagesUpsert)
-
->>>>>>> origin/master
 	t.Run("Appointments", testAppointmentsUpsert)
-
 	t.Run("Auths", testAuthsUpsert)
-
 	t.Run("Follows", testFollowsUpsert)
-
 	t.Run("Images", testImagesUpsert)
-
 	t.Run("Likes", testLikesUpsert)
-
 	t.Run("PostImages", testPostImagesUpsert)
-
 	t.Run("Posts", testPostsUpsert)
-
 	t.Run("Profiles", testProfilesUpsert)
-
 	t.Run("Reviews", testReviewsUpsert)
-
 	t.Run("RolesUsers", testRolesUsersUpsert)
-
 	t.Run("Sessions", testSessionsUpsert)
-
-<<<<<<< HEAD
-	t.Run("SpatialRefSys", testSpatialRefSysUpsert)
-
-=======
->>>>>>> origin/master
 	t.Run("StudioAdmins", testStudioAdminsUpsert)
-
 	t.Run("StudioTattooArtists", testStudioTattooArtistsUpsert)
-
 	t.Run("Studios", testStudiosUpsert)
-
 	t.Run("Tattoos", testTattoosUpsert)
-
 	t.Run("TokenPasswords", testTokenPasswordsUpsert)
-
 	t.Run("Users", testUsersUpsert)
 }

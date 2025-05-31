@@ -32,7 +32,7 @@ func (*QueuePublicationController) InteractionEvent(c bus.Context) error {
 }
 
 func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
-	BatchSize := 15
+	BatchSize := 20
 
 	rPublication, err := publicationRDRepository.GetAllPublications()
 	if err != nil {
@@ -46,6 +46,9 @@ func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
 		if err != nil {
 			return err
 		}
+		if publication == nil {
+			return nil
+		}
 		follows, err := profileService.GetFollows(rPublication.IDProfile)
 		if err != nil {
 			return err
@@ -55,15 +58,15 @@ func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
 			return err
 		}
 
-		if publication != nil {
-			err = publicationTSRepository.UpdatePublication(publication, daysSincePublish, int(follows))
-			if err != nil {
-				return err
-			}
-			err = publicationRDRepository.Delete(&rPublication)
-			if err != nil {
-				return err
-			}
+		err = publicationTSRepository.UpdatePublication(publication, daysSincePublish, int(follows))
+		if err != nil {
+
+			return err
+		}
+		err = publicationRDRepository.Delete(&rPublication)
+		if err != nil {
+
+			return err
 		}
 
 		return nil

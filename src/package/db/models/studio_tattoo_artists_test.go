@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testStudioTattooArtistsUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(studioTattooArtistAllColumns) == len(studioTattooArtistPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := StudioTattooArtist{}
+	if err = randomize.Struct(seed, &o, studioTattooArtistDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert StudioTattooArtist: %s", err)
+	}
+
+	count, err := StudioTattooArtists().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, studioTattooArtistDBTypes, false, studioTattooArtistPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert StudioTattooArtist: %s", err)
+	}
+
+	count, err = StudioTattooArtists().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -494,67 +542,6 @@ func testStudioTattooArtistsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testStudioTattooArtistToOneStudioUsingIDStudioStudio(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local StudioTattooArtist
-	var foreign Studio
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, studioTattooArtistDBTypes, false, studioTattooArtistColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, studioDBTypes, false, studioColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Studio struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.IDStudio = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.IDStudioStudio().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := StudioTattooArtistSlice{&local}
-	if err = local.L.LoadIDStudioStudio(ctx, tx, false, (*[]*StudioTattooArtist)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDStudioStudio == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.IDStudioStudio = nil
-	if err = local.L.LoadIDStudioStudio(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDStudioStudio == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-	}
-}
-
 func testStudioTattooArtistToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -616,63 +603,67 @@ func testStudioTattooArtistToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	}
 }
 
-func testStudioTattooArtistToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
-	var err error
-
+func testStudioTattooArtistToOneStudioUsingIDStudioStudio(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a StudioTattooArtist
-	var b, c Studio
+	var local StudioTattooArtist
+	var foreign Studio
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, studioTattooArtistDBTypes, false, strmangle.SetComplement(studioTattooArtistPrimaryKeyColumns, studioTattooArtistColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &local, studioTattooArtistDBTypes, false, studioTattooArtistColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
 	}
-	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &foreign, studioDBTypes, false, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
 	}
 
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Studio{&b, &c} {
-		err = a.SetIDStudioStudio(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
+	local.IDStudio = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
 
-		if a.R.IDStudioStudio != x {
-			t.Error("relationship struct not set to correct value")
-		}
+	check, err := local.IDStudioStudio().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if x.R.IDStudioStudioTattooArtists[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.IDStudio != x.ID {
-			t.Error("foreign key was wrong value", a.IDStudio)
-		}
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDStudio))
-		reflect.Indirect(reflect.ValueOf(&a.IDStudio)).Set(zero)
+	ranAfterSelectHook := false
+	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
+		ranAfterSelectHook = true
+		return nil
+	})
 
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
+	slice := StudioTattooArtistSlice{&local}
+	if err = local.L.LoadIDStudioStudio(ctx, tx, false, (*[]*StudioTattooArtist)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
 
-		if a.IDStudio != x.ID {
-			t.Error("foreign key was wrong value", a.IDStudio, x.ID)
-		}
+	local.R.IDStudioStudio = nil
+	if err = local.L.LoadIDStudioStudio(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
 	}
 }
+
 func testStudioTattooArtistToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 	var err error
 
@@ -727,6 +718,63 @@ func testStudioTattooArtistToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 
 		if a.IDTattooArtist != x.ID {
 			t.Error("foreign key was wrong value", a.IDTattooArtist, x.ID)
+		}
+	}
+}
+func testStudioTattooArtistToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a StudioTattooArtist
+	var b, c Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioTattooArtistDBTypes, false, strmangle.SetComplement(studioTattooArtistPrimaryKeyColumns, studioTattooArtistColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Studio{&b, &c} {
+		err = a.SetIDStudioStudio(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDStudioStudio != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDStudioStudioTattooArtists[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.IDStudio != x.ID {
+			t.Error("foreign key was wrong value", a.IDStudio)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDStudio))
+		reflect.Indirect(reflect.ValueOf(&a.IDStudio)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.IDStudio != x.ID {
+			t.Error("foreign key was wrong value", a.IDStudio, x.ID)
 		}
 	}
 }
@@ -805,7 +853,7 @@ func testStudioTattooArtistsSelect(t *testing.T) {
 }
 
 var (
-	studioTattooArtistDBTypes = map[string]string{`ID`: `bigint`, `IDStudio`: `bigint`, `IDTattooArtist`: `bigint`, `CreatedAt`: `timestamp without time zone`}
+	studioTattooArtistDBTypes = map[string]string{`ID`: `int8`, `IDStudio`: `int8`, `IDTattooArtist`: `int8`, `CreatedAt`: `timestamp`}
 	_                         = bytes.MinRead
 )
 
@@ -917,53 +965,5 @@ func testStudioTattooArtistsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testStudioTattooArtistsUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(studioTattooArtistAllColumns) == len(studioTattooArtistPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := StudioTattooArtist{}
-	if err = randomize.Struct(seed, &o, studioTattooArtistDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert StudioTattooArtist: %s", err)
-	}
-
-	count, err := StudioTattooArtists().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, studioTattooArtistDBTypes, false, studioTattooArtistPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize StudioTattooArtist struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert StudioTattooArtist: %s", err)
-	}
-
-	count, err = StudioTattooArtists().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

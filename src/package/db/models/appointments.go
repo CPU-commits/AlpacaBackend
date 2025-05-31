@@ -28,14 +28,14 @@ type Appointment struct {
 	IDUser         int64        `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
 	IDTattooArtist int64        `boil:"id_tattoo_artist" json:"id_tattoo_artist" toml:"id_tattoo_artist" yaml:"id_tattoo_artist"`
 	Status         string       `boil:"status" json:"status" toml:"status" yaml:"status"`
-	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Phone          null.String  `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
+	HasIdea        bool         `boil:"has_idea" json:"has_idea" toml:"has_idea" yaml:"has_idea"`
 	Area           null.String  `boil:"area" json:"area,omitempty" toml:"area" yaml:"area,omitempty"`
+	Height         null.Float64 `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
+	Width          null.Float64 `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
 	Color          null.String  `boil:"color" json:"color,omitempty" toml:"color" yaml:"color,omitempty"`
 	Description    string       `boil:"description" json:"description" toml:"description" yaml:"description"`
-	HasIdea        bool         `boil:"has_idea" json:"has_idea" toml:"has_idea" yaml:"has_idea"`
-	Height         null.Float64 `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
-	Phone          null.String  `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
-	Width          null.Float64 `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
+	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *appointmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L appointmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -46,27 +46,27 @@ var AppointmentColumns = struct {
 	IDUser         string
 	IDTattooArtist string
 	Status         string
-	CreatedAt      string
+	Phone          string
+	HasIdea        string
 	Area           string
+	Height         string
+	Width          string
 	Color          string
 	Description    string
-	HasIdea        string
-	Height         string
-	Phone          string
-	Width          string
+	CreatedAt      string
 }{
 	ID:             "id",
 	IDUser:         "id_user",
 	IDTattooArtist: "id_tattoo_artist",
 	Status:         "status",
-	CreatedAt:      "created_at",
+	Phone:          "phone",
+	HasIdea:        "has_idea",
 	Area:           "area",
+	Height:         "height",
+	Width:          "width",
 	Color:          "color",
 	Description:    "description",
-	HasIdea:        "has_idea",
-	Height:         "height",
-	Phone:          "phone",
-	Width:          "width",
+	CreatedAt:      "created_at",
 }
 
 var AppointmentTableColumns = struct {
@@ -74,27 +74,27 @@ var AppointmentTableColumns = struct {
 	IDUser         string
 	IDTattooArtist string
 	Status         string
-	CreatedAt      string
+	Phone          string
+	HasIdea        string
 	Area           string
+	Height         string
+	Width          string
 	Color          string
 	Description    string
-	HasIdea        string
-	Height         string
-	Phone          string
-	Width          string
+	CreatedAt      string
 }{
 	ID:             "appointments.id",
 	IDUser:         "appointments.id_user",
 	IDTattooArtist: "appointments.id_tattoo_artist",
 	Status:         "appointments.status",
-	CreatedAt:      "appointments.created_at",
+	Phone:          "appointments.phone",
+	HasIdea:        "appointments.has_idea",
 	Area:           "appointments.area",
+	Height:         "appointments.height",
+	Width:          "appointments.width",
 	Color:          "appointments.color",
 	Description:    "appointments.description",
-	HasIdea:        "appointments.has_idea",
-	Height:         "appointments.height",
-	Phone:          "appointments.phone",
-	Width:          "appointments.width",
+	CreatedAt:      "appointments.created_at",
 }
 
 // Generated where
@@ -124,18 +124,6 @@ func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
 }
 func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
 	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" ILIKE ?", x)
-}
-func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT ILIKE ?", x)
-}
-func (w whereHelpernull_String) SIMILAR(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" SIMILAR TO ?", x)
-}
-func (w whereHelpernull_String) NSIMILAR(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT SIMILAR TO ?", x)
 }
 func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
@@ -198,70 +186,50 @@ var AppointmentWhere = struct {
 	IDUser         whereHelperint64
 	IDTattooArtist whereHelperint64
 	Status         whereHelperstring
-	CreatedAt      whereHelpertime_Time
+	Phone          whereHelpernull_String
+	HasIdea        whereHelperbool
 	Area           whereHelpernull_String
+	Height         whereHelpernull_Float64
+	Width          whereHelpernull_Float64
 	Color          whereHelpernull_String
 	Description    whereHelperstring
-	HasIdea        whereHelperbool
-	Height         whereHelpernull_Float64
-	Phone          whereHelpernull_String
-	Width          whereHelpernull_Float64
+	CreatedAt      whereHelpertime_Time
 }{
 	ID:             whereHelperint64{field: "\"appointments\".\"id\""},
 	IDUser:         whereHelperint64{field: "\"appointments\".\"id_user\""},
 	IDTattooArtist: whereHelperint64{field: "\"appointments\".\"id_tattoo_artist\""},
 	Status:         whereHelperstring{field: "\"appointments\".\"status\""},
-	CreatedAt:      whereHelpertime_Time{field: "\"appointments\".\"created_at\""},
+	Phone:          whereHelpernull_String{field: "\"appointments\".\"phone\""},
+	HasIdea:        whereHelperbool{field: "\"appointments\".\"has_idea\""},
 	Area:           whereHelpernull_String{field: "\"appointments\".\"area\""},
+	Height:         whereHelpernull_Float64{field: "\"appointments\".\"height\""},
+	Width:          whereHelpernull_Float64{field: "\"appointments\".\"width\""},
 	Color:          whereHelpernull_String{field: "\"appointments\".\"color\""},
 	Description:    whereHelperstring{field: "\"appointments\".\"description\""},
-	HasIdea:        whereHelperbool{field: "\"appointments\".\"has_idea\""},
-	Height:         whereHelpernull_Float64{field: "\"appointments\".\"height\""},
-	Phone:          whereHelpernull_String{field: "\"appointments\".\"phone\""},
-	Width:          whereHelpernull_Float64{field: "\"appointments\".\"width\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"appointments\".\"created_at\""},
 }
 
 // AppointmentRels is where relationship names are stored.
 var AppointmentRels = struct {
-<<<<<<< HEAD
-	IDTattooArtistUser string
-	IDUserUser         string
-}{
-	IDTattooArtistUser: "IDTattooArtistUser",
-	IDUserUser:         "IDUserUser",
-=======
-	IDTattooArtistUser             string
 	IDUserUser                     string
+	IDTattooArtistUser             string
 	IDAppointmentAppointmentImages string
 }{
-	IDTattooArtistUser:             "IDTattooArtistUser",
 	IDUserUser:                     "IDUserUser",
+	IDTattooArtistUser:             "IDTattooArtistUser",
 	IDAppointmentAppointmentImages: "IDAppointmentAppointmentImages",
->>>>>>> origin/master
 }
 
 // appointmentR is where relationships are stored.
 type appointmentR struct {
-<<<<<<< HEAD
-	IDTattooArtistUser *User `boil:"IDTattooArtistUser" json:"IDTattooArtistUser" toml:"IDTattooArtistUser" yaml:"IDTattooArtistUser"`
-	IDUserUser         *User `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
-=======
-	IDTattooArtistUser             *User                 `boil:"IDTattooArtistUser" json:"IDTattooArtistUser" toml:"IDTattooArtistUser" yaml:"IDTattooArtistUser"`
 	IDUserUser                     *User                 `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+	IDTattooArtistUser             *User                 `boil:"IDTattooArtistUser" json:"IDTattooArtistUser" toml:"IDTattooArtistUser" yaml:"IDTattooArtistUser"`
 	IDAppointmentAppointmentImages AppointmentImageSlice `boil:"IDAppointmentAppointmentImages" json:"IDAppointmentAppointmentImages" toml:"IDAppointmentAppointmentImages" yaml:"IDAppointmentAppointmentImages"`
->>>>>>> origin/master
 }
 
 // NewStruct creates a new relationship struct
 func (*appointmentR) NewStruct() *appointmentR {
 	return &appointmentR{}
-}
-
-func (r *appointmentR) GetIDTattooArtistUser() *User {
-	if r == nil {
-		return nil
-	}
-	return r.IDTattooArtistUser
 }
 
 func (r *appointmentR) GetIDUserUser() *User {
@@ -271,8 +239,13 @@ func (r *appointmentR) GetIDUserUser() *User {
 	return r.IDUserUser
 }
 
-<<<<<<< HEAD
-=======
+func (r *appointmentR) GetIDTattooArtistUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.IDTattooArtistUser
+}
+
 func (r *appointmentR) GetIDAppointmentAppointmentImages() AppointmentImageSlice {
 	if r == nil {
 		return nil
@@ -280,14 +253,13 @@ func (r *appointmentR) GetIDAppointmentAppointmentImages() AppointmentImageSlice
 	return r.IDAppointmentAppointmentImages
 }
 
->>>>>>> origin/master
 // appointmentL is where Load methods for each relationship are stored.
 type appointmentL struct{}
 
 var (
-	appointmentAllColumns            = []string{"id", "id_user", "id_tattoo_artist", "status", "created_at", "area", "color", "description", "has_idea", "height", "phone", "width"}
-	appointmentColumnsWithoutDefault = []string{"id_user", "id_tattoo_artist", "status", "description", "has_idea"}
-	appointmentColumnsWithDefault    = []string{"id", "created_at", "area", "color", "height", "phone", "width"}
+	appointmentAllColumns            = []string{"id", "id_user", "id_tattoo_artist", "status", "phone", "has_idea", "area", "height", "width", "color", "description", "created_at"}
+	appointmentColumnsWithoutDefault = []string{"id_user", "id_tattoo_artist", "status", "has_idea", "description"}
+	appointmentColumnsWithDefault    = []string{"id", "phone", "area", "height", "width", "color", "created_at"}
 	appointmentPrimaryKeyColumns     = []string{"id"}
 	appointmentGeneratedColumns      = []string{}
 )
@@ -597,17 +569,6 @@ func (q appointmentQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
-// IDTattooArtistUser pointed to by the foreign key.
-func (o *Appointment) IDTattooArtistUser(mods ...qm.QueryMod) userQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.IDTattooArtist),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Users(queryMods...)
-}
-
 // IDUserUser pointed to by the foreign key.
 func (o *Appointment) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
@@ -617,8 +578,17 @@ func (o *Appointment) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Users(queryMods...)
-<<<<<<< HEAD
-=======
+}
+
+// IDTattooArtistUser pointed to by the foreign key.
+func (o *Appointment) IDTattooArtistUser(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDTattooArtist),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
 }
 
 // IDAppointmentAppointmentImages retrieves all the appointment_image's AppointmentImages with an executor via id_appointment column.
@@ -633,7 +603,126 @@ func (o *Appointment) IDAppointmentAppointmentImages(mods ...qm.QueryMod) appoin
 	)
 
 	return AppointmentImages(queryMods...)
->>>>>>> origin/master
+}
+
+// LoadIDUserUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (appointmentL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAppointment interface{}, mods queries.Applicator) error {
+	var slice []*Appointment
+	var object *Appointment
+
+	if singular {
+		var ok bool
+		object, ok = maybeAppointment.(*Appointment)
+		if !ok {
+			object = new(Appointment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAppointment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAppointment))
+			}
+		}
+	} else {
+		s, ok := maybeAppointment.(*[]*Appointment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAppointment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAppointment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &appointmentR{}
+		}
+		args[object.IDUser] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &appointmentR{}
+			}
+
+			args[obj.IDUser] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDUserUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDUser == foreign.ID {
+				local.R.IDUserUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadIDTattooArtistUser allows an eager lookup of values, cached into the
@@ -756,156 +845,6 @@ func (appointmentL) LoadIDTattooArtistUser(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// LoadIDUserUser allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (appointmentL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAppointment interface{}, mods queries.Applicator) error {
-	var slice []*Appointment
-	var object *Appointment
-
-	if singular {
-		var ok bool
-		object, ok = maybeAppointment.(*Appointment)
-		if !ok {
-			object = new(Appointment)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeAppointment)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAppointment))
-			}
-		}
-	} else {
-		s, ok := maybeAppointment.(*[]*Appointment)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeAppointment)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAppointment))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &appointmentR{}
-		}
-		args[object.IDUser] = struct{}{}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &appointmentR{}
-			}
-
-			args[obj.IDUser] = struct{}{}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`users`),
-		qm.WhereIn(`users.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
-	}
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for users")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-<<<<<<< HEAD
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.IDUserUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.IDUser == foreign.ID {
-				local.R.IDUserUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, local)
-				break
-			}
-		}
-=======
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.IDUserUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.IDUser == foreign.ID {
-				local.R.IDUserUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // LoadIDAppointmentAppointmentImages allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (appointmentL) LoadIDAppointmentAppointmentImages(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAppointment interface{}, mods queries.Applicator) error {
@@ -1014,54 +953,6 @@ func (appointmentL) LoadIDAppointmentAppointmentImages(ctx context.Context, e bo
 				break
 			}
 		}
->>>>>>> origin/master
-	}
-
-	return nil
-}
-
-// SetIDTattooArtistUser of the appointment to the related item.
-// Sets o.R.IDTattooArtistUser to related.
-// Adds o to related.R.IDTattooArtistAppointments.
-func (o *Appointment) SetIDTattooArtistUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"appointments\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo_artist"}),
-		strmangle.WhereClause("\"", "\"", 2, appointmentPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.IDTattooArtist = related.ID
-	if o.R == nil {
-		o.R = &appointmentR{
-			IDTattooArtistUser: related,
-		}
-	} else {
-		o.R.IDTattooArtistUser = related
-	}
-
-	if related.R == nil {
-		related.R = &userR{
-			IDTattooArtistAppointments: AppointmentSlice{o},
-		}
-	} else {
-		related.R.IDTattooArtistAppointments = append(related.R.IDTattooArtistAppointments, o)
 	}
 
 	return nil
@@ -1114,8 +1005,53 @@ func (o *Appointment) SetIDUserUser(ctx context.Context, exec boil.ContextExecut
 	return nil
 }
 
-<<<<<<< HEAD
-=======
+// SetIDTattooArtistUser of the appointment to the related item.
+// Sets o.R.IDTattooArtistUser to related.
+// Adds o to related.R.IDTattooArtistAppointments.
+func (o *Appointment) SetIDTattooArtistUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"appointments\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo_artist"}),
+		strmangle.WhereClause("\"", "\"", 2, appointmentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.IDTattooArtist = related.ID
+	if o.R == nil {
+		o.R = &appointmentR{
+			IDTattooArtistUser: related,
+		}
+	} else {
+		o.R.IDTattooArtistUser = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			IDTattooArtistAppointments: AppointmentSlice{o},
+		}
+	} else {
+		related.R.IDTattooArtistAppointments = append(related.R.IDTattooArtistAppointments, o)
+	}
+
+	return nil
+}
+
 // AddIDAppointmentAppointmentImages adds the given related objects to the existing relationships
 // of the appointment, optionally inserting them as new records.
 // Appends related to o.R.IDAppointmentAppointmentImages.
@@ -1169,7 +1105,6 @@ func (o *Appointment) AddIDAppointmentAppointmentImages(ctx context.Context, exe
 	return nil
 }
 
->>>>>>> origin/master
 // Appointments retrieves all the records using an executor.
 func Appointments(mods ...qm.QueryMod) appointmentQuery {
 	mods = append(mods, qm.From("\"appointments\""))
@@ -1425,135 +1360,6 @@ func (o AppointmentSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 	return rowsAff, nil
 }
 
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Appointment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
-	if o == nil {
-		return errors.New("models: no appointments provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(appointmentColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	appointmentUpsertCacheMut.RLock()
-	cache, cached := appointmentUpsertCache[key]
-	appointmentUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, _ := insertColumns.InsertColumnSet(
-			appointmentAllColumns,
-			appointmentColumnsWithDefault,
-			appointmentColumnsWithoutDefault,
-			nzDefaults,
-		)
-
-		update := updateColumns.UpdateColumnSet(
-			appointmentAllColumns,
-			appointmentPrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert appointments, could not build update column list")
-		}
-
-		ret := strmangle.SetComplement(appointmentAllColumns, strmangle.SetIntersect(insert, update))
-
-		conflict := conflictColumns
-		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
-			if len(appointmentPrimaryKeyColumns) == 0 {
-				return errors.New("models: unable to upsert appointments, could not build conflict column list")
-			}
-
-			conflict = make([]string, len(appointmentPrimaryKeyColumns))
-			copy(conflict, appointmentPrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"appointments\"", updateOnConflict, ret, update, conflict, insert, opts...)
-
-		cache.valueMapping, err = queries.BindMapping(appointmentType, appointmentMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(appointmentType, appointmentMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
-	}
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // Postgres doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert appointments")
-	}
-
-	if !cached {
-		appointmentUpsertCacheMut.Lock()
-		appointmentUpsertCache[key] = cache
-		appointmentUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
-}
-
 // Delete deletes a single Appointment record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Appointment) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1724,4 +1530,126 @@ func AppointmentExists(ctx context.Context, exec boil.ContextExecutor, iD int64)
 // Exists checks if the Appointment row exists.
 func (o *Appointment) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return AppointmentExists(ctx, exec, o.ID)
+}
+
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *Appointment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+	if o == nil {
+		return errors.New("models: no appointments provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(appointmentColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	appointmentUpsertCacheMut.RLock()
+	cache, cached := appointmentUpsertCache[key]
+	appointmentUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, ret := insertColumns.InsertColumnSet(
+			appointmentAllColumns,
+			appointmentColumnsWithDefault,
+			appointmentColumnsWithoutDefault,
+			nzDefaults,
+		)
+		update := updateColumns.UpdateColumnSet(
+			appointmentAllColumns,
+			appointmentPrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert appointments, could not build update column list")
+		}
+
+		conflict := conflictColumns
+		if len(conflict) == 0 {
+			conflict = make([]string, len(appointmentPrimaryKeyColumns))
+			copy(conflict, appointmentPrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryCockroachDB(dialect, "\"appointments\"", updateOnConflict, ret, update, conflict, insert)
+
+		cache.valueMapping, err = queries.BindMapping(appointmentType, appointmentMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(appointmentType, appointmentMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.DebugMode {
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
+	}
+
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // CockcorachDB doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return fmt.Errorf("models: unable to upsert appointments: %w", err)
+	}
+
+	if !cached {
+		appointmentUpsertCacheMut.Lock()
+		appointmentUpsertCache[key] = cache
+		appointmentUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
 }

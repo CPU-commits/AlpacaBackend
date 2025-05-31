@@ -32,6 +32,7 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 	opts := profile_repository.NewFindOneOptions().
 		Load(profile_repository.LoadOpts{
 			Avatar: true,
+			User:   true,
 		})
 
 	profile, err := profileService.profileRepository.FindOne(

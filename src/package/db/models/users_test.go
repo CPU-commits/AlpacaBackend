@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testUsersUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(userAllColumns) == len(userPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := User{}
+	if err = randomize.Struct(seed, &o, userDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert User: %s", err)
+	}
+
+	count, err := Users().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, userDBTypes, false, userPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert User: %s", err)
+	}
+
+	count, err = Users().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -861,84 +909,6 @@ func testUserOneToOneSetOpTokenPasswordUsingIDUserTokenPassword(t *testing.T) {
 	}
 }
 
-func testUserToManyIDTattooArtistAppointments(t *testing.T) {
-	var err error
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c Appointment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, true, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = randomize.Struct(seed, &b, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
-		t.Fatal(err)
-	}
-
-	b.IDTattooArtist = a.ID
-	c.IDTattooArtist = a.ID
-
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := a.IDTattooArtistAppointments().All(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bFound, cFound := false, false
-	for _, v := range check {
-		if v.IDTattooArtist == b.IDTattooArtist {
-			bFound = true
-		}
-		if v.IDTattooArtist == c.IDTattooArtist {
-			cFound = true
-		}
-	}
-
-	if !bFound {
-		t.Error("expected to find b")
-	}
-	if !cFound {
-		t.Error("expected to find c")
-	}
-
-	slice := UserSlice{&a}
-	if err = a.L.LoadIDTattooArtistAppointments(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if got := len(a.R.IDTattooArtistAppointments); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
-	}
-
-	a.R.IDTattooArtistAppointments = nil
-	if err = a.L.LoadIDTattooArtistAppointments(ctx, tx, true, &a, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got := len(a.R.IDTattooArtistAppointments); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
-	}
-
-	if t.Failed() {
-		t.Logf("%#v", check)
-	}
-}
-
 func testUserToManyIDUserAppointments(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -1009,6 +979,84 @@ func testUserToManyIDUserAppointments(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := len(a.R.IDUserAppointments); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testUserToManyIDTattooArtistAppointments(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c Appointment
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, true, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.IDTattooArtist = a.ID
+	c.IDTattooArtist = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDTattooArtistAppointments().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.IDTattooArtist == b.IDTattooArtist {
+			bFound = true
+		}
+		if v.IDTattooArtist == c.IDTattooArtist {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UserSlice{&a}
+	if err = a.L.LoadIDTattooArtistAppointments(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDTattooArtistAppointments); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDTattooArtistAppointments = nil
+	if err = a.L.LoadIDTattooArtistAppointments(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDTattooArtistAppointments); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1485,81 +1533,6 @@ func testUserToManyIDTattooArtistStudioTattooArtists(t *testing.T) {
 	}
 }
 
-func testUserToManyAddOpIDTattooArtistAppointments(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e Appointment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Appointment{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	foreignersSplitByInsertion := [][]*Appointment{
-		{&b, &c},
-		{&d, &e},
-	}
-
-	for i, x := range foreignersSplitByInsertion {
-		err = a.AddIDTattooArtistAppointments(ctx, tx, i != 0, x...)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		first := x[0]
-		second := x[1]
-
-		if a.ID != first.IDTattooArtist {
-			t.Error("foreign key was wrong value", a.ID, first.IDTattooArtist)
-		}
-		if a.ID != second.IDTattooArtist {
-			t.Error("foreign key was wrong value", a.ID, second.IDTattooArtist)
-		}
-
-		if first.R.IDTattooArtistUser != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-		if second.R.IDTattooArtistUser != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-
-		if a.R.IDTattooArtistAppointments[i*2] != first {
-			t.Error("relationship struct slice not set to correct value")
-		}
-		if a.R.IDTattooArtistAppointments[i*2+1] != second {
-			t.Error("relationship struct slice not set to correct value")
-		}
-
-		count, err := a.IDTattooArtistAppointments().Count(ctx, tx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if want := int64((i + 1) * 2); count != want {
-			t.Error("want", want, "got", count)
-		}
-	}
-}
 func testUserToManyAddOpIDUserAppointments(t *testing.T) {
 	var err error
 
@@ -1627,6 +1600,81 @@ func testUserToManyAddOpIDUserAppointments(t *testing.T) {
 		}
 
 		count, err := a.IDUserAppointments().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUserToManyAddOpIDTattooArtistAppointments(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c, d, e Appointment
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Appointment{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*Appointment{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDTattooArtistAppointments(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.IDTattooArtist {
+			t.Error("foreign key was wrong value", a.ID, first.IDTattooArtist)
+		}
+		if a.ID != second.IDTattooArtist {
+			t.Error("foreign key was wrong value", a.ID, second.IDTattooArtist)
+		}
+
+		if first.R.IDTattooArtistUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDTattooArtistUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDTattooArtistAppointments[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDTattooArtistAppointments[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDTattooArtistAppointments().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2160,11 +2208,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-<<<<<<< HEAD
-	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Username`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`}
-=======
-	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `Username`: `text`}
->>>>>>> origin/master
+	userDBTypes = map[string]string{`ID`: `int8`, `Email`: `string`, `Name`: `string`, `Username`: `string`, `Phone`: `string`, `CreatedAt`: `timestamp`}
 	_           = bytes.MinRead
 )
 
@@ -2276,53 +2320,5 @@ func testUsersSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testUsersUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(userAllColumns) == len(userPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := User{}
-	if err = randomize.Struct(seed, &o, userDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert User: %s", err)
-	}
-
-	count, err := Users().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, userDBTypes, false, userPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert User: %s", err)
-	}
-
-	count, err = Users().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

@@ -21,24 +21,12 @@ services:
     command: "-js"
     networks:
       - alpaca_network
-  pg:
-    image: postgis/postgis
-    ports:
-      - 5432:5432
-    container_name: pg
-    volumes:
-      - "pg_db:/var/lib/postgresql/data"
-    networks:
-      - alpaca_network
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: defaultdb
+
   crdb:
     image: cockroachdb/cockroach:v24.2.3
     ports:
-     - "26257:26257"
-     - "8090:8080"
+      - "26257:26257"
+      - "8090:8080"
     command: start-single-node --insecure
     volumes:
       - "db:/cockroach/cockroach-data"
@@ -74,5 +62,5 @@ networks:
 volumes:
   db:
   typesense:
-  pg_db:
   redis:
+  crdb:

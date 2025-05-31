@@ -72,17 +72,17 @@ var PostImageWhere = struct {
 
 // PostImageRels is where relationship names are stored.
 var PostImageRels = struct {
-	IDImageImage string
 	IDPostPost   string
+	IDImageImage string
 }{
-	IDImageImage: "IDImageImage",
 	IDPostPost:   "IDPostPost",
+	IDImageImage: "IDImageImage",
 }
 
 // postImageR is where relationships are stored.
 type postImageR struct {
-	IDImageImage *Image `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
 	IDPostPost   *Post  `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
+	IDImageImage *Image `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
 }
 
 // NewStruct creates a new relationship struct
@@ -90,18 +90,18 @@ func (*postImageR) NewStruct() *postImageR {
 	return &postImageR{}
 }
 
-func (r *postImageR) GetIDImageImage() *Image {
-	if r == nil {
-		return nil
-	}
-	return r.IDImageImage
-}
-
 func (r *postImageR) GetIDPostPost() *Post {
 	if r == nil {
 		return nil
 	}
 	return r.IDPostPost
+}
+
+func (r *postImageR) GetIDImageImage() *Image {
+	if r == nil {
+		return nil
+	}
+	return r.IDImageImage
 }
 
 // postImageL is where Load methods for each relationship are stored.
@@ -420,17 +420,6 @@ func (q postImageQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 	return count > 0, nil
 }
 
-// IDImageImage pointed to by the foreign key.
-func (o *PostImage) IDImageImage(mods ...qm.QueryMod) imageQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.IDImage),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Images(queryMods...)
-}
-
 // IDPostPost pointed to by the foreign key.
 func (o *PostImage) IDPostPost(mods ...qm.QueryMod) postQuery {
 	queryMods := []qm.QueryMod{
@@ -442,124 +431,15 @@ func (o *PostImage) IDPostPost(mods ...qm.QueryMod) postQuery {
 	return Posts(queryMods...)
 }
 
-// LoadIDImageImage allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (postImageL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybePostImage interface{}, mods queries.Applicator) error {
-	var slice []*PostImage
-	var object *PostImage
-
-	if singular {
-		var ok bool
-		object, ok = maybePostImage.(*PostImage)
-		if !ok {
-			object = new(PostImage)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybePostImage)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePostImage))
-			}
-		}
-	} else {
-		s, ok := maybePostImage.(*[]*PostImage)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybePostImage)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePostImage))
-			}
-		}
+// IDImageImage pointed to by the foreign key.
+func (o *PostImage) IDImageImage(mods ...qm.QueryMod) imageQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDImage),
 	}
 
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &postImageR{}
-		}
-		args[object.IDImage] = struct{}{}
+	queryMods = append(queryMods, mods...)
 
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &postImageR{}
-			}
-
-			args[obj.IDImage] = struct{}{}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`images`),
-		qm.WhereIn(`images.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Image")
-	}
-
-	var resultSlice []*Image
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Image")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for images")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for images")
-	}
-
-	if len(imageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.IDImageImage = foreign
-		if foreign.R == nil {
-			foreign.R = &imageR{}
-		}
-		foreign.R.IDImagePostImage = object
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.IDImage == foreign.ID {
-				local.R.IDImageImage = foreign
-				if foreign.R == nil {
-					foreign.R = &imageR{}
-				}
-				foreign.R.IDImagePostImage = local
-				break
-			}
-		}
-	}
-
-	return nil
+	return Images(queryMods...)
 }
 
 // LoadIDPostPost allows an eager lookup of values, cached into the
@@ -682,48 +562,121 @@ func (postImageL) LoadIDPostPost(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// SetIDImageImage of the postImage to the related item.
-// Sets o.R.IDImageImage to related.
-// Adds o to related.R.IDImagePostImage.
-func (o *PostImage) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Image) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+// LoadIDImageImage allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (postImageL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybePostImage interface{}, mods queries.Applicator) error {
+	var slice []*PostImage
+	var object *PostImage
+
+	if singular {
+		var ok bool
+		object, ok = maybePostImage.(*PostImage)
+		if !ok {
+			object = new(PostImage)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePostImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePostImage))
+			}
+		}
+	} else {
+		s, ok := maybePostImage.(*[]*PostImage)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePostImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePostImage))
+			}
 		}
 	}
 
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"post_images\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"id_image"}),
-		strmangle.WhereClause("\"", "\"", 2, postImagePrimaryKeyColumns),
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &postImageR{}
+		}
+		args[object.IDImage] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &postImageR{}
+			}
+
+			args[obj.IDImage] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`images`),
+		qm.WhereIn(`images.id in ?`, argsSlice...),
 	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
+	if mods != nil {
+		mods.Apply(query)
 	}
 
-	o.IDImage = related.ID
-	if o.R == nil {
-		o.R = &postImageR{
-			IDImageImage: related,
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Image")
+	}
+
+	var resultSlice []*Image
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Image")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for images")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for images")
+	}
+
+	if len(imageAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
 		}
-	} else {
-		o.R.IDImageImage = related
 	}
 
-	if related.R == nil {
-		related.R = &imageR{
-			IDImagePostImage: o,
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDImageImage = foreign
+		if foreign.R == nil {
+			foreign.R = &imageR{}
 		}
-	} else {
-		related.R.IDImagePostImage = o
+		foreign.R.IDImagePostImage = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDImage == foreign.ID {
+				local.R.IDImageImage = foreign
+				if foreign.R == nil {
+					foreign.R = &imageR{}
+				}
+				foreign.R.IDImagePostImage = local
+				break
+			}
+		}
 	}
 
 	return nil
@@ -771,6 +724,53 @@ func (o *PostImage) SetIDPostPost(ctx context.Context, exec boil.ContextExecutor
 		}
 	} else {
 		related.R.IDPostPostImages = append(related.R.IDPostPostImages, o)
+	}
+
+	return nil
+}
+
+// SetIDImageImage of the postImage to the related item.
+// Sets o.R.IDImageImage to related.
+// Adds o to related.R.IDImagePostImage.
+func (o *PostImage) SetIDImageImage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Image) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"post_images\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_image"}),
+		strmangle.WhereClause("\"", "\"", 2, postImagePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.IDImage = related.ID
+	if o.R == nil {
+		o.R = &postImageR{
+			IDImageImage: related,
+		}
+	} else {
+		o.R.IDImageImage = related
+	}
+
+	if related.R == nil {
+		related.R = &imageR{
+			IDImagePostImage: o,
+		}
+	} else {
+		related.R.IDImagePostImage = o
 	}
 
 	return nil
@@ -1031,135 +1031,6 @@ func (o PostImageSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 	return rowsAff, nil
 }
 
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *PostImage) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
-	if o == nil {
-		return errors.New("models: no post_images provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(postImageColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	postImageUpsertCacheMut.RLock()
-	cache, cached := postImageUpsertCache[key]
-	postImageUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, _ := insertColumns.InsertColumnSet(
-			postImageAllColumns,
-			postImageColumnsWithDefault,
-			postImageColumnsWithoutDefault,
-			nzDefaults,
-		)
-
-		update := updateColumns.UpdateColumnSet(
-			postImageAllColumns,
-			postImagePrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert post_images, could not build update column list")
-		}
-
-		ret := strmangle.SetComplement(postImageAllColumns, strmangle.SetIntersect(insert, update))
-
-		conflict := conflictColumns
-		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
-			if len(postImagePrimaryKeyColumns) == 0 {
-				return errors.New("models: unable to upsert post_images, could not build conflict column list")
-			}
-
-			conflict = make([]string, len(postImagePrimaryKeyColumns))
-			copy(conflict, postImagePrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"post_images\"", updateOnConflict, ret, update, conflict, insert, opts...)
-
-		cache.valueMapping, err = queries.BindMapping(postImageType, postImageMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(postImageType, postImageMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
-	}
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // Postgres doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert post_images")
-	}
-
-	if !cached {
-		postImageUpsertCacheMut.Lock()
-		postImageUpsertCache[key] = cache
-		postImageUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
-}
-
 // Delete deletes a single PostImage record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *PostImage) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1330,4 +1201,126 @@ func PostImageExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (
 // Exists checks if the PostImage row exists.
 func (o *PostImage) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return PostImageExists(ctx, exec, o.ID)
+}
+
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *PostImage) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+	if o == nil {
+		return errors.New("models: no post_images provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(postImageColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	postImageUpsertCacheMut.RLock()
+	cache, cached := postImageUpsertCache[key]
+	postImageUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, ret := insertColumns.InsertColumnSet(
+			postImageAllColumns,
+			postImageColumnsWithDefault,
+			postImageColumnsWithoutDefault,
+			nzDefaults,
+		)
+		update := updateColumns.UpdateColumnSet(
+			postImageAllColumns,
+			postImagePrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert post_images, could not build update column list")
+		}
+
+		conflict := conflictColumns
+		if len(conflict) == 0 {
+			conflict = make([]string, len(postImagePrimaryKeyColumns))
+			copy(conflict, postImagePrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryCockroachDB(dialect, "\"post_images\"", updateOnConflict, ret, update, conflict, insert)
+
+		cache.valueMapping, err = queries.BindMapping(postImageType, postImageMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(postImageType, postImageMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.DebugMode {
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
+	}
+
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // CockcorachDB doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return fmt.Errorf("models: unable to upsert post_images: %w", err)
+	}
+
+	if !cached {
+		postImageUpsertCacheMut.Lock()
+		postImageUpsertCache[key] = cache
+		postImageUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
 }

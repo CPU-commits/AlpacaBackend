@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testStudioAdminsUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(studioAdminAllColumns) == len(studioAdminPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := StudioAdmin{}
+	if err = randomize.Struct(seed, &o, studioAdminDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert StudioAdmin: %s", err)
+	}
+
+	count, err := StudioAdmins().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, studioAdminDBTypes, false, studioAdminPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert StudioAdmin: %s", err)
+	}
+
+	count, err = StudioAdmins().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -494,67 +542,6 @@ func testStudioAdminsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testStudioAdminToOneUserUsingIDOwnerUser(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local StudioAdmin
-	var foreign User
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, studioAdminDBTypes, false, studioAdminColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.IDOwner = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.IDOwnerUser().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := StudioAdminSlice{&local}
-	if err = local.L.LoadIDOwnerUser(ctx, tx, false, (*[]*StudioAdmin)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDOwnerUser == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.IDOwnerUser = nil
-	if err = local.L.LoadIDOwnerUser(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDOwnerUser == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-	}
-}
-
 func testStudioAdminToOneStudioUsingIDStudioStudio(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -616,63 +603,67 @@ func testStudioAdminToOneStudioUsingIDStudioStudio(t *testing.T) {
 	}
 }
 
-func testStudioAdminToOneSetOpUserUsingIDOwnerUser(t *testing.T) {
-	var err error
-
+func testStudioAdminToOneUserUsingIDOwnerUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a StudioAdmin
-	var b, c User
+	var local StudioAdmin
+	var foreign User
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, studioAdminDBTypes, false, strmangle.SetComplement(studioAdminPrimaryKeyColumns, studioAdminColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &local, studioAdminDBTypes, false, studioAdminColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
 	}
-	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
 	}
 
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*User{&b, &c} {
-		err = a.SetIDOwnerUser(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
+	local.IDOwner = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
 
-		if a.R.IDOwnerUser != x {
-			t.Error("relationship struct not set to correct value")
-		}
+	check, err := local.IDOwnerUser().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if x.R.IDOwnerStudioAdmins[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.IDOwner != x.ID {
-			t.Error("foreign key was wrong value", a.IDOwner)
-		}
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDOwner))
-		reflect.Indirect(reflect.ValueOf(&a.IDOwner)).Set(zero)
+	ranAfterSelectHook := false
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+		ranAfterSelectHook = true
+		return nil
+	})
 
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
+	slice := StudioAdminSlice{&local}
+	if err = local.L.LoadIDOwnerUser(ctx, tx, false, (*[]*StudioAdmin)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDOwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
 
-		if a.IDOwner != x.ID {
-			t.Error("foreign key was wrong value", a.IDOwner, x.ID)
-		}
+	local.R.IDOwnerUser = nil
+	if err = local.L.LoadIDOwnerUser(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDOwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
 	}
 }
+
 func testStudioAdminToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
 	var err error
 
@@ -727,6 +718,63 @@ func testStudioAdminToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
 
 		if a.IDStudio != x.ID {
 			t.Error("foreign key was wrong value", a.IDStudio, x.ID)
+		}
+	}
+}
+func testStudioAdminToOneSetOpUserUsingIDOwnerUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a StudioAdmin
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioAdminDBTypes, false, strmangle.SetComplement(studioAdminPrimaryKeyColumns, studioAdminColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*User{&b, &c} {
+		err = a.SetIDOwnerUser(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDOwnerUser != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDOwnerStudioAdmins[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.IDOwner != x.ID {
+			t.Error("foreign key was wrong value", a.IDOwner)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDOwner))
+		reflect.Indirect(reflect.ValueOf(&a.IDOwner)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.IDOwner != x.ID {
+			t.Error("foreign key was wrong value", a.IDOwner, x.ID)
 		}
 	}
 }
@@ -805,7 +853,7 @@ func testStudioAdminsSelect(t *testing.T) {
 }
 
 var (
-	studioAdminDBTypes = map[string]string{`ID`: `bigint`, `IDStudio`: `bigint`, `IDOwner`: `bigint`, `CreatedAt`: `timestamp without time zone`}
+	studioAdminDBTypes = map[string]string{`ID`: `int8`, `IDStudio`: `int8`, `IDOwner`: `int8`, `CreatedAt`: `timestamp`}
 	_                  = bytes.MinRead
 )
 
@@ -917,53 +965,5 @@ func testStudioAdminsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testStudioAdminsUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(studioAdminAllColumns) == len(studioAdminPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := StudioAdmin{}
-	if err = randomize.Struct(seed, &o, studioAdminDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert StudioAdmin: %s", err)
-	}
-
-	count, err := StudioAdmins().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, studioAdminDBTypes, false, studioAdminPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize StudioAdmin struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert StudioAdmin: %s", err)
-	}
-
-	count, err = StudioAdmins().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

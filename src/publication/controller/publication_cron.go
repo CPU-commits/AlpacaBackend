@@ -24,6 +24,7 @@ func NewCronPublication(
 			likeRepository,
 			tattooRepository,
 			userRepository,
+			*fileService,
 			bus,
 		),
 	}
