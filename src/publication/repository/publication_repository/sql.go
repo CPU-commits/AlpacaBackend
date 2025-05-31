@@ -147,12 +147,11 @@ func (sqlPR sqlPublicationRepository) Insert(
 		Mentions:   publication.Mentions,
 	}
 
-	ctx := context.Background()
-	tx, err := sqlPR.db.BeginTx(ctx, nil)
+	tx, err := sqlPR.db.BeginTx(context.Background(), nil)
 	if err != nil {
 		return nil, utils.ErrRepositoryFailed
 	}
-	if err := sqlPost.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := sqlPost.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
 
 		return nil, utils.ErrRepositoryFailed
@@ -164,7 +163,7 @@ func (sqlPR sqlPublicationRepository) Insert(
 			Name:     image.Name,
 		}
 
-		if err := sqlImage.Insert(ctx, tx, boil.Infer()); err != nil {
+		if err := sqlImage.Insert(context.Background(), tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
 			return nil, utils.ErrRepositoryFailed
@@ -173,7 +172,7 @@ func (sqlPR sqlPublicationRepository) Insert(
 			IDImage: sqlImage.ID,
 			IDPost:  sqlPost.ID,
 		}
-		if err := sqlPostImage.Insert(ctx, tx, boil.Infer()); err != nil {
+		if err := sqlPostImage.Insert(context.Background(), tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
 			return nil, utils.ErrRepositoryFailed

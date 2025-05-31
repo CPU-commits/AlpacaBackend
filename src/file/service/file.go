@@ -8,10 +8,30 @@ import (
 
 var fileServiceInstance *FileService
 
-type FileService struct{}
+type FileService struct {
+	imageStore store.ImageStore
+}
+
+func (fileService *FileService) UploadImages(imagesDto []store.ImageDto, workspace string) ([]model.Image, error) {
+	images, err := utils.ConcurrentMap(imagesDto, func(imageDto store.ImageDto) (model.Image, error) {
+		err := fileService.CheckImageMimeType(imageDto)
+		if err != nil {
+			return model.Image{}, err
+		}
+		image, err := fileService.imageStore.Upload(imageDto, workspace)
+		if err != nil {
+			return model.Image{}, err
+		}
+
+		return *image, nil
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+	return images, nil
+}
 
 func (fileService *FileService) CheckImageMimeType(file store.ImageDto) error {
-
 	check := utils.Includes(model.FileImageMimeTypeList, file.MimeType)
 	if !check {
 		return ErrInvalidMimeType
@@ -20,9 +40,11 @@ func (fileService *FileService) CheckImageMimeType(file store.ImageDto) error {
 	return nil
 }
 
-func NewFileService() *FileService {
+func NewFileService(imageStore store.ImageStore) *FileService {
 	if fileServiceInstance == nil {
-		fileServiceInstance = &FileService{}
+		fileServiceInstance = &FileService{
+			imageStore: imageStore,
+		}
 	}
 	return fileServiceInstance
 }

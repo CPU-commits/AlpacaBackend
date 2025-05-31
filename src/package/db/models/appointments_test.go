@@ -494,6 +494,162 @@ func testAppointmentsInsertWhitelist(t *testing.T) {
 	}
 }
 
+<<<<<<< HEAD
+=======
+func testAppointmentToManyIDAppointmentAppointmentImages(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b, c AppointmentImage
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, appointmentImageDBTypes, false, appointmentImageColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, appointmentImageDBTypes, false, appointmentImageColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.IDAppointment = a.ID
+	c.IDAppointment = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDAppointmentAppointmentImages().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.IDAppointment == b.IDAppointment {
+			bFound = true
+		}
+		if v.IDAppointment == c.IDAppointment {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := AppointmentSlice{&a}
+	if err = a.L.LoadIDAppointmentAppointmentImages(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDAppointmentAppointmentImages); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDAppointmentAppointmentImages = nil
+	if err = a.L.LoadIDAppointmentAppointmentImages(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDAppointmentAppointmentImages); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testAppointmentToManyAddOpIDAppointmentAppointmentImages(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b, c, d, e AppointmentImage
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*AppointmentImage{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, appointmentImageDBTypes, false, strmangle.SetComplement(appointmentImagePrimaryKeyColumns, appointmentImageColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*AppointmentImage{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDAppointmentAppointmentImages(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.IDAppointment {
+			t.Error("foreign key was wrong value", a.ID, first.IDAppointment)
+		}
+		if a.ID != second.IDAppointment {
+			t.Error("foreign key was wrong value", a.ID, second.IDAppointment)
+		}
+
+		if first.R.IDAppointmentAppointment != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDAppointmentAppointment != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDAppointmentAppointmentImages[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDAppointmentAppointmentImages[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDAppointmentAppointmentImages().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+>>>>>>> origin/master
 func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -805,7 +961,11 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
+<<<<<<< HEAD
 	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','created')`, `CreatedAt`: `timestamp without time zone`}
+=======
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','created')`, `CreatedAt`: `timestamp without time zone`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `HasIdea`: `boolean`, `Height`: `double precision`, `Phone`: `text`, `Width`: `double precision`}
+>>>>>>> origin/master
 	_                  = bytes.MinRead
 )
 

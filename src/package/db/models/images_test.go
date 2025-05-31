@@ -494,6 +494,67 @@ func testImagesInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testImageOneToOneAppointmentImageUsingIDImageAppointmentImage(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign AppointmentImage
+	var local Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, appointmentImageDBTypes, true, appointmentImageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize AppointmentImage struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, imageDBTypes, true, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.IDImage = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDImageAppointmentImage().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.IDImage != foreign.IDImage {
+		t.Errorf("want: %v, got %v", foreign.IDImage, check.IDImage)
+	}
+
+	ranAfterSelectHook := false
+	AddAppointmentImageHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *AppointmentImage) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ImageSlice{&local}
+	if err = local.L.LoadIDImageAppointmentImage(ctx, tx, false, (*[]*Image)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDImageAppointmentImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDImageAppointmentImage = nil
+	if err = local.L.LoadIDImageAppointmentImage(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDImageAppointmentImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testImageOneToOnePostImageUsingIDImagePostImage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -677,6 +738,67 @@ func testImageOneToOneTattooUsingIDImageTattoo(t *testing.T) {
 	}
 }
 
+func testImageOneToOneSetOpAppointmentImageUsingIDImageAppointmentImage(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b, c AppointmentImage
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, appointmentImageDBTypes, false, strmangle.SetComplement(appointmentImagePrimaryKeyColumns, appointmentImageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, appointmentImageDBTypes, false, strmangle.SetComplement(appointmentImagePrimaryKeyColumns, appointmentImageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*AppointmentImage{&b, &c} {
+		err = a.SetIDImageAppointmentImage(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDImageAppointmentImage != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.IDImageImage != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.IDImage {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.IDImage))
+		reflect.Indirect(reflect.ValueOf(&x.IDImage)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.ID != x.IDImage {
+			t.Error("foreign key was wrong value", a.ID, x.IDImage)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
 func testImageOneToOneSetOpPostImageUsingIDImagePostImage(t *testing.T) {
 	var err error
 

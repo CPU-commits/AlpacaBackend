@@ -244,6 +244,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 			likeRepository,
 			tattooRepository,
 			userRepository,
+			*fileService,
 			bus,
 		),
 	}

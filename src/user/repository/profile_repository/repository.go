@@ -44,7 +44,7 @@ func (opts *FindOneOptions) Load(load LoadOpts) *FindOneOptions {
 
 type UpdateData struct {
 	Avatar      *fileModel.Image
-	Description string
+	Description *string
 }
 
 type ProfileRepository interface {

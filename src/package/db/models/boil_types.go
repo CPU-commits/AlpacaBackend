@@ -64,6 +64,53 @@ func AllAppointmentStatus() []string {
 	}
 }
 
+<<<<<<< HEAD
+=======
+// Enum values for TattooArea
+const (
+	TattooAreaArm     string = "arm"
+	TattooAreaLeg     string = "leg"
+	TattooAreaBack    string = "back"
+	TattooAreaChest   string = "chest"
+	TattooAreaAbdomen string = "abdomen"
+	TattooAreaNeck    string = "neck"
+	TattooAreaHead    string = "head"
+	TattooAreaHand    string = "hand"
+	TattooAreaFoot    string = "foot"
+	TattooAreaHip     string = "hip"
+	TattooAreaOther   string = "other"
+)
+
+func AllTattooArea() []string {
+	return []string{
+		TattooAreaArm,
+		TattooAreaLeg,
+		TattooAreaBack,
+		TattooAreaChest,
+		TattooAreaAbdomen,
+		TattooAreaNeck,
+		TattooAreaHead,
+		TattooAreaHand,
+		TattooAreaFoot,
+		TattooAreaHip,
+		TattooAreaOther,
+	}
+}
+
+// Enum values for TattooColor
+const (
+	TattooColorBlack     string = "black"
+	TattooColorFullColor string = "full_color"
+)
+
+func AllTattooColor() []string {
+	return []string{
+		TattooColorBlack,
+		TattooColorFullColor,
+	}
+}
+
+>>>>>>> origin/master
 // Enum values for RoleName
 const (
 	RoleNameAdmin        string = "admin"

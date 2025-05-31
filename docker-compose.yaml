@@ -9,7 +9,7 @@ services:
       - 8000:8080
     depends_on:
       - nats-js
-      - pg
+      - crdb
       - typesense
       - redis
     networks:
@@ -34,6 +34,16 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: defaultdb
+  crdb:
+    image: cockroachdb/cockroach:v24.2.3
+    ports:
+     - "26257:26257"
+     - "8090:8080"
+    command: start-single-node --insecure
+    volumes:
+      - "db:/cockroach/cockroach-data"
+    networks:
+      - alpaca_network
   typesense:
     image: typesense/typesense:28.0
     restart: on-failure

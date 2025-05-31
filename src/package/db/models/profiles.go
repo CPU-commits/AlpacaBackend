@@ -69,6 +69,7 @@ var ProfileTableColumns = struct {
 
 // Generated where
 
+<<<<<<< HEAD
 type whereHelpernull_String struct{ field string }
 
 func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
@@ -125,6 +126,8 @@ func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+=======
+>>>>>>> origin/master
 type whereHelpernull_Int64 struct{ field string }
 
 func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {

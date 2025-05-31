@@ -3,6 +3,7 @@ package utils
 import (
 	"net/http"
 
+	appointmentService "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
@@ -84,5 +85,9 @@ func init() {
 	errorsService[fileService.ErrInvalidMimeType] = errRes{
 		StatusCode: http.StatusUnsupportedMediaType,
 		MessageId:  "file.invalid_mime_type",
+	}
+	errorsService[appointmentService.ErrUserIsNotTattooArtists] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "appointment.not_tattoo_artist",
 	}
 }

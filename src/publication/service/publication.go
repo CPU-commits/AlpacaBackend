@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
-	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
@@ -253,18 +252,7 @@ func (publicationService *PublicationService) Publish(
 		return nil, err
 	}
 	publication, imagesDto := publicationDto.ToModel()
-	images, err := utils.ConcurrentMap(imagesDto, func(imageDto store.ImageDto) (fileModel.Image, error) {
-		err := publicationService.fileService.CheckImageMimeType(imageDto)
-		if err != nil {
-			return fileModel.Image{}, err
-		}
-		image, err := publicationService.imageStore.Upload(imageDto, fmt.Sprintf("publications/%d", idUser))
-		if err != nil {
-			return fileModel.Image{}, err
-		}
-
-		return *image, nil
-	}, nil)
+	images, err := publicationService.fileService.UploadImages(imagesDto, fmt.Sprintf("publications/%d", idUser))
 	if err != nil {
 		return nil, err
 	}
@@ -446,6 +434,7 @@ func NewPublicationService(
 	likeRepository like_repository.LikeRepository,
 	tattooRepository tattoo_repository.TattooRepository,
 	userRepository user_repository.UserRepository,
+	fileService file_service.FileService,
 	bus bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
@@ -458,6 +447,7 @@ func NewPublicationService(
 			tattooRepository:      tattooRepository,
 			userRepository:        userRepository,
 			bus:                   bus,
+			fileService:           fileService,
 		}
 	}
 

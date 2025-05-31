@@ -150,8 +150,8 @@ func (sqlPR sqlProfileRepository) UpdateOne(criteria *Criteria, data UpdateData)
 		sqlProfile.IDAvatar = null.Int64From(sqlImage.ID)
 		cols = append(cols, models.ProfileColumns.IDAvatar)
 	}
-	if data.Description != "" {
-		sqlProfile.Description = null.StringFrom(data.Description)
+	if data.Description != nil {
+		sqlProfile.Description = null.StringFrom(*data.Description)
 		cols = append(cols, models.ProfileColumns.Description)
 	}
 

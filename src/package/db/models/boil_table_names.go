@@ -5,6 +5,7 @@ package models
 
 var TableNames = struct {
 	Accesses            string
+	AppointmentImages   string
 	Appointments        string
 	Auths               string
 	Follows             string
@@ -25,6 +26,7 @@ var TableNames = struct {
 	Users               string
 }{
 	Accesses:            "accesses",
+	AppointmentImages:   "appointment_images",
 	Appointments:        "appointments",
 	Auths:               "auths",
 	Follows:             "follows",

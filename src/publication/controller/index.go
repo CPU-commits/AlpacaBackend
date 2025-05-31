@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
@@ -25,6 +26,7 @@ var (
 	likeRepository          = like_repository.NewSqlLikeRepository(db.DB)
 	publicationRepository   = publication_repository.NewSqlPublicationRepository(db.DB)
 	publicationTSRepository = publication_repository.NewTsPublicationRepository()
+	roleRepository          = role_repository.NewSQLRoleRepository()
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
 )
@@ -33,6 +35,7 @@ var (
 var (
 	userService = authService.NewUserService(
 		userRepository,
+		roleRepository,
 	)
 	profileService = userServices.NewProfileService(
 		profileRepository,
@@ -41,7 +44,9 @@ var (
 		*fileService,
 		&followRepository,
 	)
-	fileService = file_service.NewFileService()
+	fileService = file_service.NewFileService(
+		imageStore,
+	)
 
 	tattooService = tattooServices.NewTattooService(
 		imageStore,

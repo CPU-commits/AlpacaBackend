@@ -35,5 +35,8 @@
 	},
 	"file": {
 		"invalid_mime_type": "El tipo de archivo es incorrecto"
+	},
+	"appointment": {
+		"not_tattoo_artist": "El perfil no es un tatuador"
 	}
 }

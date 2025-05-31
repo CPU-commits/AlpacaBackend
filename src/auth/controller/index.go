@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/access_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/auth_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/session_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/tokenpassword_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
@@ -22,6 +23,7 @@ var (
 	sqlUserRepository          = user_repository.NewSQLUserRepository(db.DB)
 	sqlAccessRepository        = access_repository.NewSQLAccessRepository(db.DB)
 	sqlTokenPasswordRepository = tokenpassword_repository.NewSQLTokenPasswordRepository(db.DB)
+	sqlRoleRepository          = role_repository.NewSQLRoleRepository()
 )
 
 // Events
@@ -42,6 +44,7 @@ var (
 	)
 	userService = service.NewUserService(
 		sqlUserRepository,
+		sqlRoleRepository,
 	)
 	tokenPasswordService = service.NewTokenPasswordService(
 		sqlTokenPasswordRepository,

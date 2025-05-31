@@ -9,6 +9,11 @@ import "testing"
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionSession", testAccessToOneSessionUsingIDSessionSession)
+<<<<<<< HEAD
+=======
+	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointment", testAppointmentImageToOneAppointmentUsingIDAppointmentAppointment)
+	t.Run("AppointmentImageToImageUsingIDImageImage", testAppointmentImageToOneImageUsingIDImageImage)
+>>>>>>> origin/master
 	t.Run("AppointmentToUserUsingIDTattooArtistUser", testAppointmentToOneUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserUser", testAppointmentToOneUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserUser", testAuthToOneUserUsingIDUserUser)
@@ -39,6 +44,7 @@ func TestToOne(t *testing.T) {
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
+	t.Run("ImageToAppointmentImageUsingIDImageAppointmentImage", testImageOneToOneAppointmentImageUsingIDImageAppointmentImage)
 	t.Run("ImageToPostImageUsingIDImagePostImage", testImageOneToOnePostImageUsingIDImagePostImage)
 	t.Run("ImageToProfileUsingIDAvatarProfile", testImageOneToOneProfileUsingIDAvatarProfile)
 	t.Run("ImageToTattooUsingIDImageTattoo", testImageOneToOneTattooUsingIDImageTattoo)
@@ -50,6 +56,7 @@ func TestOneToOne(t *testing.T) {
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
+	t.Run("AppointmentToIDAppointmentAppointmentImages", testAppointmentToManyIDAppointmentAppointmentImages)
 	t.Run("AuthToIDAuthSessions", testAuthToManyIDAuthSessions)
 	t.Run("PostToIDPostLikes", testPostToManyIDPostLikes)
 	t.Run("PostToIDPostPostImages", testPostToManyIDPostPostImages)
@@ -76,6 +83,11 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionAccesses", testAccessToOneSetOpSessionUsingIDSessionSession)
+<<<<<<< HEAD
+=======
+	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointmentImages", testAppointmentImageToOneSetOpAppointmentUsingIDAppointmentAppointment)
+	t.Run("AppointmentImageToImageUsingIDImageAppointmentImage", testAppointmentImageToOneSetOpImageUsingIDImageImage)
+>>>>>>> origin/master
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneSetOpUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserAppointments", testAppointmentToOneSetOpUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserAuth", testAuthToOneSetOpUserUsingIDUserUser)
@@ -113,6 +125,7 @@ func TestToOneRemove(t *testing.T) {
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
+	t.Run("ImageToAppointmentImageUsingIDImageAppointmentImage", testImageOneToOneSetOpAppointmentImageUsingIDImageAppointmentImage)
 	t.Run("ImageToPostImageUsingIDImagePostImage", testImageOneToOneSetOpPostImageUsingIDImagePostImage)
 	t.Run("ImageToProfileUsingIDAvatarProfile", testImageOneToOneSetOpProfileUsingIDAvatarProfile)
 	t.Run("ImageToTattooUsingIDImageTattoo", testImageOneToOneSetOpTattooUsingIDImageTattoo)
@@ -130,6 +143,7 @@ func TestOneToOneRemove(t *testing.T) {
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
+	t.Run("AppointmentToIDAppointmentAppointmentImages", testAppointmentToManyAddOpIDAppointmentAppointmentImages)
 	t.Run("AuthToIDAuthSessions", testAuthToManyAddOpIDAuthSessions)
 	t.Run("PostToIDPostLikes", testPostToManyAddOpIDPostLikes)
 	t.Run("PostToIDPostPostImages", testPostToManyAddOpIDPostPostImages)
