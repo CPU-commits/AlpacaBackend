@@ -3,10 +3,12 @@ package publication_repository
 import (
 	"context"
 	"encoding/base64"
+	"strconv"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/typesense/typesense-go/v3/typesense/api"
 	"github.com/typesense/typesense-go/v3/typesense/api/pointer"
@@ -16,25 +18,28 @@ type tsPublicationRepository struct {
 	ts *typesense.Client
 }
 
+type TSPublication struct {
+	ID         string   `json:"id"`
+	IDProfile  int64    `json:"id_profile"`
+	Content    string   `json:"content"`
+	Likes      int32    `json:"likes"`
+	Views      int32    `json:"views"`
+	Categories []string `json:"categories"`
+	CreatedAt  int64    `json:"created_at"`
+	Rating     float64  `json:"rating"`
+	Image1     string   `json:"image_1,omitempty"`
+	Image2     string   `json:"image_2,omitempty"`
+	Image3     string   `json:"image_3,omitempty"`
+	Image4     string   `json:"image_4,omitempty"`
+	Image5     string   `json:"image_5,omitempty"`
+}
+
 func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publication) error {
-	type TSPublication struct {
-		ID         int64    `json:"id_publication"`
-		IDProfile  int64    `json:"id_profile"`
-		Content    string   `json:"content"`
-		Likes      int32    `json:"likes"`
-		Categories []string `json:"categories"`
-		CreatedAt  int64    `json:"created_at"`
-		Rating     float32  `json:"rating"`
-		Image1     string   `json:"image_1,omitempty"`
-		Image2     string   `json:"image_2,omitempty"`
-		Image3     string   `json:"image_3,omitempty"`
-		Image4     string   `json:"image_4,omitempty"`
-		Image5     string   `json:"image_5,omitempty"`
-	}
 
 	params := &api.DocumentIndexParameters{}
+	strID := strconv.FormatInt(publication.ID, 10)
 	tsPublication := TSPublication{
-		ID:         publication.ID,
+		ID:         strID,
 		IDProfile:  publication.IDProfile,
 		Content:    publication.Content,
 		Likes:      int32(publication.Likes),
@@ -75,6 +80,36 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 	return err
 }
 
+// Actualiza el rating con los nuevos valores
+func (tsPR *tsPublicationRepository) UpdatePublication(
+	publication *model.Publication,
+	daysSincePublished int,
+	followers int,
+) error {
+
+	params := &api.DocumentIndexParameters{}
+	strID := strconv.FormatInt(publication.ID, 10)
+
+	rating := utils.CalculateRanting(daysSincePublished, publication.Likes, publication.Views, 0, followers)
+	tsPublication := TSPublication{
+		ID:         strID,
+		IDProfile:  publication.IDProfile,
+		Content:    publication.Content,
+		Likes:      int32(publication.Likes),
+		Views:      int32(publication.Views),
+		Categories: publication.Categories,
+		CreatedAt:  publication.CreatedAt.Unix(),
+		Rating:     rating,
+	}
+
+	_, err := tsPR.ts.Collection("publications").Document(tsPublication.ID).Update(context.Background(), tsPublication, params)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewTsPublicationRepository() tsPublicationRepository {
 	return tsPublicationRepository{
 		ts: db.TSClient,
@@ -85,10 +120,11 @@ func init() {
 	client := db.TSClient
 
 	fields := []api.Field{
-		{Name: "id_publication", Type: "int64", Facet: pointer.True()},
+		{Name: "id", Type: "string", Facet: pointer.True()},
 		{Name: "id_profile", Type: "int64", Facet: pointer.True()},
 		{Name: "content", Type: "string", Index: pointer.True()},
 		{Name: "likes", Type: "int32", Facet: pointer.True()},
+		{Name: "views", Type: "int32", Facet: pointer.True()},
 		{Name: "categories", Type: "string[]", Facet: pointer.True()},
 		{Name: "created_at", Type: "int64", Sort: pointer.True(), Facet: pointer.True()},
 		{Name: "rating", Type: "float"},

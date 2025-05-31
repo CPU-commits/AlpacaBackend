@@ -64,6 +64,8 @@ func AllAppointmentStatus() []string {
 	}
 }
 
+<<<<<<< HEAD
+=======
 // Enum values for TattooArea
 const (
 	TattooAreaArm     string = "arm"
@@ -108,6 +110,7 @@ func AllTattooColor() []string {
 	}
 }
 
+>>>>>>> origin/master
 // Enum values for RoleName
 const (
 	RoleNameAdmin        string = "admin"

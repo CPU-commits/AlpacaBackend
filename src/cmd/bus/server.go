@@ -15,4 +15,12 @@ func Init(logger logger.Logger) {
 		NEW_PUBLICATION,
 		publicationController.IndexPublication,
 	)
+	queueBus.Subscribe(
+		PUBLICATION_INTERACTION,
+		publicationController.InteractionEvent,
+	)
+	queueBus.Subscribe(
+		PUBLICATION_UPDATE_RATING,
+		publicationController.UpdateRatings,
+	)
 }

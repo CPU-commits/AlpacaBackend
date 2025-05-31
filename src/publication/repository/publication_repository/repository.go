@@ -96,6 +96,7 @@ func NewFindOptions() *FindOptions {
 
 type UpdateData struct {
 	SumLikes int
+	SumViews int
 }
 
 type PublicationRepository interface {

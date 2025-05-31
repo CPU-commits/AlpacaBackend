@@ -100,6 +100,7 @@ func (sqlPublicationRepository) sqlPostToPublication(
 		Content:    post.Content,
 		ID:         post.ID,
 		Likes:      post.Likes,
+		Views:      post.Views,
 		Images:     images,
 		CreatedAt:  post.CreatedAt,
 		Categories: post.Categories,
@@ -427,6 +428,10 @@ func (sqlPR sqlPublicationRepository) UpdateOne(criteria *Criteria, data UpdateD
 		sqlPublication.Likes += data.SumLikes
 
 		cols = append(cols, models.PostColumns.Likes)
+	}
+	if data.SumViews != 0 {
+		sqlPublication.Views += data.SumViews
+		cols = append(cols, models.PostColumns.Views)
 	}
 
 	_, err = sqlPublication.Update(context.Background(), sqlPR.db, boil.Whitelist(cols...))

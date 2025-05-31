@@ -144,7 +144,7 @@ func (sqlPR sqlProfileRepository) FindOne(criteria *Criteria, opts *FindOneOptio
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, utils.ErrRepositoryFailed
 	}
 
 	profile := sqlPR.SqlProfileToProfile(sqlProfile)

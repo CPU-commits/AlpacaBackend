@@ -125,7 +125,7 @@ model tattoos {
 	popularity Int @default(0)
 	id_post BigInt?
 	views Int @default(0)
-	coordinate Unsupported("GEOMETRY")?
+	coordinate String?
 	post posts? @relation(fields: [id_post], references: [id])
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
@@ -189,6 +189,7 @@ model posts {
 	likes Int
 	categories String[]
 	mentions Int[]
+	views Int @default(0)
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	profile profiles @relation(fields: [id_profile], references: [id])
 	tattoos tattoos[]

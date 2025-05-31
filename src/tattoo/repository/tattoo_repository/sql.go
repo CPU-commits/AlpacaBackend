@@ -87,6 +87,7 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 	ctx := context.Background()
 	tx, err := sqlTR.db.BeginTx(ctx, nil)
 	if err != nil {
+
 		return nil, utils.ErrRepositoryFailed
 	}
 	newTattoos := tattoos
@@ -137,6 +138,7 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 		newTattoos[i] = tattoo
 	}
 	if err := tx.Commit(); err != nil {
+
 		tx.Rollback()
 
 		return nil, utils.ErrRepositoryFailed

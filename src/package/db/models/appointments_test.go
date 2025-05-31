@@ -494,6 +494,8 @@ func testAppointmentsInsertWhitelist(t *testing.T) {
 	}
 }
 
+<<<<<<< HEAD
+=======
 func testAppointmentToManyIDAppointmentAppointmentImages(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -647,6 +649,7 @@ func testAppointmentToManyAddOpIDAppointmentAppointmentImages(t *testing.T) {
 		}
 	}
 }
+>>>>>>> origin/master
 func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -958,7 +961,11 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
+<<<<<<< HEAD
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','created')`, `CreatedAt`: `timestamp without time zone`}
+=======
 	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','created')`, `CreatedAt`: `timestamp without time zone`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `HasIdea`: `boolean`, `Height`: `double precision`, `Phone`: `text`, `Width`: `double precision`}
+>>>>>>> origin/master
 	_                  = bytes.MinRead
 )
 

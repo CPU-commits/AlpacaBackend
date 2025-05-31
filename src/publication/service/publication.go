@@ -189,12 +189,14 @@ func (publicationService *PublicationService) HandleLike(
 		return false, err
 	}
 	if existsLike {
+
 		err = publicationService.likeRepository.Delete(&like_repository.Criteria{
 			IDProfile: publication.IDProfile,
 			IDUser:    idUser,
 			IDPost:    idPost,
 		})
 		if err != nil {
+
 			return false, err
 		}
 		if err := publicationService.publicationRepository.UpdateOne(
@@ -207,7 +209,10 @@ func (publicationService *PublicationService) HandleLike(
 		); err != nil {
 			return false, err
 		}
-
+		err = publicationService.interactionEvent(publication.ID)
+		if err != nil {
+			return false, err
+		}
 		return false, nil
 	} else {
 		err = publicationService.likeRepository.Insert(model.Like{
@@ -228,7 +233,10 @@ func (publicationService *PublicationService) HandleLike(
 		); err != nil {
 			return false, err
 		}
-
+		err = publicationService.interactionEvent(publication.ID)
+		if err != nil {
+			return false, err
+		}
 		return true, nil
 	}
 }
@@ -243,7 +251,6 @@ func (publicationService *PublicationService) Publish(
 	if err != nil {
 		return nil, err
 	}
-
 	publication, imagesDto := publicationDto.ToModel()
 	images, err := publicationService.fileService.UploadImages(imagesDto, fmt.Sprintf("publications/%d", idUser))
 	if err != nil {
@@ -369,6 +376,56 @@ func (publicationService *PublicationService) DeletePublication(
 	)
 }
 
+func (publicationService *PublicationService) AddView(idPublication int64) error {
+
+	publication, err := publicationService.publicationRepository.FindOne(
+		&publication_repository.Criteria{
+			ID: idPublication,
+		},
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	if publication == nil {
+		return ErrPublicationNotExists
+	}
+
+	err = publicationService.publicationRepository.UpdateOne(&publication_repository.Criteria{
+		ID: idPublication,
+	}, publication_repository.UpdateData{
+		SumViews: 1,
+	})
+	if err != nil {
+		return err
+	}
+	err = publicationService.interactionEvent(idPublication)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (publicationService *PublicationService) interactionEvent(idPost int64) error {
+
+	publication, err := publicationService.GetPublication(idPost)
+	if err != nil {
+		return err
+	}
+	publicationService.bus.Publish(bus.Event{
+		Name:    PUBLICATION_INTERACTION,
+		Payload: utils.Payload(publication),
+	})
+
+	return nil
+}
+
+func (publicationService *PublicationService) UpdateRatings() {
+	publicationService.bus.Publish(bus.Event{
+		Name: PUBLICATION_UPDATE_RATING,
+	})
+}
+
 func NewPublicationService(
 	tattooService service.TattooService,
 	profileService userService.ProfileService,
@@ -378,7 +435,7 @@ func NewPublicationService(
 	tattooRepository tattoo_repository.TattooRepository,
 	userRepository user_repository.UserRepository,
 	fileService file_service.FileService,
-	busS bus.Bus,
+	bus bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
 		publicationService = &PublicationService{
@@ -389,7 +446,7 @@ func NewPublicationService(
 			likeRepository:        likeRepository,
 			tattooRepository:      tattooRepository,
 			userRepository:        userRepository,
-			bus:                   busS,
+			bus:                   bus,
 			fileService:           fileService,
 		}
 	}

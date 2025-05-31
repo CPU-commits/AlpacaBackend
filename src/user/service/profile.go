@@ -9,6 +9,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
@@ -17,6 +18,7 @@ var profileService *ProfileService
 
 type ProfileService struct {
 	profileRepository profile_repository.ProfileRepository
+	followRepository  follow_repository.FollowRepository
 	userService       authService.UserService
 	imageStore        store.ImageStore
 	fileService       file_service.FileService
@@ -151,11 +153,20 @@ func (profileService *ProfileService) GetProfileIDFromIDUser(idUser int64) (int6
 	return profile.ID, nil
 }
 
+func (profileService *ProfileService) GetFollows(idProfile int64) (int64, error) {
+
+	return profileService.followRepository.CountProfileFollowers(&follow_repository.FollowCriteria{
+		IDProfile: idProfile,
+	})
+
+}
+
 func NewProfileService(
 	profileRepository profile_repository.ProfileRepository,
 	userService authService.UserService,
 	imageStore store.ImageStore,
 	fileService file_service.FileService,
+	followRepository follow_repository.FollowRepository,
 ) *ProfileService {
 	if profileService == nil {
 		profileService = &ProfileService{
@@ -163,6 +174,7 @@ func NewProfileService(
 			userService:       userService,
 			imageStore:        imageStore,
 			fileService:       fileService,
+			followRepository:  followRepository,
 		}
 	}
 	return profileService

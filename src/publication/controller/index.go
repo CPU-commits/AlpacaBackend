@@ -11,6 +11,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	tattooServices "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 )
@@ -22,10 +23,12 @@ var (
 	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
 	userRepository          = user_repository.NewSQLUserRepository(db.DB)
 	tattooRepository        = tattoo_repository.NewSqlTattooRepository(db.DB)
-	publicationRepository   = publication_repository.NewSqlPublicationRepository(db.DB)
 	likeRepository          = like_repository.NewSqlLikeRepository(db.DB)
+	publicationRepository   = publication_repository.NewSqlPublicationRepository(db.DB)
 	publicationTSRepository = publication_repository.NewTsPublicationRepository()
 	roleRepository          = role_repository.NewSQLRoleRepository()
+	publicationRDRepository = publication_repository.NewRdPublicationRepository()
+	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
 )
 
 // Services
@@ -39,10 +42,12 @@ var (
 		*userService,
 		imageStore,
 		*fileService,
+		&followRepository,
 	)
 	fileService = file_service.NewFileService(
 		imageStore,
 	)
+
 	tattooService = tattooServices.NewTattooService(
 		imageStore,
 		*profileService,

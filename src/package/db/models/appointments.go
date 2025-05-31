@@ -223,6 +223,13 @@ var AppointmentWhere = struct {
 
 // AppointmentRels is where relationship names are stored.
 var AppointmentRels = struct {
+<<<<<<< HEAD
+	IDTattooArtistUser string
+	IDUserUser         string
+}{
+	IDTattooArtistUser: "IDTattooArtistUser",
+	IDUserUser:         "IDUserUser",
+=======
 	IDTattooArtistUser             string
 	IDUserUser                     string
 	IDAppointmentAppointmentImages string
@@ -230,13 +237,19 @@ var AppointmentRels = struct {
 	IDTattooArtistUser:             "IDTattooArtistUser",
 	IDUserUser:                     "IDUserUser",
 	IDAppointmentAppointmentImages: "IDAppointmentAppointmentImages",
+>>>>>>> origin/master
 }
 
 // appointmentR is where relationships are stored.
 type appointmentR struct {
+<<<<<<< HEAD
+	IDTattooArtistUser *User `boil:"IDTattooArtistUser" json:"IDTattooArtistUser" toml:"IDTattooArtistUser" yaml:"IDTattooArtistUser"`
+	IDUserUser         *User `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+=======
 	IDTattooArtistUser             *User                 `boil:"IDTattooArtistUser" json:"IDTattooArtistUser" toml:"IDTattooArtistUser" yaml:"IDTattooArtistUser"`
 	IDUserUser                     *User                 `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 	IDAppointmentAppointmentImages AppointmentImageSlice `boil:"IDAppointmentAppointmentImages" json:"IDAppointmentAppointmentImages" toml:"IDAppointmentAppointmentImages" yaml:"IDAppointmentAppointmentImages"`
+>>>>>>> origin/master
 }
 
 // NewStruct creates a new relationship struct
@@ -258,6 +271,8 @@ func (r *appointmentR) GetIDUserUser() *User {
 	return r.IDUserUser
 }
 
+<<<<<<< HEAD
+=======
 func (r *appointmentR) GetIDAppointmentAppointmentImages() AppointmentImageSlice {
 	if r == nil {
 		return nil
@@ -265,6 +280,7 @@ func (r *appointmentR) GetIDAppointmentAppointmentImages() AppointmentImageSlice
 	return r.IDAppointmentAppointmentImages
 }
 
+>>>>>>> origin/master
 // appointmentL is where Load methods for each relationship are stored.
 type appointmentL struct{}
 
@@ -601,6 +617,8 @@ func (o *Appointment) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Users(queryMods...)
+<<<<<<< HEAD
+=======
 }
 
 // IDAppointmentAppointmentImages retrieves all the appointment_image's AppointmentImages with an executor via id_appointment column.
@@ -615,6 +633,7 @@ func (o *Appointment) IDAppointmentAppointmentImages(mods ...qm.QueryMod) appoin
 	)
 
 	return AppointmentImages(queryMods...)
+>>>>>>> origin/master
 }
 
 // LoadIDTattooArtistUser allows an eager lookup of values, cached into the
@@ -824,6 +843,36 @@ func (appointmentL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, 
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
 			}
+<<<<<<< HEAD
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDUserUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDUser == foreign.ID {
+				local.R.IDUserUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.IDUserAppointments = append(foreign.R.IDUserAppointments, local)
+				break
+			}
+		}
+=======
 		}
 	}
 
@@ -965,6 +1014,7 @@ func (appointmentL) LoadIDAppointmentAppointmentImages(ctx context.Context, e bo
 				break
 			}
 		}
+>>>>>>> origin/master
 	}
 
 	return nil
@@ -1064,6 +1114,8 @@ func (o *Appointment) SetIDUserUser(ctx context.Context, exec boil.ContextExecut
 	return nil
 }
 
+<<<<<<< HEAD
+=======
 // AddIDAppointmentAppointmentImages adds the given related objects to the existing relationships
 // of the appointment, optionally inserting them as new records.
 // Appends related to o.R.IDAppointmentAppointmentImages.
@@ -1117,6 +1169,7 @@ func (o *Appointment) AddIDAppointmentAppointmentImages(ctx context.Context, exe
 	return nil
 }
 
+>>>>>>> origin/master
 // Appointments retrieves all the records using an executor.
 func Appointments(mods ...qm.QueryMod) appointmentQuery {
 	mods = append(mods, qm.From("\"appointments\""))
