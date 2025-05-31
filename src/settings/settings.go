@@ -23,6 +23,8 @@ type settings struct {
 	CLOUDINARY_URL   string
 	TYPESENSE_HOSTS  string
 	TYPESENS_API_KEY string
+	REDIS_CONNECTION string
+	REDIS_PASS       string
 }
 
 func validateSettings(settings *settings) {
@@ -55,6 +57,12 @@ func validateSettings(settings *settings) {
 	if settings.TYPESENS_API_KEY == "" {
 		missing = append(missing, "TYPESENS_API_KEY")
 	}
+	if settings.REDIS_CONNECTION == "" {
+		missing = append(missing, "REDIS_CONNECTION")
+	}
+	if settings.REDIS_PASS == "" {
+		missing = append(missing, "REDIS_PASS")
+	}
 
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
@@ -72,6 +80,8 @@ func newSettings() *settings {
 		CLOUDINARY_URL:   os.Getenv("CLOUDINARY_URL"),
 		TYPESENSE_HOSTS:  os.Getenv("TYPESENSE_HOSTS"),
 		TYPESENS_API_KEY: os.Getenv("TYPESENS_API_KEY"),
+		REDIS_CONNECTION: os.Getenv("REDIS_CONNECTION"),
+		REDIS_PASS:       os.Getenv("REDIS_PASS"),
 	}
 	validateSettings(settings)
 

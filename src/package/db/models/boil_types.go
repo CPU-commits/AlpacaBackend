@@ -50,3 +50,31 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	strmangle.PutBuffer(buf)
 	return str
 }
+
+// Enum values for AppointmentStatus
+const (
+	AppointmentStatusPaid    string = "paid"
+	AppointmentStatusCreated string = "created"
+)
+
+func AllAppointmentStatus() []string {
+	return []string{
+		AppointmentStatusPaid,
+		AppointmentStatusCreated,
+	}
+}
+
+// Enum values for RoleName
+const (
+	RoleNameAdmin        string = "admin"
+	RoleNameUser         string = "user"
+	RoleNameTattooArtist string = "tattooArtist"
+)
+
+func AllRoleName() []string {
+	return []string{
+		RoleNameAdmin,
+		RoleNameUser,
+		RoleNameTattooArtist,
+	}
+}

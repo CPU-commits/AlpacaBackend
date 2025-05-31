@@ -134,7 +134,12 @@ func (tattooService *TattooService) PublishTattoos(
 		return nil, err
 	}
 
-	return tattooService.tattooRepository.Insert(tattoos, idProfile)
+	modelTatto, err := tattooService.tattooRepository.Insert(tattoos, idProfile)
+	if err != nil {
+
+		return nil, err
+	}
+	return modelTatto, nil
 }
 
 func NewTattooService(

@@ -11,19 +11,20 @@ services:
       - nats-js
       - pg
       - typesense
+      - redis
     networks:
       - alpaca_network
   nats-js:
     image: nats:2.10-scratch
     ports:
       - 4222:4222
-    command: '-js'
+    command: "-js"
     networks:
       - alpaca_network
   pg:
     image: postgis/postgis
     ports:
-     - 5432:5432
+      - 5432:5432
     container_name: pg
     volumes:
       - "pg_db:/var/lib/postgresql/data"
@@ -40,9 +41,21 @@ services:
       - "8108:8108"
     volumes:
       - typesense:/data
-    command: '--data-dir /data --api-key=xyz --enable-cors'
+    command: "--data-dir /data --api-key=xyz --enable-cors"
     networks:
       - alpaca_network
+  redis:
+    image: redis:8.0-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASS}
+    environment:
+      - REDIS_PASS=${REDIS_PASS}
+    networks:
+      - alpaca_network
+    volumes:
+      - redis:/data
 
 networks:
   alpaca_network:
@@ -52,3 +65,4 @@ volumes:
   db:
   typesense:
   pg_db:
+  redis:

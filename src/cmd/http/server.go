@@ -92,7 +92,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	})
 	// Bus
 
-	bus := queue.New(logger) // Rou
+	bus := queue.New(logger)
 	// tes
 	auth := router.Group("api/auth")
 	{
@@ -131,6 +131,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
+		publication.POST("/:idPost/view", publicationController.AddViewPublication)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
 	}
 	// Route docs

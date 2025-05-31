@@ -298,33 +298,57 @@ func Find[T any](slide []T, cond func(v T) (bool, error)) (findValue *T, err err
 	return
 }
 
-func ConcurrentForEach[T any](slide []T, toDo func(v T) error) error {
-	// Sync
+type OptionsConcurrentForEach struct {
+	MaxConcurrency int
+}
+
+func ConcurrentForEach[T any](
+	slice []T,
+	toDo func(v T) error,
+	options *OptionsConcurrentForEach,
+) error {
+	maxConc := 10
+	if options != nil && options.MaxConcurrency > 0 {
+		maxConc = options.MaxConcurrency
+	}
+
 	var wg sync.WaitGroup
-	// Handle
+	var mu sync.Mutex
 	var err error
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	for i, v := range slide {
+	sem := make(chan struct{}, maxConc)
+
+	for _, v := range slice {
+		select {
+		case <-ctx.Done():
+			break
+		case sem <- struct{}{}:
+		}
+
 		wg.Add(1)
-
-		go func(v T, i int, err *error, wg *sync.WaitGroup) {
+		go func(v T) {
 			defer wg.Done()
+			defer func() { <-sem }()
 
-			// Handle error
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				errRet := toDo(v)
-				if errRet != nil {
-					*err = errRet
+				if errRet := toDo(v); errRet != nil {
+					mu.Lock()
+					if err == nil {
+						err = errRet
+						cancel()
+					}
+					mu.Unlock()
 				}
 			}
-		}(v, i, &err, &wg)
+		}(v)
 	}
+
 	wg.Wait()
 	return err
 }

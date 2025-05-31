@@ -8,6 +8,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 )
@@ -19,6 +20,7 @@ var (
 	profileRepository = profile_repository.NewSqlProfileRepository(db.DB)
 	tattooRepository  = tattoo_repository.NewSqlTattooRepository(db.DB)
 	userRepository    = user_repository.NewSQLUserRepository(db.DB)
+	followRepository  = follow_repository.NewSqlFollowRepository(db.DB)
 )
 
 // Services
@@ -33,6 +35,7 @@ var (
 		*userService,
 		cloudinary_store.NewCloudinaryImageStore(),
 		*fileService,
+		&followRepository,
 	)
 	tattooService = service.NewTattooService(
 		imageStore,

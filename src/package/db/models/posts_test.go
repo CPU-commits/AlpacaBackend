@@ -15,54 +15,6 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-func testPostsUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(postAllColumns) == len(postPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := Post{}
-	if err = randomize.Struct(seed, &o, postDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Post struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Post: %s", err)
-	}
-
-	count, err := Posts().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, postDBTypes, false, postPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Post struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Post: %s", err)
-	}
-
-	count, err = Posts().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-}
-
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -1369,7 +1321,7 @@ func testPostsSelect(t *testing.T) {
 }
 
 var (
-	postDBTypes = map[string]string{`ID`: `int8`, `IDProfile`: `int8`, `Content`: `string`, `Likes`: `int4`, `Categories`: `ARRAYstring`, `CreatedAt`: `timestamp`, `Mentions`: `ARRAYint4`}
+	postDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Likes`: `integer`, `Categories`: `ARRAYtext`, `Mentions`: `ARRAYinteger`, `Views`: `integer`, `CreatedAt`: `timestamp without time zone`}
 	_           = bytes.MinRead
 )
 
@@ -1481,5 +1433,53 @@ func testPostsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
+	}
+}
+
+func testPostsUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(postAllColumns) == len(postPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := Post{}
+	if err = randomize.Struct(seed, &o, postDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Post struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Post: %s", err)
+	}
+
+	count, err := Posts().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, postDBTypes, false, postPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Post struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Post: %s", err)
+	}
+
+	count, err = Posts().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
 	}
 }

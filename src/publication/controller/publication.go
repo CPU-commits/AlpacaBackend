@@ -172,7 +172,6 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	claims, _ := utils.NewClaimsFromContext(c)
 	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		utils.ResFromErr(c, err)
 		return
 	}
@@ -206,6 +205,32 @@ func (httpPC *HttpPublicationController) DeletePublication(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, nil)
+}
+
+// Post godoc
+//
+//	@Summary	Añadir una "view" a una publicacion
+//	@Tags		publications
+//	@Success	200
+//	@Param		idPublication	path		int	true	"Id de publicacion"
+//	@Failure	503				object		utils.ProblemDetails				"Error con la base de datos"
+//	@Router		/api/publications/{idPublication}/view [post]
+func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
+	idPublicationStr := c.Param("idPost")
+	idPublication, err := strconv.Atoi(idPublicationStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	if err := httpPC.publicationService.AddView(
+		int64(idPublication),
+	); err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }
 
 func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {

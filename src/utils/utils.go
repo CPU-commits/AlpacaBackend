@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func ToPayload(data interface{}) []byte {
@@ -21,4 +22,15 @@ func ExtractWords[T comparable](text string, delimiter string) []T {
 		}
 	}
 	return result
+}
+
+func DaysSinceCreation(createdAt time.Time) (int, error) {
+
+	// Truncar ambas fechas al día para contar días calendario
+	createdDate := time.Date(createdAt.Year(), createdAt.Month(), createdAt.Day(), 0, 0, 0, 0, time.UTC)
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+
+	days := int(today.Sub(createdDate).Hours() / 24)
+
+	return days, nil
 }

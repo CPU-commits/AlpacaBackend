@@ -30,7 +30,7 @@ func calculateRating(daysSincePublished int, likes int, views int, shares int, f
 	return rating
 }
 
-func main() {
+func maina() {
 	// Ejemplo de prueba
 	days := 1
 	likes := 20000
