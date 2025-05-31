@@ -44,7 +44,6 @@ func (sqlProfileRepository) SqlProfileToProfile(
 		}
 
 	}
-	var user *authModel.User
 	if profile.R != nil && profile.R.IDUserUser != nil {
 		sqlUser := profile.R.IDUserUser
 
