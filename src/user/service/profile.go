@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
@@ -32,7 +33,11 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 	opts := profile_repository.NewFindOneOptions().
 		Load(profile_repository.LoadOpts{
 			Avatar: true,
-			User:   true,
+			User: &user_repository.SelectOpts{
+				Name: utils.Bool(true),
+				ID:   utils.Bool(true),
+			},
+			Roles: true,
 		})
 
 	profile, err := profileService.profileRepository.FindOne(

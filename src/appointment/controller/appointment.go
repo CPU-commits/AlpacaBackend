@@ -4,10 +4,12 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -16,6 +18,35 @@ import (
 
 type HttpAppointmentController struct {
 	appointmentService *service.AppointmentService
+}
+
+func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.Context) {
+	claims, _ := utils.NewClaimsFromContext(c)
+	// Params
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	params := service.AppointmentParams{
+		Page: page,
+	}
+
+	appointments, count, err := appointmentController.appointmentService.GetAppointments(
+		claims.ID,
+		domainUtils.Includes(claims.Roles, string(model.TATTOO_ARTIST_ROLE)),
+		params,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.Header("X-Total", strconv.Itoa(int(count)))
+	c.Header("X-Per-Page", "10")
+	c.JSON(http.StatusOK, appointments)
 }
 
 func (appointmentController *HttpAppointmentController) RequestAppointment(c *gin.Context) {

@@ -1,6 +1,7 @@
 package profile_repository
 
 import (
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 )
@@ -19,7 +20,8 @@ type SelectOpts struct {
 
 type LoadOpts struct {
 	Avatar bool
-	User   bool
+	User   *user_repository.SelectOpts
+	Roles  bool
 }
 
 type FindOneOptions struct {

@@ -3,7 +3,9 @@ package model
 import (
 	"time"
 
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 )
 
 // Status
@@ -48,17 +50,21 @@ func IsAppointmentColor(color string) bool {
 }
 
 type Appointment struct {
-	ID             int64             `json:"id"`
-	IDTattooArtist int64             `json:"idTattooArtist"`
-	IDUser         int64             `json:"idUser"`
-	Status         AppointmentStatus `json:"status"`
-	Phone          string            `json:"phone,omitempty"`
-	HasIdea        *bool             `json:"hasIdea,omitempty"`
-	Area           AppointmentArea   `json:"area,omitempty"`
-	Height         float32           `json:"height,omitempty"`
-	Width          float32           `json:"width,omitempty"`
-	Color          AppointmentColor  `json:"color,omitempty"`
-	Description    string            `json:"description"`
-	Images         []model.Image     `json:"images,omitempty"`
-	CreatedAt      time.Time         `json:"createdAt"`
+	ID                  int64              `json:"id"`
+	IDTattooArtist      int64              `json:"idTattooArtist"`
+	TattooArtist        *authModel.User    `json:"tattooArtist,omitempty"`
+	TattooArtistProfile *userModel.Profile `json:"tattooArtistProfile,omitempty"`
+	IDUser              int64              `json:"idUser"`
+	UserProfile         *userModel.Profile `json:"userProfile,omitempty"`
+	User                *authModel.User    `json:"user,omitempty"`
+	Status              AppointmentStatus  `json:"status"`
+	Phone               string             `json:"phone,omitempty"`
+	HasIdea             *bool              `json:"hasIdea,omitempty"`
+	Area                AppointmentArea    `json:"area,omitempty"`
+	Height              float32            `json:"height,omitempty"`
+	Width               float32            `json:"width,omitempty"`
+	Color               AppointmentColor   `json:"color,omitempty"`
+	Description         string             `json:"description"`
+	Images              []model.Image      `json:"images,omitempty"`
+	CreatedAt           time.Time          `json:"createdAt"`
 }
