@@ -3,25 +3,216 @@ package appointment_repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type appointmentRepositorySql struct {
-	db *sql.DB
+	db                   *sql.DB
+	sqlUserRepository    user_repository.SqlUserRepository
+	sqlProfileRepository profile_repository.SqlProfileRepository
 }
 
-func (appointmentRepositorySql) sqlAppointmentToModel(
+func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 	sqlAppointment *models.Appointment,
 ) *model.Appointment {
-	appointment := &model.Appointment{}
+	appointment := &model.Appointment{
+		ID:             sqlAppointment.ID,
+		IDTattooArtist: sqlAppointment.IDTattooArtist,
+		IDUser:         sqlAppointment.IDUser,
+		Status:         model.AppointmentStatus(sqlAppointment.Status),
+		Description:    sqlAppointment.Description,
+		Phone:          sqlAppointment.Phone.String,
+		HasIdea:        &sqlAppointment.HasIdea,
+		Area:           model.AppointmentArea(sqlAppointment.Area.String),
+		Height:         float32(sqlAppointment.Height.Float64),
+		Width:          float32(sqlAppointment.Width.Float64),
+		Color:          model.AppointmentColor(sqlAppointment.Color.String),
+		CreatedAt:      sqlAppointment.CreatedAt,
+	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDAppointmentAppointmentImages != nil {
+		var images []fileModel.Image
+		sqlAppImages := sqlAppointment.R.IDAppointmentAppointmentImages
+
+		for _, sqlAppImage := range sqlAppImages {
+			if sqlAppImage.R != nil && sqlAppImage.R.IDImageImage != nil {
+				sqlImage := sqlAppImage.R.IDImageImage
+
+				images = append(images, fileModel.Image{
+					ID:        sqlImage.ID,
+					Key:       sqlImage.Key,
+					Name:      sqlImage.Name,
+					MimeType:  sqlImage.MimeType,
+					CreatedAt: sqlAppointment.CreatedAt,
+				})
+			}
+		}
+		appointment.Images = images
+	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDUserUser != nil {
+		var user *authModel.User
+
+		sqlUser := sqlAppointment.R.IDUserUser
+
+		user = &authModel.User{
+			ID:       sqlUser.ID,
+			Name:     sqlUser.Name,
+			Username: sqlUser.Username,
+		}
+		if sqlUser.R != nil && sqlUser.R.IDUserProfile != nil {
+			profile := sqlAR.sqlProfileRepository.SqlProfileToProfile(
+				sqlUser.R.IDUserProfile,
+			)
+			appointment.UserProfile = &profile
+		}
+		appointment.User = user
+	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDTattooArtistUser != nil {
+		var user *authModel.User
+
+		sqlUser := sqlAppointment.R.IDTattooArtistUser
+
+		user = &authModel.User{
+			ID:       sqlUser.ID,
+			Name:     sqlUser.Name,
+			Username: sqlUser.Username,
+		}
+		fmt.Printf("sqlUser.R: %v\n", sqlUser.R.IDUserProfile)
+		if sqlUser.R != nil && sqlUser.R.IDUserProfile != nil {
+			profile := sqlAR.sqlProfileRepository.SqlProfileToProfile(
+				sqlUser.R.IDUserProfile,
+			)
+			appointment.TattooArtistProfile = &profile
+		}
+		appointment.TattooArtist = user
+	}
 
 	return appointment
+}
+
+func (appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []QueryMod {
+	where := []QueryMod{}
+	if criteria == nil {
+		return where
+	}
+	if criteria.IDUser != 0 {
+		where = append(where, models.AppointmentWhere.IDUser.EQ(criteria.IDUser))
+	}
+	if criteria.IDTattooArtist != 0 {
+		where = append(where, models.AppointmentWhere.IDTattooArtist.EQ(criteria.IDTattooArtist))
+	}
+
+	return where
+}
+
+func (appointmentRepositorySql) sortToMod(sort *Sort) []QueryMod {
+	mod := []QueryMod{}
+	if sort == nil {
+		return mod
+	}
+	if sort.CreatedAt == "ASC" {
+		mod = append(mod, OrderBy(fmt.Sprintf("%s asc", models.AppointmentColumns.CreatedAt)))
+	} else if sort.CreatedAt == "DESC" {
+		mod = append(mod, OrderBy(fmt.Sprintf("%s desc", models.AppointmentColumns.CreatedAt)))
+	}
+
+	return mod
+}
+
+func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
+	mod := []QueryMod{}
+	if load == nil {
+		return mod
+	}
+	if load.Images {
+		mod = append(mod, Load(Rels(models.AppointmentRels.IDAppointmentAppointmentImages, models.AppointmentImageRels.IDImageImage)))
+	}
+	if load.User != nil {
+		mod = append(mod, Load(
+			models.AppointmentRels.IDUserUser,
+			sqlAR.sqlUserRepository.SelectOpts(load.User)...,
+		))
+		if load.Profile != nil {
+			mod = append(mod, Load(
+				Rels(models.AppointmentRels.IDUserUser, models.UserRels.IDUserProfile),
+				sqlAR.sqlProfileRepository.SelectOpts(load.Profile)...,
+			))
+		}
+	}
+	if load.TattooArtist != nil {
+		mod = append(mod, Load(
+			models.AppointmentRels.IDTattooArtistUser,
+			sqlAR.sqlUserRepository.SelectOpts(load.User)...,
+		))
+		if load.Profile != nil {
+			mod = append(mod, Load(
+				Rels(models.AppointmentRels.IDTattooArtistUser, models.UserRels.IDUserProfile),
+				sqlAR.sqlProfileRepository.SelectOpts(load.Profile)...,
+			))
+		}
+	}
+
+	return mod
+}
+
+func (sqlAR appointmentRepositorySql) findOptionsToMod(opts *findOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	if opts.skip != nil {
+		mod = append(mod, Offset(int(*opts.skip)))
+	}
+	if opts.limit != nil {
+		mod = append(mod, Limit(int(*opts.limit)))
+	}
+	if opts.sort != nil {
+		mod = append(mod, sqlAR.sortToMod(opts.sort)...)
+	}
+	if opts.load != nil {
+		mod = append(mod, sqlAR.loadToMod(opts.load)...)
+	}
+
+	return mod
+}
+
+func (sqlAR appointmentRepositorySql) Find(
+	criteria *Criteria,
+	opts *findOptions,
+) ([]model.Appointment, error) {
+	where := sqlAR.criteriaToWhere(criteria)
+	mod := sqlAR.findOptionsToMod(opts)
+
+	appointments, err := models.Appointments(append(where, mod...)...).All(context.Background(), sqlAR.db)
+	if err != nil {
+		return nil, utils.ErrRepositoryFailed
+	}
+
+	return utils.MapNoError(appointments, func(sqlAppointment *models.Appointment) model.Appointment {
+		return *sqlAR.sqlAppointmentToModel(sqlAppointment)
+	}), nil
+}
+
+func (sqlAR appointmentRepositorySql) Count(criteria *Criteria) (int64, error) {
+	where := sqlAR.criteriaToWhere(criteria)
+
+	count, err := models.Appointments(where...).Count(context.Background(), sqlAR.db)
+	if err != nil {
+		return 0, utils.ErrRepositoryFailed
+	}
+
+	return count, nil
 }
 
 func (sqlAR appointmentRepositorySql) Insert(
@@ -46,6 +237,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 	}
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
+		fmt.Printf("err1: %v\n", err)
 
 		return nil, utils.ErrRepositoryFailed
 	}
@@ -85,5 +277,11 @@ func (sqlAR appointmentRepositorySql) Insert(
 func NewSqlAppointmentRepository() AppointmentRepository {
 	return appointmentRepositorySql{
 		db: db.DB,
+		sqlUserRepository: user_repository.SqlExplicitUserRepository(
+			db.DB,
+		),
+		sqlProfileRepository: profile_repository.SqlExplicitProfileRepository(
+			db.DB,
+		),
 	}
 }

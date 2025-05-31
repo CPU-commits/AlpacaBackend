@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
@@ -16,12 +18,13 @@ import (
 )
 
 type sqlProfileRepository struct {
-	db *sql.DB
+	db                *sql.DB
+	sqlUserRepository user_repository.SqlUserRepository
 }
 
 type SqlProfileRepository = sqlProfileRepository
 
-func (sqlProfileRepository) sqlProfileToProfile(
+func (sqlProfileRepository) SqlProfileToProfile(
 	profile *models.Profile,
 ) model.Profile {
 	var avatar *fileModel.Image
@@ -36,6 +39,28 @@ func (sqlProfileRepository) sqlProfileToProfile(
 			CreatedAt: sqlAvatar.CreatedAt,
 		}
 	}
+	var user *authModel.User
+	if profile.R != nil && profile.R.IDUserUser != nil {
+		sqlUser := profile.R.IDUserUser
+
+		var roles []authModel.Role
+		if profile.R.IDUserUser.R != nil && profile.R.IDUserUser.R.IDUserRolesUsers != nil {
+			sqlRoles := profile.R.IDUserUser.R.IDUserRolesUsers
+
+			for _, role := range sqlRoles {
+				roles = append(roles, authModel.Role(role.Role))
+			}
+		}
+
+		user = &authModel.User{
+			ID:        sqlUser.ID,
+			Roles:     roles,
+			Name:      sqlUser.Name,
+			Username:  sqlUser.Username,
+			CreatedAt: sqlUser.CreatedAt,
+		}
+	}
+
 	return model.Profile{
 		ID:          profile.ID,
 		IDUser:      profile.IDUser,
@@ -43,10 +68,11 @@ func (sqlProfileRepository) sqlProfileToProfile(
 		CreatedAt:   profile.CreatedAt,
 		Description: profile.Description.String,
 		Avatar:      avatar,
+		User:        user,
 	}
 }
 
-func (sqlProfileRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
+func (sqlProfileRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	mod := []QueryMod{}
 	if selectOpts == nil {
 		return mod
@@ -62,13 +88,22 @@ func (sqlProfileRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
 	return mod
 }
 
-func (sqlProfileRepository) loadOpts(load *LoadOpts) []QueryMod {
+func (sqlPR sqlProfileRepository) loadOpts(load *LoadOpts) []QueryMod {
 	mod := []QueryMod{}
 	if load == nil {
 		return mod
 	}
 	if load.Avatar {
 		mod = append(mod, Load(models.ProfileRels.IDAvatarImage))
+	}
+	if load.User != nil {
+		mod = append(mod, Load(
+			models.ProfileRels.IDUserUser,
+			sqlPR.sqlUserRepository.SelectOpts(load.User)...,
+		))
+	}
+	if load.Roles {
+		mod = append(mod, Load(Rels(models.ProfileRels.IDUserUser, models.UserRels.IDUserRolesUsers)))
 	}
 
 	return mod
@@ -79,7 +114,7 @@ func (sqlPR sqlProfileRepository) findOneOptionsToMod(opts *FindOneOptions) []Qu
 	if opts == nil {
 		return mod
 	}
-	mod = append(mod, sqlPR.selectOpts(opts.SelectOpts)...)
+	mod = append(mod, sqlPR.SelectOpts(opts.SelectOpts)...)
 	mod = append(mod, sqlPR.loadOpts(opts.load)...)
 
 	return mod
@@ -112,7 +147,7 @@ func (sqlPR sqlProfileRepository) FindOne(criteria *Criteria, opts *FindOneOptio
 		return nil, err
 	}
 
-	profile := sqlPR.sqlProfileToProfile(sqlProfile)
+	profile := sqlPR.SqlProfileToProfile(sqlProfile)
 
 	return &profile, nil
 }
@@ -205,20 +240,28 @@ func (sqlPR sqlProfileRepository) Find(opts *FindOneOptions) (*[]model.Profile, 
 		return nil, err
 	}
 	profiles := utils.MapNoError(profilesSQl, func(profile *models.Profile) model.Profile {
-		return sqlPR.sqlProfileToProfile(profile)
+		return sqlPR.SqlProfileToProfile(profile)
 	})
 	return &profiles, nil
 
 }
 
-func NewSqlProfileRepository(db *sql.DB) ProfileRepository {
+func NewSqlProfileRepository(
+	db *sql.DB,
+) ProfileRepository {
 	return sqlProfileRepository{
 		db: db,
+		sqlUserRepository: user_repository.SqlExplicitUserRepository(
+			db,
+		),
 	}
 }
 
 func SqlExplicitProfileRepository(db *sql.DB) sqlProfileRepository {
 	return sqlProfileRepository{
 		db: db,
+		sqlUserRepository: user_repository.SqlExplicitUserRepository(
+			db,
+		),
 	}
 }

@@ -137,11 +137,12 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
 	}
-	appointment := router.Group("api/appointments")
+	appointment := router.Group("api/appointments", middleware.JWTMiddleware())
 	{
 		// Controllers
 		appointmentController := appointmentController.NewHTTPAppointmentController()
 		// Define routes
+		appointment.GET("", appointmentController.GetAppointments)
 		appointment.POST("", appointmentController.RequestAppointment)
 	}
 	// Route docs

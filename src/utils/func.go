@@ -339,7 +339,7 @@ func ForEach[T any](slide []T, toDo func(v T) error) error {
 	return nil
 }
 
-func Includes[T any](slide []T, equalTo interface{}) bool {
+func Includes[T any](slide []T, equalTo T) bool {
 	for _, v := range slide {
 		valueOfAny := reflect.ValueOf(equalTo)
 		valueOfV := reflect.ValueOf(v)
