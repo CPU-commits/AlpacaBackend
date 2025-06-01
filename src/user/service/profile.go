@@ -7,6 +7,7 @@ import (
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
@@ -17,11 +18,12 @@ import (
 var profileService *ProfileService
 
 type ProfileService struct {
-	profileRepository profile_repository.ProfileRepository
-	followRepository  follow_repository.FollowRepository
-	userService       authService.UserService
-	imageStore        store.ImageStore
-	fileService       file_service.FileService
+	profileRepository       profile_repository.ProfileRepository
+	followRepository        follow_repository.FollowRepository
+	userService             authService.UserService
+	imageStore              store.ImageStore
+	fileService             file_service.FileService
+	publicationRDRepository publication_repository.RdPublicationRepository
 }
 
 func (profileService *ProfileService) GetProfile(username string) (*model.Profile, error) {
@@ -161,20 +163,33 @@ func (profileService *ProfileService) GetFollows(idProfile int64) (int64, error)
 
 }
 
+// GetAllUserView
+func (profileService *ProfileService) GetAllUserView(identifier string) ([]int64, error) {
+
+	userViews, err := profileService.publicationRDRepository.GetAllUserView(identifier)
+	if err != nil {
+		return []int64{}, err
+	}
+	return userViews, err
+}
+
 func NewProfileService(
 	profileRepository profile_repository.ProfileRepository,
 	userService authService.UserService,
 	imageStore store.ImageStore,
 	fileService file_service.FileService,
 	followRepository follow_repository.FollowRepository,
+	publicationRDRepository publication_repository.RdPublicationRepository,
+
 ) *ProfileService {
 	if profileService == nil {
 		profileService = &ProfileService{
-			profileRepository: profileRepository,
-			userService:       userService,
-			imageStore:        imageStore,
-			fileService:       fileService,
-			followRepository:  followRepository,
+			profileRepository:       profileRepository,
+			userService:             userService,
+			imageStore:              imageStore,
+			fileService:             fileService,
+			followRepository:        followRepository,
+			publicationRDRepository: publicationRDRepository,
 		}
 	}
 	return profileService

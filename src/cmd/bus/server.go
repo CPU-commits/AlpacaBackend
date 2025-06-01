@@ -23,4 +23,8 @@ func Init(logger logger.Logger) {
 		PUBLICATION_UPDATE_RATING,
 		publicationController.UpdateRatings,
 	)
+	queueBus.Subscribe(
+		ADD_TEMPORAL_VIEW,
+		publicationController.AddTemporalView,
+	)
 }

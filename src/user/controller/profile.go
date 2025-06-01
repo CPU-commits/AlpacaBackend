@@ -99,6 +99,28 @@ func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
 	})
 }
 
+// Get godoc
+//
+//	@Summary	Recibir los views temporales de un usuario
+//	@Tags		profile
+//	@Success	200			{object}	controller.GetUserViews
+//	@Param		idUser	path		string					true	"idUser"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/profiles/{idUser}/views [Get]
+func (*HttpProfileController) GetAllUserViews(c *gin.Context) {
+	identifier := c.Param("identifier")
+
+	userViews, err := profileService.GetAllUserView(identifier)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, GetUserViews{
+		Views: userViews,
+	})
+}
+
 func NewHTTProfileController() HttpProfileController {
 	return HttpProfileController{}
 }

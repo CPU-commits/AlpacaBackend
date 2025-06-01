@@ -21,3 +21,8 @@ type Publication struct {
 	CreatedAt  time.Time            `json:"createdAt"`
 	Profile    *userModel.Profile   `json:"profile,omitempty"`
 }
+
+type TemporalViewPublication struct {
+	IDPublication int64  `json:"id_publication"`
+	Identifier    string `json:"identifier"`
+}

@@ -376,7 +376,7 @@ func (publicationService *PublicationService) DeletePublication(
 	)
 }
 
-func (publicationService *PublicationService) AddView(idPublication int64) error {
+func (publicationService *PublicationService) AddView(idPublication int64, identifier string) error {
 
 	publication, err := publicationService.publicationRepository.FindOne(
 		&publication_repository.Criteria{
@@ -403,6 +403,16 @@ func (publicationService *PublicationService) AddView(idPublication int64) error
 	if err != nil {
 		return err
 	}
+
+	data := model.TemporalViewPublication{
+		IDPublication: idPublication,
+		Identifier:    identifier,
+	}
+
+	go publicationService.bus.Publish(bus.Event{
+		Name:    ADD_TEMPORAL_VIEW,
+		Payload: utils.Payload(data),
+	})
 	return nil
 }
 

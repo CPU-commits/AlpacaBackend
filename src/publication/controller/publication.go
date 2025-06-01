@@ -172,7 +172,6 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	claims, _ := utils.NewClaimsFromContext(c)
 	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		utils.ResFromErr(c, err)
 		return
 	}
@@ -223,9 +222,11 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	identifier := c.Query("identifier") // Se debe cambiar por IP o identificador
 
 	if err := httpPC.publicationService.AddView(
 		int64(idPublication),
+		identifier,
 	); err != nil {
 		utils.ResFromErr(c, err)
 		return

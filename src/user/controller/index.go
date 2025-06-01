@@ -7,6 +7,7 @@ import (
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -14,10 +15,11 @@ import (
 
 // Repositories
 var (
-	profileRepository = profile_repository.NewSqlProfileRepository(db.DB)
-	userRepository    = user_repository.NewSQLUserRepository(db.DB)
-	roleRepository    = role_repository.NewSQLRoleRepository()
-	followRepository  = follow_repository.NewSqlFollowRepository(db.DB)
+	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
+	userRepository          = user_repository.NewSQLUserRepository(db.DB)
+	roleRepository          = role_repository.NewSQLRoleRepository()
+	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
+	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 )
 
 // Image
@@ -36,5 +38,6 @@ var (
 		cloudinary_store.NewCloudinaryImageStore(),
 		*fileService,
 		&followRepository,
+		publicationRDRepository,
 	)
 )

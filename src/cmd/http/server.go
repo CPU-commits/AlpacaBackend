@@ -123,6 +123,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		profileController := userController.NewHTTProfileController()
 		// Define routes
 		profile.GET("/:username", profileController.GetProfile)
+		profile.GET("/views/:identifier", profileController.GetAllUserViews) // Se debe cambiar username por Identificador IP o algo asi
 		profile.PATCH("/avatar", middleware.JWTMiddleware(), profileController.ChangeAvatar)
 		profile.PATCH("", middleware.JWTMiddleware(), profileController.UpdateProfile)
 	}

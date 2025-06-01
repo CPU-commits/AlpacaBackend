@@ -63,7 +63,7 @@ func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
 
 			return err
 		}
-		err = publicationRDRepository.Delete(&rPublication)
+		err = publicationRDRepository.DeleteRedisPublications(&rPublication)
 		if err != nil {
 
 			return err
@@ -78,6 +78,16 @@ func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
 		return c.Kill(err.Error())
 	}
 	return nil
+}
+
+func (*QueuePublicationController) AddTemporalView(c bus.Context) error {
+	var data model.TemporalViewPublication
+	if err := c.BindData(&data); err != nil {
+		return c.Kill(err.Error())
+	}
+	return publicationRDRepository.AddView(
+		data.IDPublication, data.Identifier,
+	)
 }
 
 func NewPublicationQueueController() *QueuePublicationController {

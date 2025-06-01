@@ -9,3 +9,7 @@ type GetProfileResponse struct {
 type UpdateProfileResponse struct {
 	Key string
 }
+
+type GetUserViews struct {
+	Views []int64
+}
