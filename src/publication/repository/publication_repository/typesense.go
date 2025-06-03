@@ -34,6 +34,17 @@ type TSPublication struct {
 	Image5     string   `json:"image_5,omitempty"`
 }
 
+func (tsPR *tsPublicationRepository) DeletePublication(publication *model.Publication) error {
+	strID := strconv.FormatInt(publication.ID, 10)
+
+	_, err := tsPR.ts.Collection("publications").Document(strID).Delete(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publication) error {
 
 	params := &api.DocumentIndexParameters{}
@@ -47,7 +58,6 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 		CreatedAt:  publication.CreatedAt.Unix(),
 		Rating:     0.3,
 	}
-
 	imageNumber := 1
 	for _, image := range publication.Images {
 		imageBytes, err := cloudinary_store.NewCloudinaryImageStore().Download(
@@ -76,8 +86,10 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 		tsPublication,
 		params,
 	)
-
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Actualiza el rating con los nuevos valores

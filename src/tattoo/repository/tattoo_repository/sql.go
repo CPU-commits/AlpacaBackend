@@ -3,6 +3,7 @@ package tattoo_repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -262,6 +263,9 @@ func (sqlTR sqlTattooRepository) Update(criteria *Criteria, data UpdateData) err
 		Select("id"),
 	}, where...)...).One(context.Background(), sqlTR.db)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		return utils.ErrRepositoryFailed
 	}
 	// Cols

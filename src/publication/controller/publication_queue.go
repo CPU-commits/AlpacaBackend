@@ -89,6 +89,14 @@ func (*QueuePublicationController) AddTemporalView(c bus.Context) error {
 		data.IDPublication, data.Identifier,
 	)
 }
+func (*QueuePublicationController) DeletePublication(c bus.Context) error {
+	var publication model.Publication
+
+	if err := c.BindData(&publication); err != nil {
+		return c.Kill(err.Error())
+	}
+	return publicationTSRepository.DeletePublication(&publication)
+}
 
 func NewPublicationQueueController() *QueuePublicationController {
 	return &QueuePublicationController{}

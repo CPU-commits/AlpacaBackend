@@ -27,4 +27,8 @@ func Init(logger logger.Logger) {
 		ADD_TEMPORAL_VIEW,
 		publicationController.AddTemporalView,
 	)
+	queueBus.Subscribe(
+		DELETE_PUBLICATION,
+		publicationController.DeletePublication,
+	)
 }

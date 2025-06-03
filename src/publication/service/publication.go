@@ -315,12 +315,6 @@ func (publicationService *PublicationService) DeletePublication(
 	idUser int64,
 ) error {
 	opts := publication_repository.NewFindOneOptions().
-		Select(publication_repository.SelectOpts{
-			IDProfile: utils.Bool(true),
-			User: &user_repository.SelectOpts{
-				ID: utils.Bool(true),
-			},
-		}).
 		Include(publication_repository.Include{
 			ProfileUser: true,
 			Tattoos:     true,
@@ -368,12 +362,19 @@ func (publicationService *PublicationService) DeletePublication(
 			return err
 		}
 	}
-
-	return publicationService.publicationRepository.Delete(
+	err = publicationService.publicationRepository.Delete(
 		&publication_repository.Criteria{
 			ID: idPublication,
 		},
 	)
+	if err != nil {
+		return err
+	}
+	go publicationService.bus.Publish(bus.Event{
+		Name:    DELETE_PUBLICATION,
+		Payload: utils.Payload(publication),
+	})
+	return nil
 }
 
 func (publicationService *PublicationService) AddView(idPublication int64, identifier string) error {
