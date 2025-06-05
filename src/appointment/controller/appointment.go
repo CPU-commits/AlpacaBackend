@@ -89,6 +89,53 @@ func (appointmentController *HttpAppointmentController) RequestAppointment(c *gi
 	c.JSON(http.StatusCreated, nil)
 }
 
+func (appointmentController *HttpAppointmentController) CancelAppointment(c *gin.Context) {
+	idAppointmentStr := c.Param("idAppointment")
+	idAppointment, err := strconv.Atoi(idAppointmentStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	if err := appointmentController.appointmentService.CancelAppointment(
+		int64(idAppointment),
+		claims.ID,
+	); err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
+func (appointmentController *HttpAppointmentController) ScheduleAppointment(c *gin.Context) {
+	var scheduleAppointment *dto.ScheduleAppointmentDto
+	if err := c.BindJSON(&scheduleAppointment); err != nil {
+		utils.ResErrValidators(c, err)
+		return
+	}
+
+	idAppointmentStr := c.Param("idAppointment")
+	idAppointment, err := strconv.Atoi(idAppointmentStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	if err := appointmentController.appointmentService.ScheduleAppointment(
+		int64(idAppointment),
+		claims.ID,
+		*scheduleAppointment,
+	); err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
 func NewHTTPAppointmentController() *HttpAppointmentController {
 	return &HttpAppointmentController{
 		appointmentService: appointmentService,

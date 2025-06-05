@@ -40,6 +40,9 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 		Width:          float32(sqlAppointment.Width.Float64),
 		Color:          model.AppointmentColor(sqlAppointment.Color.String),
 		CreatedAt:      sqlAppointment.CreatedAt,
+		FinishedAt:     sqlAppointment.FinishedAt.Ptr(),
+		Duration:       float32(sqlAppointment.Duration.Float64),
+		ScheduledAt:    sqlAppointment.ScheduledAt.Ptr(),
 	}
 	if sqlAppointment.R != nil && sqlAppointment.R.IDAppointmentAppointmentImages != nil {
 		var images []fileModel.Image
@@ -69,10 +72,12 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 			ID:       sqlUser.ID,
 			Name:     sqlUser.Name,
 			Username: sqlUser.Username,
+			Email:    sqlUser.Email,
 		}
 		if sqlUser.R != nil && sqlUser.R.IDUserProfile != nil {
 			profile := sqlAR.sqlProfileRepository.SqlProfileToProfile(
 				sqlUser.R.IDUserProfile,
+				"user",
 			)
 			appointment.UserProfile = &profile
 		}
@@ -87,11 +92,12 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 			ID:       sqlUser.ID,
 			Name:     sqlUser.Name,
 			Username: sqlUser.Username,
+			Email:    sqlUser.Email,
 		}
-		fmt.Printf("sqlUser.R: %v\n", sqlUser.R.IDUserProfile)
 		if sqlUser.R != nil && sqlUser.R.IDUserProfile != nil {
 			profile := sqlAR.sqlProfileRepository.SqlProfileToProfile(
 				sqlUser.R.IDUserProfile,
+				"user",
 			)
 			appointment.TattooArtistProfile = &profile
 		}
@@ -101,16 +107,40 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 	return appointment
 }
 
-func (appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []QueryMod {
+func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []QueryMod {
 	where := []QueryMod{}
 	if criteria == nil {
 		return where
+	}
+	if criteria.ID != 0 {
+		where = append(where, models.AppointmentWhere.ID.EQ(criteria.ID))
+	}
+	if criteria.IDNE != 0 {
+		where = append(where, models.AppointmentWhere.ID.NEQ(criteria.ID))
 	}
 	if criteria.IDUser != 0 {
 		where = append(where, models.AppointmentWhere.IDUser.EQ(criteria.IDUser))
 	}
 	if criteria.IDTattooArtist != 0 {
 		where = append(where, models.AppointmentWhere.IDTattooArtist.EQ(criteria.IDTattooArtist))
+	}
+	if criteria.Status != "" {
+		where = append(where, models.AppointmentWhere.Status.EQ(string(criteria.Status)))
+	}
+	if !criteria.ScheduledAtGTE.IsZero() {
+		where = append(where, models.AppointmentWhere.ScheduledAt.GTE(null.TimeFrom(criteria.ScheduledAtGTE)))
+	}
+	if !criteria.FinishedAtLTE.IsZero() {
+		where = append(where, models.AppointmentWhere.FinishedAt.LTE(null.TimeFrom(criteria.FinishedAtLTE)))
+	}
+
+	var orMods []QueryMod
+	for _, clause := range criteria.Or {
+		orWhere := sqlAR.criteriaToWhere(&clause)
+		orMods = append(orMods, Or2(Expr(orWhere...)))
+	}
+	if orMods != nil {
+		where = append(where, Expr(orMods...))
 	}
 
 	return where
@@ -160,6 +190,11 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 				Rels(models.AppointmentRels.IDTattooArtistUser, models.UserRels.IDUserProfile),
 				sqlAR.sqlProfileRepository.SelectOpts(load.Profile)...,
 			))
+			if load.ProfileAvatar {
+				mod = append(mod, Load(
+					Rels(models.AppointmentRels.IDTattooArtistUser, models.UserRels.IDUserProfile, models.ProfileRels.IDAvatarImage),
+				))
+			}
 		}
 	}
 
@@ -215,6 +250,45 @@ func (sqlAR appointmentRepositorySql) Count(criteria *Criteria) (int64, error) {
 	return count, nil
 }
 
+func (sqlAR appointmentRepositorySql) Exists(criteria *Criteria) (bool, error) {
+	where := sqlAR.criteriaToWhere(criteria)
+
+	exists, err := models.Appointments(where...).Exists(context.Background(), sqlAR.db)
+	if err != nil {
+		return false, utils.ErrRepositoryFailed
+	}
+
+	return exists, nil
+}
+
+func (sqlAR appointmentRepositorySql) Update(criteria *Criteria, data *UpdateData) error {
+	where := sqlAR.criteriaToWhere(criteria)
+	// Data
+	cols := models.M{}
+	if data.Status != "" {
+		cols[models.AppointmentColumns.Status] = data.Status
+	}
+	if data.UnsetDuration {
+		cols[models.AppointmentColumns.Duration] = null.Float64FromPtr(nil)
+	} else if data.Duration != 0 {
+		cols[models.AppointmentColumns.Duration] = data.Duration
+	}
+	if !data.ScheduledAt.IsZero() {
+		cols[models.AppointmentColumns.ScheduledAt] = data.ScheduledAt
+	}
+	if data.UnsetFinishedAt {
+		cols[models.AppointmentColumns.FinishedAt] = null.TimeFromPtr(nil)
+	} else if !data.FinishedAt.IsZero() {
+		cols[models.AppointmentColumns.FinishedAt] = data.FinishedAt
+	}
+
+	if _, err := models.Appointments(where...).UpdateAll(context.Background(), sqlAR.db, cols); err != nil {
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
+}
+
 func (sqlAR appointmentRepositorySql) Insert(
 	appointment *model.Appointment,
 ) (*model.Appointment, error) {
@@ -237,7 +311,6 @@ func (sqlAR appointmentRepositorySql) Insert(
 	}
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
-		fmt.Printf("err1: %v\n", err)
 
 		return nil, utils.ErrRepositoryFailed
 	}

@@ -12,8 +12,10 @@ import (
 type AppointmentStatus string
 
 const (
-	STATUS_PAID    AppointmentStatus = "paid"
-	STATUS_CREATED AppointmentStatus = "created"
+	STATUS_PAID      AppointmentStatus = "paid"
+	STATUS_CREATED   AppointmentStatus = "created"
+	STATUS_CANCELED  AppointmentStatus = "canceled"
+	STATUS_SCHEDULED AppointmentStatus = "scheduled"
 )
 
 // Area
@@ -65,6 +67,9 @@ type Appointment struct {
 	Width               float32            `json:"width,omitempty"`
 	Color               AppointmentColor   `json:"color,omitempty"`
 	Description         string             `json:"description"`
+	Duration            float32            `json:"duration,omitempty"`
+	ScheduledAt         *time.Time         `json:"scheduledAt,omitempty"`
+	FinishedAt          *time.Time         `json:"finishedAt,omitempty"`
 	Images              []model.Image      `json:"images,omitempty"`
 	CreatedAt           time.Time          `json:"createdAt"`
 }

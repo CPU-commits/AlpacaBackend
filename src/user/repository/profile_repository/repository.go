@@ -13,6 +13,7 @@ type Criteria struct {
 
 type SelectOpts struct {
 	ID     *bool
+	IDUser *bool
 	Avatar *bool
 	Limit  *int
 	OffSet *int

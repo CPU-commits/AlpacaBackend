@@ -1,14 +1,22 @@
 package appointment_repository
 
 import (
+	"time"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 )
 
 type Criteria struct {
+	ID             int64
+	IDNE           int64
+	Status         model.AppointmentStatus
 	IDUser         int64
 	IDTattooArtist int64
+	ScheduledAtGTE time.Time
+	FinishedAtLTE  time.Time
+	Or             []Criteria
 }
 
 type Sort struct {
@@ -23,10 +31,11 @@ type findOptions struct {
 }
 
 type LoadOpts struct {
-	TattooArtist *user_repository.SelectOpts
-	User         *user_repository.SelectOpts
-	Profile      *profile_repository.SelectOpts
-	Images       bool
+	TattooArtist  *user_repository.SelectOpts
+	User          *user_repository.SelectOpts
+	Profile       *profile_repository.SelectOpts
+	ProfileAvatar bool
+	Images        bool
 }
 
 func (f *findOptions) Skip(skip int64) *findOptions {
@@ -57,8 +66,19 @@ func NewFindOptions() *findOptions {
 	return &findOptions{}
 }
 
+type UpdateData struct {
+	Status          model.AppointmentStatus
+	ScheduledAt     time.Time
+	Duration        float64
+	FinishedAt      time.Time
+	UnsetDuration   bool
+	UnsetFinishedAt bool
+}
+
 type AppointmentRepository interface {
 	Find(criteria *Criteria, opts *findOptions) ([]model.Appointment, error)
 	Count(criteria *Criteria) (int64, error)
+	Exists(criteria *Criteria) (bool, error)
+	Update(criteria *Criteria, data *UpdateData) error
 	Insert(appointment *model.Appointment) (*model.Appointment, error)
 }

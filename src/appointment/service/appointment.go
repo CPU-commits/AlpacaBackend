@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
@@ -21,6 +22,31 @@ type AppointmentService struct {
 
 var appointmentService *AppointmentService
 
+func (appointmentService *AppointmentService) hasAccessToAppointment(
+	idAppointment,
+	idUser int64,
+	isTattooArtist bool,
+) error {
+	criteria := appointment_repository.Criteria{
+		ID: idAppointment,
+	}
+	if isTattooArtist {
+		criteria.IDTattooArtist = idUser
+	} else {
+		criteria.IDUser = idUser
+	}
+
+	hasAccess, err := appointmentService.appointmentRepository.Exists(&criteria)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return ErrUserHasNoAccessToAppointment
+	}
+
+	return nil
+}
+
 func (appointmentService *AppointmentService) GetAppointments(
 	idUser int64,
 	isArtist bool,
@@ -32,14 +58,17 @@ func (appointmentService *AppointmentService) GetAppointments(
 		Profile: &profile_repository.SelectOpts{
 			ID:     utils.Bool(true),
 			Avatar: utils.Bool(true),
+			IDUser: utils.Bool(true),
 		},
+		ProfileAvatar: true,
 	}
 	if isArtist {
 		criteria.IDTattooArtist = idUser
-		load.TattooArtist = &user_repository.SelectOpts{
+		load.User = &user_repository.SelectOpts{
 			Name:     utils.Bool(true),
 			Username: utils.Bool(true),
 			ID:       utils.Bool(true),
+			Email:    utils.Bool(true),
 		}
 	} else {
 		criteria.IDUser = idUser
@@ -72,6 +101,114 @@ func (appointmentService *AppointmentService) GetAppointments(
 	}
 
 	return appointments, total, nil
+}
+
+func (appointmentService *AppointmentService) CancelAppointment(
+	idAppointment,
+	idTattooArtist int64,
+) error {
+	if err := appointmentService.hasAccessToAppointment(
+		idAppointment,
+		idTattooArtist,
+		true,
+	); err != nil {
+		return err
+	}
+	appointmentIsFinished, err := appointmentService.appointmentRepository.Exists(
+		&appointment_repository.Criteria{
+			ID:            idAppointment,
+			FinishedAtLTE: time.Now(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if appointmentIsFinished {
+		return ErrAppointmentIsFinished
+	}
+
+	return appointmentService.appointmentRepository.Update(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		&appointment_repository.UpdateData{
+			Status: model.STATUS_CANCELED,
+		},
+	)
+}
+
+func (appointmentService *AppointmentService) ScheduleAppointment(
+	idAppointment,
+	idTattooArtist int64,
+	scheduleAppointment dto.ScheduleAppointmentDto,
+) error {
+	scheduledAt, finishedAt, err := scheduleAppointment.ToTimes()
+	if err != nil {
+		return err
+	}
+	if time.Now().After(scheduledAt) {
+		return ErrScheduleDateMustBeAfterNow
+	}
+	if !finishedAt.IsZero() && scheduledAt.After(finishedAt) {
+		return ErrScheduleDateMusteBeAfterFinished
+	}
+
+	if err := appointmentService.hasAccessToAppointment(
+		idAppointment,
+		idTattooArtist,
+		true,
+	); err != nil {
+		return err
+	}
+	isAppointmentCreated, err := appointmentService.appointmentRepository.Exists(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+			Or: []appointment_repository.Criteria{
+				{Status: model.STATUS_CREATED},
+				{Status: model.STATUS_SCHEDULED},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if !isAppointmentCreated {
+		return ErrStatusIsNotCreated
+	}
+	// Scheduled?
+	isBussy, err := appointmentService.appointmentRepository.Exists(
+		&appointment_repository.Criteria{
+			IDNE:           idAppointment,
+			ScheduledAtGTE: scheduledAt,
+			FinishedAtLTE:  finishedAt,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if isBussy {
+		return ErrScheduleIsBussy
+	}
+
+	var duration float64
+	if !finishedAt.IsZero() {
+		duration = finishedAt.Sub(scheduledAt).Seconds()
+	} else {
+		duration = 3600 // 1 hora por defecto
+		finishedAt = scheduledAt.Add(1 * time.Hour)
+	}
+
+	return appointmentService.appointmentRepository.Update(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		&appointment_repository.UpdateData{
+			Status:      model.STATUS_SCHEDULED,
+			ScheduledAt: scheduledAt,
+			FinishedAt:  finishedAt,
+			Duration:    duration,
+		},
+	)
 }
 
 func (appointmentService *AppointmentService) RequestAppointment(

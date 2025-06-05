@@ -9,11 +9,8 @@ import "testing"
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionSession", testAccessToOneSessionUsingIDSessionSession)
-<<<<<<< HEAD
-=======
 	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointment", testAppointmentImageToOneAppointmentUsingIDAppointmentAppointment)
 	t.Run("AppointmentImageToImageUsingIDImageImage", testAppointmentImageToOneImageUsingIDImageImage)
->>>>>>> origin/master
 	t.Run("AppointmentToUserUsingIDTattooArtistUser", testAppointmentToOneUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserUser", testAppointmentToOneUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserUser", testAuthToOneUserUsingIDUserUser)
@@ -83,11 +80,8 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionAccesses", testAccessToOneSetOpSessionUsingIDSessionSession)
-<<<<<<< HEAD
-=======
 	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointmentImages", testAppointmentImageToOneSetOpAppointmentUsingIDAppointmentAppointment)
 	t.Run("AppointmentImageToImageUsingIDImageAppointmentImage", testAppointmentImageToOneSetOpImageUsingIDImageImage)
->>>>>>> origin/master
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneSetOpUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserAppointments", testAppointmentToOneSetOpUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserAuth", testAuthToOneSetOpUserUsingIDUserUser)

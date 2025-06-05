@@ -19,7 +19,7 @@ type tsPublicationRepository struct {
 }
 
 type TSPublication struct {
-	ID         string   `json:"id"`
+	ID         string   `json:"id_publication"`
 	IDProfile  int64    `json:"id_profile"`
 	Content    string   `json:"content"`
 	Likes      int32    `json:"likes"`

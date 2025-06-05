@@ -25,6 +25,7 @@ type settings struct {
 	TYPESENS_API_KEY string
 	REDIS_CONNECTION string
 	REDIS_PASS       string
+	OPENAI_KEY       string
 }
 
 func validateSettings(settings *settings) {
@@ -63,6 +64,9 @@ func validateSettings(settings *settings) {
 	if settings.REDIS_PASS == "" {
 		missing = append(missing, "REDIS_PASS")
 	}
+	if settings.OPENAI_KEY == "" {
+		missing = append(missing, "OPENAI_KEY")
+	}
 
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
@@ -82,6 +86,7 @@ func newSettings() *settings {
 		TYPESENS_API_KEY: os.Getenv("TYPESENS_API_KEY"),
 		REDIS_CONNECTION: os.Getenv("REDIS_CONNECTION"),
 		REDIS_PASS:       os.Getenv("REDIS_PASS"),
+		OPENAI_KEY:       os.Getenv("OPENAI_KEY"),
 	}
 	validateSettings(settings)
 

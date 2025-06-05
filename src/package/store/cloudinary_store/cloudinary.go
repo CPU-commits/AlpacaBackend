@@ -53,6 +53,14 @@ func (cloudImageStore cloudinaryImageStore) Delete(key string) error {
 	return err
 }
 
+func (cloudinaryImageStore cloudinaryImageStore) GetURL(key string) (string, error) {
+	image, err := cloudinaryImageStore.cld.Image(key)
+	if err != nil {
+		return "", err
+	}
+	return image.String()
+}
+
 func (cloudinaryImageStore cloudinaryImageStore) Download(key string) ([]byte, error) {
 	image, err := cloudinaryImageStore.cld.Image(key)
 	if err != nil {

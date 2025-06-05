@@ -17,7 +17,6 @@ var TableNames = struct {
 	Reviews             string
 	RolesUsers          string
 	Sessions            string
-	SpatialRefSys       string
 	StudioAdmins        string
 	StudioTattooArtists string
 	Studios             string
@@ -38,7 +37,6 @@ var TableNames = struct {
 	Reviews:             "reviews",
 	RolesUsers:          "roles_users",
 	Sessions:            "sessions",
-	SpatialRefSys:       "spatial_ref_sys",
 	StudioAdmins:        "studio_admins",
 	StudioTattooArtists: "studio_tattoo_artists",
 	Studios:             "studios",

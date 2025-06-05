@@ -53,19 +53,21 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for AppointmentStatus
 const (
-	AppointmentStatusPaid    string = "paid"
-	AppointmentStatusCreated string = "created"
+	AppointmentStatusPaid      string = "paid"
+	AppointmentStatusCreated   string = "created"
+	AppointmentStatusScheduled string = "scheduled"
+	AppointmentStatusCanceled  string = "canceled"
 )
 
 func AllAppointmentStatus() []string {
 	return []string{
 		AppointmentStatusPaid,
 		AppointmentStatusCreated,
+		AppointmentStatusScheduled,
+		AppointmentStatusCanceled,
 	}
 }
 
-<<<<<<< HEAD
-=======
 // Enum values for TattooArea
 const (
 	TattooAreaArm     string = "arm"
@@ -110,7 +112,6 @@ func AllTattooColor() []string {
 	}
 }
 
->>>>>>> origin/master
 // Enum values for RoleName
 const (
 	RoleNameAdmin        string = "admin"

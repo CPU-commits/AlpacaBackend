@@ -59,9 +59,13 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.Username != "" {
 		mod = append(mod, Where("username = ?", criteria.Username))
 	}
-	for _, orCriteria := range criteria.Or {
-		orMods := sqlUR.criteriaToWhere(&orCriteria)
-		mod = append(mod, Or2(Expr(orMods...)))
+	var orMods []QueryMod
+	for _, clause := range criteria.Or {
+		orWhere := sqlUR.criteriaToWhere(&clause)
+		orMods = append(orMods, orWhere...)
+	}
+	if orMods != nil {
+		mod = append(mod, Expr(Or2(Expr(orMods...))))
 	}
 
 	return mod
@@ -77,6 +81,9 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.Name != nil && *selectOpts.Name {
 		mod = append(mod, Select(models.UserColumns.Name))
+	}
+	if selectOpts.Email != nil && *selectOpts.Email {
+		mod = append(mod, Select(models.UserColumns.Email))
 	}
 	if selectOpts.Username != nil && *selectOpts.Username {
 		mod = append(mod, Select(models.UserColumns.Username))

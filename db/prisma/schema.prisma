@@ -125,7 +125,7 @@ model tattoos {
 	popularity Int @default(0)
 	id_post BigInt?
 	views Int @default(0)
-	coordinate String?
+	coordinate Unsupported("GEOMETRY")?
 	post posts? @relation(fields: [id_post], references: [id])
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
@@ -228,6 +228,9 @@ model appointments {
   width Float?
   color tattoo_color?
   description String
+  scheduled_at DateTime?
+  duration Float?
+  finished_at DateTime?
   created_at        DateTime @default(now()) @db.Timestamp(6)
 
   images appointment_images[]
@@ -256,6 +259,8 @@ enum tattoo_area {
 
 enum appointment_status {
 	paid
+	scheduled
+	canceled
 	created
 }
 

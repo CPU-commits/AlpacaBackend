@@ -82,6 +82,10 @@ func init() {
 		StatusCode: http.StatusUnauthorized,
 		MessageId:  "publication.not_have_access",
 	}
+	errorsService[publicationService.ErrTooManyImages] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "publication.too_images",
+	}
 	errorsService[fileService.ErrInvalidMimeType] = errRes{
 		StatusCode: http.StatusUnsupportedMediaType,
 		MessageId:  "file.invalid_mime_type",
@@ -89,5 +93,29 @@ func init() {
 	errorsService[appointmentService.ErrUserIsNotTattooArtists] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "appointment.not_tattoo_artist",
+	}
+	errorsService[appointmentService.ErrUserHasNoAccessToAppointment] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "appointment.no_have_access",
+	}
+	errorsService[appointmentService.ErrStatusIsNotCreated] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.not_created",
+	}
+	errorsService[appointmentService.ErrScheduleDateMustBeAfterNow] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "appointment.scheduled_at_now",
+	}
+	errorsService[appointmentService.ErrScheduleDateMusteBeAfterFinished] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "appointment.scheduled_at_finished",
+	}
+	errorsService[appointmentService.ErrScheduleIsBussy] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.bussy",
+	}
+	errorsService[appointmentService.ErrAppointmentIsFinished] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.finished",
 	}
 }

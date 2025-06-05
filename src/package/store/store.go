@@ -16,4 +16,5 @@ type ImageStore interface {
 	Upload(image ImageDto, namespace string) (*model.Image, error)
 	Delete(key string) error
 	Download(key string) ([]byte, error)
+	GetURL(key string) (string, error)
 }

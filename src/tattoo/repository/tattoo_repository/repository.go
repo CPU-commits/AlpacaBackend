@@ -61,6 +61,7 @@ type TattooRepository interface {
 	Insert(tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error)
 	Find(criteria *Criteria, opts *FindOpts) ([]model.Tattoo, error)
 	Count(criteria *Criteria) (int64, error)
+	ConvertImageInTattoo(idImages []int64, tattoos []model.Tattoo, idProfile int64) error
 	UpdateViews(ids []int64) error
 	Update(criteria *Criteria, data UpdateData) error
 }

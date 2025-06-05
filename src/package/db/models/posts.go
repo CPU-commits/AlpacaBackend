@@ -28,14 +28,10 @@ type Post struct {
 	IDProfile  int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
 	Content    string            `boil:"content" json:"content" toml:"content" yaml:"content"`
 	Likes      int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-<<<<<<< HEAD
-=======
 	CreatedAt  time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
->>>>>>> origin/master
 	Categories types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Mentions   types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
 	Views      int               `boil:"views" json:"views" toml:"views" yaml:"views"`
-	CreatedAt  time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -46,27 +42,19 @@ var PostColumns = struct {
 	IDProfile  string
 	Content    string
 	Likes      string
-<<<<<<< HEAD
-=======
 	CreatedAt  string
->>>>>>> origin/master
 	Categories string
 	Mentions   string
 	Views      string
-	CreatedAt  string
 }{
 	ID:         "id",
 	IDProfile:  "id_profile",
 	Content:    "content",
 	Likes:      "likes",
-<<<<<<< HEAD
-=======
 	CreatedAt:  "created_at",
->>>>>>> origin/master
 	Categories: "categories",
 	Mentions:   "mentions",
 	Views:      "views",
-	CreatedAt:  "created_at",
 }
 
 var PostTableColumns = struct {
@@ -74,27 +62,19 @@ var PostTableColumns = struct {
 	IDProfile  string
 	Content    string
 	Likes      string
-<<<<<<< HEAD
-=======
 	CreatedAt  string
->>>>>>> origin/master
 	Categories string
 	Mentions   string
 	Views      string
-	CreatedAt  string
 }{
 	ID:         "posts.id",
 	IDProfile:  "posts.id_profile",
 	Content:    "posts.content",
 	Likes:      "posts.likes",
-<<<<<<< HEAD
-=======
 	CreatedAt:  "posts.created_at",
->>>>>>> origin/master
 	Categories: "posts.categories",
 	Mentions:   "posts.mentions",
 	Views:      "posts.views",
-	CreatedAt:  "posts.created_at",
 }
 
 // Generated where
@@ -177,27 +157,19 @@ var PostWhere = struct {
 	IDProfile  whereHelperint64
 	Content    whereHelperstring
 	Likes      whereHelperint
-<<<<<<< HEAD
-=======
 	CreatedAt  whereHelpertime_Time
->>>>>>> origin/master
 	Categories whereHelpertypes_StringArray
 	Mentions   whereHelpertypes_Int64Array
 	Views      whereHelperint
-	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperint64{field: "\"posts\".\"id\""},
 	IDProfile:  whereHelperint64{field: "\"posts\".\"id_profile\""},
 	Content:    whereHelperstring{field: "\"posts\".\"content\""},
 	Likes:      whereHelperint{field: "\"posts\".\"likes\""},
-<<<<<<< HEAD
-=======
 	CreatedAt:  whereHelpertime_Time{field: "\"posts\".\"created_at\""},
->>>>>>> origin/master
 	Categories: whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
 	Mentions:   whereHelpertypes_Int64Array{field: "\"posts\".\"mentions\""},
 	Views:      whereHelperint{field: "\"posts\".\"views\""},
-	CreatedAt:  whereHelpertime_Time{field: "\"posts\".\"created_at\""},
 }
 
 // PostRels is where relationship names are stored.
@@ -258,15 +230,9 @@ func (r *postR) GetIDPostTattoos() TattooSlice {
 type postL struct{}
 
 var (
-<<<<<<< HEAD
-	postAllColumns            = []string{"id", "id_profile", "content", "likes", "categories", "mentions", "views", "created_at"}
+	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at", "categories", "mentions", "views"}
 	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "categories", "mentions", "views", "created_at"}
-=======
-	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at", "categories", "mentions"}
-	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "created_at", "categories", "mentions"}
->>>>>>> origin/master
+	postColumnsWithDefault    = []string{"id", "created_at", "categories", "mentions", "views"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )

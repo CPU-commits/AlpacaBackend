@@ -83,6 +83,26 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	return mod
 }
 
+func (sqlTattooRepository) tattooModelToSqlTattoo(tattoo model.Tattoo, idProfile, sqlImageID int64) models.Tattoo {
+	sqlTattoo := models.Tattoo{
+		Likes:      tattoo.Likes,
+		IDProfile:  idProfile,
+		IDImage:    sqlImageID,
+		Categories: tattoo.Categories,
+	}
+	if tattoo.Description != "" {
+		sqlTattoo.Description = null.StringFrom(tattoo.Description)
+	}
+	if tattoo.Coord != nil {
+		sqlTattoo.Coordinate = null.StringFrom(fmt.Sprintf("Point(%v %v)", tattoo.Coord.X, tattoo.Coord.Y))
+	}
+	if tattoo.IDPublication != 0 {
+		sqlTattoo.IDPost = null.Int64From(tattoo.IDPublication)
+	}
+
+	return sqlTattoo
+}
+
 func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error) {
 	ctx := context.Background()
 	tx, err := sqlTR.db.BeginTx(ctx, nil)
@@ -111,21 +131,11 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 			CreatedAt: sqlImage.CreatedAt,
 		}
 
-		sqlTattoo := models.Tattoo{
-			Likes:      tattoo.Likes,
-			IDProfile:  idProfile,
-			IDImage:    sqlImage.ID,
-			Categories: tattoo.Categories,
-		}
-		if tattoo.Description != "" {
-			sqlTattoo.Description = null.StringFrom(tattoo.Description)
-		}
-		if tattoo.Coord != nil {
-			sqlTattoo.Coordinate = null.StringFrom(fmt.Sprintf("Point(%v %v)", tattoo.Coord.X, tattoo.Coord.Y))
-		}
-		if tattoo.IDPublication != 0 {
-			sqlTattoo.IDPost = null.Int64From(tattoo.IDPublication)
-		}
+		sqlTattoo := sqlTR.tattooModelToSqlTattoo(
+			tattoo,
+			idProfile,
+			sqlImage.ID,
+		)
 
 		if err := sqlTattoo.Insert(ctx, tx, boil.Infer()); err != nil {
 			tx.Rollback()
@@ -145,6 +155,43 @@ func (sqlTR sqlTattooRepository) Insert(tattoos []model.Tattoo, idProfile int64)
 	}
 
 	return newTattoos, nil
+}
+
+func (sqlTR sqlTattooRepository) ConvertImageInTattoo(
+	idImages []int64,
+	tattoos []model.Tattoo,
+	idProfile int64,
+) error {
+	tx, err := sqlTR.db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+
+	if _, err := models.PostImages(models.PostImageWhere.IDImage.IN(idImages)).DeleteAll(context.Background(), tx); err != nil {
+		tx.Rollback()
+
+		return utils.ErrRepositoryFailed
+	}
+	for _, tattoo := range tattoos {
+		sqlTattoo := sqlTR.tattooModelToSqlTattoo(
+			tattoo,
+			idProfile,
+			tattoo.Image.ID,
+		)
+
+		if err := sqlTattoo.Insert(context.Background(), tx, boil.Infer()); err != nil {
+			tx.Rollback()
+
+			return utils.ErrRepositoryFailed
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
 }
 
 func (sqlTattooRepository) includeOpts(include *Include) []QueryMod {

@@ -8,11 +8,8 @@ import "testing"
 func TestUpsert(t *testing.T) {
 	t.Run("Accesses", testAccessesUpsert)
 
-<<<<<<< HEAD
-=======
 	t.Run("AppointmentImages", testAppointmentImagesUpsert)
 
->>>>>>> origin/master
 	t.Run("Appointments", testAppointmentsUpsert)
 
 	t.Run("Auths", testAuthsUpsert)
@@ -35,11 +32,6 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Sessions", testSessionsUpsert)
 
-<<<<<<< HEAD
-	t.Run("SpatialRefSys", testSpatialRefSysUpsert)
-
-=======
->>>>>>> origin/master
 	t.Run("StudioAdmins", testStudioAdminsUpsert)
 
 	t.Run("StudioTattooArtists", testStudioTattooArtistsUpsert)

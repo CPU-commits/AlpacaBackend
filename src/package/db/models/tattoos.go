@@ -145,27 +145,10 @@ func (*tattooR) NewStruct() *tattooR {
 }
 
 func (r *tattooR) GetIDImageImage() *Image {
-<<<<<<< HEAD
 	if r == nil {
 		return nil
 	}
 	return r.IDImageImage
-}
-
-func (r *tattooR) GetIDPostPost() *Post {
-	if r == nil {
-		return nil
-	}
-	return r.IDPostPost
-}
-
-func (r *tattooR) GetIDProfileProfile() *Profile {
-=======
->>>>>>> origin/master
-	if r == nil {
-		return nil
-	}
-	return r.IDProfileProfile
 }
 
 func (r *tattooR) GetIDPostPost() *Post {

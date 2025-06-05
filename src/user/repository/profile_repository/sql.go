@@ -24,8 +24,10 @@ type sqlProfileRepository struct {
 
 type SqlProfileRepository = sqlProfileRepository
 
+// Exclude: "avatar", "user"
 func (sqlProfileRepository) SqlProfileToProfile(
 	profile *models.Profile,
+	exclude ...string,
 ) model.Profile {
 	var avatar *fileModel.Image
 	if profile.R != nil && profile.R.IDAvatarImage != nil {
@@ -40,7 +42,7 @@ func (sqlProfileRepository) SqlProfileToProfile(
 		}
 	}
 	var user *authModel.User
-	if profile.R != nil && profile.R.IDUserUser != nil {
+	if !utils.Includes(exclude, "user") && profile.R != nil && profile.R.IDUserUser != nil {
 		sqlUser := profile.R.IDUserUser
 
 		var roles []authModel.Role
@@ -80,6 +82,9 @@ func (sqlProfileRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 
 	if selectOpts.ID != nil && *selectOpts.ID {
 		mod = append(mod, Select(models.ProfileColumns.ID))
+	}
+	if selectOpts.IDUser != nil && *selectOpts.IDUser {
+		mod = append(mod, Select(models.ProfileColumns.IDUser))
 	}
 	if selectOpts.Avatar != nil && *selectOpts.Avatar {
 		mod = append(mod, Select(models.ProfileColumns.IDAvatar))

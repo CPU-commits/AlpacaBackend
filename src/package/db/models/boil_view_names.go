@@ -4,9 +4,4 @@
 package models
 
 var ViewNames = struct {
-	GeographyColumns string
-	GeometryColumns  string
-}{
-	GeographyColumns: "geography_columns",
-	GeometryColumns:  "geometry_columns",
-}
+}{}

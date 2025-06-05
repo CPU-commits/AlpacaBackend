@@ -4,8 +4,11 @@ import (
 	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/llm"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/llm/openaiprovider"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
@@ -241,6 +244,52 @@ func (publicationService *PublicationService) HandleLike(
 	}
 }
 
+func (publicationService *PublicationService) predictIfPublicationImagesAreTattoos(
+	publication *model.Publication,
+) {
+	imageTattoos, err := utils.ConcurrentFilter(publication.Images, func(image fileModel.Image) (bool, error) {
+		imageUrl, err := publicationService.imageStore.GetURL(image.Key)
+		if err != nil {
+			return false, err
+		}
+		prediction, _, err := openaiprovider.Predict[TattooPredict](
+			llm.PredictSchema{
+				Name:        "tattoo_schema",
+				Description: "determine if is tattoo",
+			},
+			AssistanteMessageTattoo,
+			llm.Message{
+				ImageURL: imageUrl,
+			},
+		)
+		if err != nil {
+			return false, err
+		}
+
+		return prediction.IsTattoo, nil
+	})
+	if err != nil {
+		return
+	}
+	idImages := utils.MapNoError(imageTattoos, func(image fileModel.Image) int64 {
+		return image.ID
+	})
+	tattoos := utils.MapNoError(imageTattoos, func(image fileModel.Image) tattooModel.Tattoo {
+		return tattooModel.Tattoo{
+			Image:         image,
+			Description:   publication.Content,
+			IDPublication: publication.ID,
+			Categories:    publication.Categories,
+		}
+	})
+
+	publicationService.tattooRepository.ConvertImageInTattoo(
+		idImages,
+		tattoos,
+		publication.IDProfile,
+	)
+}
+
 func (publicationService *PublicationService) Publish(
 	publicationDto *dto.PublicationDto,
 	idUser int64,
@@ -252,6 +301,10 @@ func (publicationService *PublicationService) Publish(
 		return nil, err
 	}
 	publication, imagesDto := publicationDto.ToModel()
+	if len(imagesDto) > 5 {
+		return nil, ErrTooManyImages
+	}
+
 	images, err := publicationService.fileService.UploadImages(imagesDto, fmt.Sprintf("publications/%d", idUser))
 	if err != nil {
 		return nil, err
@@ -306,6 +359,9 @@ func (publicationService *PublicationService) Publish(
 		Name:    NEW_PUBLICATION,
 		Payload: utils.Payload(publication),
 	})
+	go publicationService.predictIfPublicationImagesAreTattoos(
+		publication,
+	)
 
 	return publication, nil
 }

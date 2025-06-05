@@ -15,6 +15,7 @@ type SelectOpts struct {
 	ID       *bool
 	Username *bool
 	Name     *bool
+	Email    *bool
 }
 
 type FindOneOptions struct {

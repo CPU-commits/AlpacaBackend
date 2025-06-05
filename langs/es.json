@@ -31,12 +31,22 @@
 	},
 	"publication": {
 		"not_exists": "No existe la publicación",
-		"not_have_access": "No tienes accesso a la publicación"
+		"not_have_access": "No tienes accesso a la publicación",
+		"too_images": "Cada publicación puede tener máximo 5 imágenes"
 	},
 	"file": {
 		"invalid_mime_type": "El tipo de archivo es incorrecto"
 	},
 	"appointment": {
-		"not_tattoo_artist": "El perfil no es un tatuador"
+		"not_tattoo_artist": "El perfil no es un tatuador",
+		"no_have_access": "No tienes acceso o no existe a la cita",
+		"not_created": "La cita se canceló",
+		"scheduled_at_now": "La fecha de agendamiento no puede ser pasada",
+		"scheduled_at_finished": "La fecha de agendamiento no puede ser pasada a la de finzalización",
+		"bussy": "El horario ya está ocupado por otra cita",
+		"finished": "La cita ya finalizó"
+	},
+	"common": {
+		"date_format_error": "El formato de la fecha no es correcto"
 	}
 }

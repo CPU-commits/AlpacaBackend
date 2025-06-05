@@ -104,7 +104,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		authController := new(authController.HttpAuthController)
 		// Define routes
 		auth.POST("/login", authController.Login)
-		auth.POST("/refresh", middleware.JWTMiddleware(), authController.Refresh)
+		auth.POST("/refresh", authController.Refresh)
 		auth.POST("/register", authController.Register)
 	}
 
@@ -145,6 +145,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Define routes
 		appointment.GET("", appointmentController.GetAppointments)
 		appointment.POST("", appointmentController.RequestAppointment)
+		appointment.PATCH(":idAppointment/schedule", appointmentController.ScheduleAppointment)
+		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
