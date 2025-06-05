@@ -222,9 +222,11 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	identifier := c.Query("identifier") // Se debe cambiar por IP o identificador
 
 	if err := httpPC.publicationService.AddView(
 		int64(idPublication),
+		identifier,
 	); err != nil {
 		utils.ResFromErr(c, err)
 		return

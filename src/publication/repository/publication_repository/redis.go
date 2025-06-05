@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
@@ -11,12 +12,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type rdPublicationRepository struct {
+type RdPublicationRepository struct {
 	rd *redis.Client
 }
 
-func NewRdPublicationRepository() rdPublicationRepository {
-	return rdPublicationRepository{
+func NewRdPublicationRepository() RdPublicationRepository {
+	return RdPublicationRepository{
 		rd: db.RClient,
 	}
 }
@@ -30,7 +31,62 @@ type RedisPublication struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
-func (rdPublicationRepository *rdPublicationRepository) Delete(redisPublication *RedisPublication) error {
+func (rdPublicationRepository *RdPublicationRepository) AddView(idPost int64, identifier string) error {
+
+	key := fmt.Sprintf("user_view:%s", identifier)
+	timeExpired := time.Hour * 4
+
+	_, err := rdPublicationRepository.rd.SAdd(context.Background(), key, idPost).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = rdPublicationRepository.rd.Expire(context.Background(), key, timeExpired).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rdPublicationRepository *RdPublicationRepository) ExistView(idPost int64, idUser int64) (bool, error) {
+	isMember, err := rdPublicationRepository.rd.SIsMember(context.TODO(), fmt.Sprintf("user_view:%d", idUser), idPost).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return isMember, nil
+}
+
+// UserViews = Los post visto por el usuario - Son temporales
+func (rdPublicationRepository *RdPublicationRepository) GetAllUserView(identifier string) ([]int64, error) {
+	members, err := rdPublicationRepository.rd.SMembers(context.TODO(), fmt.Sprintf("user_view:%s", identifier)).Result()
+	if err != nil {
+		return []int64{}, nil
+	}
+
+	var userViews []int64
+	for _, member := range members {
+		id, err := strconv.ParseInt(member, 10, 64)
+		if err != nil {
+			fmt.Println("Error convirtiendo a int64:", err)
+			continue
+		}
+		userViews = append(userViews, id)
+	}
+
+	return userViews, nil
+}
+
+func (rdPublicationRepository *RdPublicationRepository) DeleteUserView(idUser int64) error {
+	_, err := rdPublicationRepository.rd.Del(context.Background(), fmt.Sprintf("user_view:%d", idUser)).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(redisPublication *RedisPublication) error {
 
 	_, err := rdPublicationRepository.rd.JSONDel(context.Background(), fmt.Sprintf("publication:%d", redisPublication.IDPublication), "$").Result()
 	if err != nil {
@@ -40,7 +96,7 @@ func (rdPublicationRepository *rdPublicationRepository) Delete(redisPublication 
 	return nil
 }
 
-func (rdPublicationRepository *rdPublicationRepository) GetAllPublications() ([]RedisPublication, error) {
+func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]RedisPublication, error) {
 	var cursor uint64
 	var keys []string
 
@@ -84,7 +140,7 @@ func (rdPublicationRepository *rdPublicationRepository) GetAllPublications() ([]
 	return publications, nil
 }
 
-func (rdPublicationRepository *rdPublicationRepository) AddInteraction(publication *model.Publication) error {
+func (rdPublicationRepository *RdPublicationRepository) AddInteraction(publication *model.Publication) error {
 	post := RedisPublication{
 		IDPublication: publication.ID,
 		IDProfile:     publication.IDProfile,
