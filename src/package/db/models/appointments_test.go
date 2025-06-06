@@ -958,7 +958,7 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
-	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','created','scheduled','canceled')`, `CreatedAt`: `timestamp without time zone`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `HasIdea`: `boolean`, `Height`: `double precision`, `Phone`: `text`, `Width`: `double precision`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `ScheduledAt`: `timestamp without time zone`}
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','scheduled','canceled','created')`, `Phone`: `text`, `HasIdea`: `boolean`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Height`: `double precision`, `Width`: `double precision`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `ScheduledAt`: `timestamp without time zone`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `CreatedAt`: `timestamp without time zone`}
 	_                  = bytes.MinRead
 )
 

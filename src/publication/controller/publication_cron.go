@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 )
 
 type cronPublicationController struct {
@@ -17,7 +18,12 @@ func NewCronPublication(
 	return &cronPublicationController{
 		bus: bus,
 		publicationService: *service.NewPublicationService(
-			*tattooService,
+			*tattooService.NewTattooService(
+				imageStore,
+				*profileService,
+				tattooRepository,
+				*fileService,
+			),
 			*profileService,
 			imageStore,
 			publicationRepository,
