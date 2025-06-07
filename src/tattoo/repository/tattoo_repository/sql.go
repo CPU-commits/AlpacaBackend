@@ -9,10 +9,12 @@ import (
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -20,16 +22,18 @@ import (
 
 type sqlTattooRepository struct {
 	db *sql.DB
+	ts *typesense.Client
 }
 
 func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tattoo {
 	tattoo := model.Tattoo{
-		ID:          sqlTattoo.ID,
-		Likes:       sqlTattoo.Likes,
-		CreatedAt:   sqlTattoo.CreatedAt,
-		Views:       sqlTattoo.Views,
-		Description: sqlTattoo.Description.String,
-		Categories:  sqlTattoo.Categories,
+		ID:            sqlTattoo.ID,
+		Likes:         sqlTattoo.Likes,
+		CreatedAt:     sqlTattoo.CreatedAt,
+		Views:         sqlTattoo.Views,
+		IDPublication: sqlTattoo.IDPost.Int64,
+		Description:   sqlTattoo.Description.String,
+		Categories:    sqlTattoo.Categories,
 	}
 	if sqlTattoo.R != nil && sqlTattoo.R.IDImageImage != nil {
 		sqlImage := sqlTattoo.R.IDImageImage
@@ -45,7 +49,14 @@ func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tat
 	}
 
 	if sqlTattoo.R != nil && sqlTattoo.R.IDProfileProfile != nil {
-		tattoo.Profile = &userModel.Profile{}
+		profile := sqlTattoo.R.IDProfileProfile
+		tattoo.Profile = &userModel.Profile{
+			ID:          profile.ID,
+			Description: profile.Description.String,
+			IDUser:      profile.IDUser,
+			Likes:       profile.Likes,
+			CreatedAt:   profile.CreatedAt,
+		}
 
 		if sqlTattoo.R.IDProfileProfile.R.IDAvatarImage != nil {
 			avatar := sqlTattoo.R.IDProfileProfile.R.IDAvatarImage
@@ -162,17 +173,17 @@ func (sqlTR sqlTattooRepository) ConvertImageInTattoo(
 	idImages []int64,
 	tattoos []model.Tattoo,
 	idProfile int64,
-) error {
+) ([]model.Tattoo, error) {
 	tx, err := sqlTR.db.BeginTx(context.Background(), nil)
 	if err != nil {
-		return utils.ErrRepositoryFailed
+		return nil, utils.ErrRepositoryFailed
 	}
-
 	if _, err := models.PostImages(models.PostImageWhere.IDImage.IN(idImages)).DeleteAll(context.Background(), tx); err != nil {
 		tx.Rollback()
 
-		return utils.ErrRepositoryFailed
+		return nil, utils.ErrRepositoryFailed
 	}
+	var newTattoos []models.Tattoo
 	for _, tattoo := range tattoos {
 		sqlTattoo := sqlTR.tattooModelToSqlTattoo(
 			tattoo,
@@ -183,16 +194,29 @@ func (sqlTR sqlTattooRepository) ConvertImageInTattoo(
 		if err := sqlTattoo.Insert(context.Background(), tx, boil.Infer()); err != nil {
 			tx.Rollback()
 
-			return utils.ErrRepositoryFailed
+			return nil, utils.ErrRepositoryFailed
 		}
+
+		newTatto, err := models.Tattoos(
+			Where("id_image = ?", tattoo.Image.ID),
+			Load(models.TattooRels.IDImageImage),
+			Load(models.TattooRels.IDProfileProfile),
+		).One(context.Background(), tx)
+		if err != nil {
+			tx.Rollback()
+			return nil, utils.ErrRepositoryFailed
+		}
+		newTattoos = append(newTattoos, *newTatto)
 	}
 	if err := tx.Commit(); err != nil {
 		tx.Rollback()
 
-		return utils.ErrRepositoryFailed
+		return nil, utils.ErrRepositoryFailed
 	}
 
-	return nil
+	return utils.MapNoError(newTattoos, func(tattoo models.Tattoo) model.Tattoo {
+		return sqlTR.sqlTattooToTattoo(&tattoo)
+	}), nil
 }
 
 func (sqlTattooRepository) includeOpts(include *Include) []QueryMod {
@@ -330,8 +354,9 @@ func (sqlTR sqlTattooRepository) Update(criteria *Criteria, data UpdateData) err
 	return nil
 }
 
-func NewSqlTattooRepository(db *sql.DB) TattooRepository {
+func NewSqlTattooRepository(sqlDB *sql.DB) TattooRepository {
 	return sqlTattooRepository{
-		db: db,
+		db: sqlDB,
+		ts: db.TSClient,
 	}
 }

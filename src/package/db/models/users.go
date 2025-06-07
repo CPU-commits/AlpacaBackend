@@ -27,9 +27,9 @@ type User struct {
 	ID        int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email     string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Name      string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Phone     null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,32 +39,32 @@ var UserColumns = struct {
 	ID        string
 	Email     string
 	Name      string
+	Username  string
 	Phone     string
 	CreatedAt string
-	Username  string
 }{
 	ID:        "id",
 	Email:     "email",
 	Name:      "name",
+	Username:  "username",
 	Phone:     "phone",
 	CreatedAt: "created_at",
-	Username:  "username",
 }
 
 var UserTableColumns = struct {
 	ID        string
 	Email     string
 	Name      string
+	Username  string
 	Phone     string
 	CreatedAt string
-	Username  string
 }{
 	ID:        "users.id",
 	Email:     "users.email",
 	Name:      "users.name",
+	Username:  "users.username",
 	Phone:     "users.phone",
 	CreatedAt: "users.created_at",
-	Username:  "users.username",
 }
 
 // Generated where
@@ -73,16 +73,16 @@ var UserWhere = struct {
 	ID        whereHelperint64
 	Email     whereHelperstring
 	Name      whereHelperstring
+	Username  whereHelperstring
 	Phone     whereHelpernull_String
 	CreatedAt whereHelpertime_Time
-	Username  whereHelperstring
 }{
 	ID:        whereHelperint64{field: "\"users\".\"id\""},
 	Email:     whereHelperstring{field: "\"users\".\"email\""},
 	Name:      whereHelperstring{field: "\"users\".\"name\""},
+	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Phone:     whereHelpernull_String{field: "\"users\".\"phone\""},
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
-	Username:  whereHelperstring{field: "\"users\".\"username\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -213,7 +213,7 @@ func (r *userR) GetIDTattooArtistStudioTattooArtists() StudioTattooArtistSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "name", "phone", "created_at", "username"}
+	userAllColumns            = []string{"id", "email", "name", "username", "phone", "created_at"}
 	userColumnsWithoutDefault = []string{"email", "name", "username"}
 	userColumnsWithDefault    = []string{"id", "phone", "created_at"}
 	userPrimaryKeyColumns     = []string{"id"}

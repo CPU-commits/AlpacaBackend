@@ -12,6 +12,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -239,7 +240,12 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 	return &HttpPublicationController{
 		bus: bus,
 		publicationService: service.NewPublicationService(
-			*tattooService,
+			*tattooService.NewTattooService(
+				imageStore,
+				*profileService,
+				tattooRepository,
+				*fileService,
+			),
 			*profileService,
 			imageStore,
 			publicationRepository,

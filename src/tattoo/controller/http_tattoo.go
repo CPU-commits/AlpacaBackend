@@ -8,13 +8,18 @@ import (
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
-type HttpTattooController struct{}
+type HttpTattooController struct {
+	bus           bus.Bus
+	tattooService service.TattooService
+}
 
 // Get godoc
 //
@@ -25,7 +30,7 @@ type HttpTattooController struct{}
 //	@Param		page		query		int						true	"numero de pagina"
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/tattoos/{username} [Get]
-func (*HttpTattooController) GetTattoos(c *gin.Context) {
+func (httpTattoo *HttpTattooController) GetTattoos(c *gin.Context) {
 	username := c.Param("username")
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
@@ -34,7 +39,7 @@ func (*HttpTattooController) GetTattoos(c *gin.Context) {
 		return
 	}
 
-	tattoos, metadata, err := tattooService.GetTattoos(username, page)
+	tattoos, metadata, err := httpTattoo.tattooService.GetTattoos(username, page)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -54,10 +59,10 @@ func (*HttpTattooController) GetTattoos(c *gin.Context) {
 //	@Param		username	path		string					true	"username"
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/tattoos/latest/{username} [Get]
-func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
+func (httpTattoo *HttpTattooController) GetLatestTattoos(c *gin.Context) {
 	username := c.Param("username")
 
-	tattoos, err := tattooService.GetLatestTattoos(username)
+	tattoos, err := httpTattoo.tattooService.GetLatestTattoos(username)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -87,7 +92,7 @@ func (*HttpTattooController) GetLatestTattoos(c *gin.Context) {
 //	@Failure		415	{object}	utils.ProblemDetails	"El tipo de imagen es inválido, debe ser jpg/png/webp"
 //	@Failure		400	{object}	utils.ProblemDetails	"Formulario inválido o sin datos de tatuajes"
 //	@Router			/api/tattoos [post]
-func (*HttpTattooController) UploadTattoos(c *gin.Context) {
+func (httpTattoo *HttpTattooController) UploadTattoos(c *gin.Context) {
 	var tattoosDto *dto.TattoosDto
 	if err := c.Bind(&tattoosDto); err != nil {
 		utils.ResErrValidators(c, err)
@@ -126,11 +131,23 @@ func (*HttpTattooController) UploadTattoos(c *gin.Context) {
 	}
 	claims, _ := utils.NewClaimsFromContext(c)
 
-	_, err = tattooService.PublishTattoos(tattooDto, claims.ID)
+	_, err = httpTattoo.tattooService.PublishTattoos(tattooDto, claims.ID)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{})
+}
+
+func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
+	return &HttpTattooController{
+		bus: bus,
+		tattooService: *service.NewTattooService(
+			imageStore,
+			*profileService,
+			tattooRepository,
+			*fileService,
+		),
+	}
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
-	tattooServices "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -47,12 +46,5 @@ var (
 	)
 	fileService = file_service.NewFileService(
 		imageStore,
-	)
-
-	tattooService = tattooServices.NewTattooService(
-		imageStore,
-		*profileService,
-		tattooRepository,
-		*fileService,
 	)
 )

@@ -9,6 +9,10 @@ import (
 
 type QueuePublicationController struct{}
 
+func NewPublicationQueueController() *QueuePublicationController {
+	return &QueuePublicationController{}
+}
+
 func (*QueuePublicationController) IndexPublication(c bus.Context) error {
 	var publication model.Publication
 
@@ -96,8 +100,4 @@ func (*QueuePublicationController) DeletePublication(c bus.Context) error {
 		return c.Kill(err.Error())
 	}
 	return publicationTSRepository.DeletePublication(&publication)
-}
-
-func NewPublicationQueueController() *QueuePublicationController {
-	return &QueuePublicationController{}
 }

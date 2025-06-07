@@ -283,11 +283,23 @@ func (publicationService *PublicationService) predictIfPublicationImagesAreTatto
 		}
 	})
 
-	publicationService.tattooRepository.ConvertImageInTattoo(
+	newTattoos, err := publicationService.tattooRepository.ConvertImageInTattoo(
 		idImages,
 		tattoos,
 		publication.IDProfile,
 	)
+	if err != nil {
+		return
+	}
+
+	for _, newTattoo := range newTattoos {
+		tattoo := newTattoo
+		go publicationService.bus.Publish(bus.Event{
+			Name:    NEW_TATTOO,
+			Payload: utils.Payload(tattoo),
+		})
+	}
+
 }
 
 func (publicationService *PublicationService) Publish(
@@ -479,7 +491,7 @@ func (publicationService *PublicationService) interactionEvent(idPost int64) err
 	if err != nil {
 		return err
 	}
-	publicationService.bus.Publish(bus.Event{
+	go publicationService.bus.Publish(bus.Event{
 		Name:    PUBLICATION_INTERACTION,
 		Payload: utils.Payload(publication),
 	})
@@ -488,7 +500,7 @@ func (publicationService *PublicationService) interactionEvent(idPost int64) err
 }
 
 func (publicationService *PublicationService) UpdateRatings() {
-	publicationService.bus.Publish(bus.Event{
+	go publicationService.bus.Publish(bus.Event{
 		Name: PUBLICATION_UPDATE_RATING,
 	})
 }
