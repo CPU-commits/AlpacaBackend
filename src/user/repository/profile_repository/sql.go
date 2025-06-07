@@ -30,6 +30,17 @@ func (sqlProfileRepository) SqlProfileToProfile(
 	exclude ...string,
 ) model.Profile {
 	var avatar *fileModel.Image
+	if profile.R != nil && profile.R.IDAvatarImage != nil {
+		sqlAvatar := profile.R.IDAvatarImage
+
+		avatar = &fileModel.Image{
+			ID:        sqlAvatar.ID,
+			Key:       sqlAvatar.Key,
+			MimeType:  sqlAvatar.MimeType,
+			Name:      sqlAvatar.Name,
+			CreatedAt: sqlAvatar.CreatedAt,
+		}
+	}
 	var user *authModel.User
 	if !utils.Includes(exclude, "user") && profile.R != nil && profile.R.IDUserUser != nil {
 		sqlUser := profile.R.IDUserUser
