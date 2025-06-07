@@ -64,7 +64,6 @@ func (rdPublicationRepository *RdPublicationRepository) GetAllUserView(identifie
 	if err != nil {
 		return []int64{}, nil
 	}
-
 	var userViews []int64
 	for _, member := range members {
 		id, err := strconv.ParseInt(member, 10, 64)

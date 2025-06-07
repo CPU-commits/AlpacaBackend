@@ -115,7 +115,6 @@ func (*HttpProfileController) GetAllUserViews(c *gin.Context) {
 		utils.ResFromErr(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, GetUserViews{
 		Views: userViews,
 	})

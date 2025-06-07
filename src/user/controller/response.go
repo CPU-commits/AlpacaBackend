@@ -11,5 +11,5 @@ type UpdateProfileResponse struct {
 }
 
 type GetUserViews struct {
-	Views []int64
+	Views []int64 `json:"views"`
 }

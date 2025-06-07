@@ -13,7 +13,7 @@ type GetPublicationsResponse struct {
 }
 
 type GetLikeResponse struct {
-	Islike bool `json:"is_like"`
+	Isliked bool `json:"isLiked"`
 }
 
 type PublicationDtoResponse struct {

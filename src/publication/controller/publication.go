@@ -75,7 +75,7 @@ func (httpPC *HttpPublicationController) GetMyLike(c *gin.Context) {
 	}
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	isLike, err := httpPC.publicationService.GetMyLike(
+	isLiked, err := httpPC.publicationService.GetMyLike(
 		int64(idPost),
 		claims.ID,
 	)
@@ -85,7 +85,7 @@ func (httpPC *HttpPublicationController) GetMyLike(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, GetLikeResponse{
-		Islike: isLike,
+		Isliked: isLiked,
 	})
 }
 
