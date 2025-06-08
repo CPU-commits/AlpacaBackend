@@ -16,6 +16,7 @@ func TestParent(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImages)
 	t.Run("Appointments", testAppointments)
 	t.Run("Auths", testAuths)
+	t.Run("Codes", testCodes)
 	t.Run("Follows", testFollows)
 	t.Run("Images", testImages)
 	t.Run("Likes", testLikes)
@@ -30,6 +31,7 @@ func TestParent(t *testing.T) {
 	t.Run("Studios", testStudios)
 	t.Run("Tattoos", testTattoos)
 	t.Run("TokenPasswords", testTokenPasswords)
+	t.Run("Tokens", testTokens)
 	t.Run("Users", testUsers)
 }
 
@@ -38,6 +40,7 @@ func TestDelete(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesDelete)
 	t.Run("Appointments", testAppointmentsDelete)
 	t.Run("Auths", testAuthsDelete)
+	t.Run("Codes", testCodesDelete)
 	t.Run("Follows", testFollowsDelete)
 	t.Run("Images", testImagesDelete)
 	t.Run("Likes", testLikesDelete)
@@ -52,6 +55,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Studios", testStudiosDelete)
 	t.Run("Tattoos", testTattoosDelete)
 	t.Run("TokenPasswords", testTokenPasswordsDelete)
+	t.Run("Tokens", testTokensDelete)
 	t.Run("Users", testUsersDelete)
 }
 
@@ -60,6 +64,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesQueryDeleteAll)
 	t.Run("Appointments", testAppointmentsQueryDeleteAll)
 	t.Run("Auths", testAuthsQueryDeleteAll)
+	t.Run("Codes", testCodesQueryDeleteAll)
 	t.Run("Follows", testFollowsQueryDeleteAll)
 	t.Run("Images", testImagesQueryDeleteAll)
 	t.Run("Likes", testLikesQueryDeleteAll)
@@ -74,6 +79,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Studios", testStudiosQueryDeleteAll)
 	t.Run("Tattoos", testTattoosQueryDeleteAll)
 	t.Run("TokenPasswords", testTokenPasswordsQueryDeleteAll)
+	t.Run("Tokens", testTokensQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
 }
 
@@ -82,6 +88,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesSliceDeleteAll)
 	t.Run("Appointments", testAppointmentsSliceDeleteAll)
 	t.Run("Auths", testAuthsSliceDeleteAll)
+	t.Run("Codes", testCodesSliceDeleteAll)
 	t.Run("Follows", testFollowsSliceDeleteAll)
 	t.Run("Images", testImagesSliceDeleteAll)
 	t.Run("Likes", testLikesSliceDeleteAll)
@@ -96,6 +103,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Studios", testStudiosSliceDeleteAll)
 	t.Run("Tattoos", testTattoosSliceDeleteAll)
 	t.Run("TokenPasswords", testTokenPasswordsSliceDeleteAll)
+	t.Run("Tokens", testTokensSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
 }
 
@@ -104,6 +112,7 @@ func TestExists(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesExists)
 	t.Run("Appointments", testAppointmentsExists)
 	t.Run("Auths", testAuthsExists)
+	t.Run("Codes", testCodesExists)
 	t.Run("Follows", testFollowsExists)
 	t.Run("Images", testImagesExists)
 	t.Run("Likes", testLikesExists)
@@ -118,6 +127,7 @@ func TestExists(t *testing.T) {
 	t.Run("Studios", testStudiosExists)
 	t.Run("Tattoos", testTattoosExists)
 	t.Run("TokenPasswords", testTokenPasswordsExists)
+	t.Run("Tokens", testTokensExists)
 	t.Run("Users", testUsersExists)
 }
 
@@ -126,6 +136,7 @@ func TestFind(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesFind)
 	t.Run("Appointments", testAppointmentsFind)
 	t.Run("Auths", testAuthsFind)
+	t.Run("Codes", testCodesFind)
 	t.Run("Follows", testFollowsFind)
 	t.Run("Images", testImagesFind)
 	t.Run("Likes", testLikesFind)
@@ -140,6 +151,7 @@ func TestFind(t *testing.T) {
 	t.Run("Studios", testStudiosFind)
 	t.Run("Tattoos", testTattoosFind)
 	t.Run("TokenPasswords", testTokenPasswordsFind)
+	t.Run("Tokens", testTokensFind)
 	t.Run("Users", testUsersFind)
 }
 
@@ -148,6 +160,7 @@ func TestBind(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesBind)
 	t.Run("Appointments", testAppointmentsBind)
 	t.Run("Auths", testAuthsBind)
+	t.Run("Codes", testCodesBind)
 	t.Run("Follows", testFollowsBind)
 	t.Run("Images", testImagesBind)
 	t.Run("Likes", testLikesBind)
@@ -162,6 +175,7 @@ func TestBind(t *testing.T) {
 	t.Run("Studios", testStudiosBind)
 	t.Run("Tattoos", testTattoosBind)
 	t.Run("TokenPasswords", testTokenPasswordsBind)
+	t.Run("Tokens", testTokensBind)
 	t.Run("Users", testUsersBind)
 }
 
@@ -170,6 +184,7 @@ func TestOne(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesOne)
 	t.Run("Appointments", testAppointmentsOne)
 	t.Run("Auths", testAuthsOne)
+	t.Run("Codes", testCodesOne)
 	t.Run("Follows", testFollowsOne)
 	t.Run("Images", testImagesOne)
 	t.Run("Likes", testLikesOne)
@@ -184,6 +199,7 @@ func TestOne(t *testing.T) {
 	t.Run("Studios", testStudiosOne)
 	t.Run("Tattoos", testTattoosOne)
 	t.Run("TokenPasswords", testTokenPasswordsOne)
+	t.Run("Tokens", testTokensOne)
 	t.Run("Users", testUsersOne)
 }
 
@@ -192,6 +208,7 @@ func TestAll(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesAll)
 	t.Run("Appointments", testAppointmentsAll)
 	t.Run("Auths", testAuthsAll)
+	t.Run("Codes", testCodesAll)
 	t.Run("Follows", testFollowsAll)
 	t.Run("Images", testImagesAll)
 	t.Run("Likes", testLikesAll)
@@ -206,6 +223,7 @@ func TestAll(t *testing.T) {
 	t.Run("Studios", testStudiosAll)
 	t.Run("Tattoos", testTattoosAll)
 	t.Run("TokenPasswords", testTokenPasswordsAll)
+	t.Run("Tokens", testTokensAll)
 	t.Run("Users", testUsersAll)
 }
 
@@ -214,6 +232,7 @@ func TestCount(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesCount)
 	t.Run("Appointments", testAppointmentsCount)
 	t.Run("Auths", testAuthsCount)
+	t.Run("Codes", testCodesCount)
 	t.Run("Follows", testFollowsCount)
 	t.Run("Images", testImagesCount)
 	t.Run("Likes", testLikesCount)
@@ -228,6 +247,7 @@ func TestCount(t *testing.T) {
 	t.Run("Studios", testStudiosCount)
 	t.Run("Tattoos", testTattoosCount)
 	t.Run("TokenPasswords", testTokenPasswordsCount)
+	t.Run("Tokens", testTokensCount)
 	t.Run("Users", testUsersCount)
 }
 
@@ -236,6 +256,7 @@ func TestHooks(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesHooks)
 	t.Run("Appointments", testAppointmentsHooks)
 	t.Run("Auths", testAuthsHooks)
+	t.Run("Codes", testCodesHooks)
 	t.Run("Follows", testFollowsHooks)
 	t.Run("Images", testImagesHooks)
 	t.Run("Likes", testLikesHooks)
@@ -250,6 +271,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Studios", testStudiosHooks)
 	t.Run("Tattoos", testTattoosHooks)
 	t.Run("TokenPasswords", testTokenPasswordsHooks)
+	t.Run("Tokens", testTokensHooks)
 	t.Run("Users", testUsersHooks)
 }
 
@@ -262,6 +284,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Appointments", testAppointmentsInsertWhitelist)
 	t.Run("Auths", testAuthsInsert)
 	t.Run("Auths", testAuthsInsertWhitelist)
+	t.Run("Codes", testCodesInsert)
+	t.Run("Codes", testCodesInsertWhitelist)
 	t.Run("Follows", testFollowsInsert)
 	t.Run("Follows", testFollowsInsertWhitelist)
 	t.Run("Images", testImagesInsert)
@@ -290,6 +314,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Tattoos", testTattoosInsertWhitelist)
 	t.Run("TokenPasswords", testTokenPasswordsInsert)
 	t.Run("TokenPasswords", testTokenPasswordsInsertWhitelist)
+	t.Run("Tokens", testTokensInsert)
+	t.Run("Tokens", testTokensInsertWhitelist)
 	t.Run("Users", testUsersInsert)
 	t.Run("Users", testUsersInsertWhitelist)
 }
@@ -299,6 +325,7 @@ func TestReload(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesReload)
 	t.Run("Appointments", testAppointmentsReload)
 	t.Run("Auths", testAuthsReload)
+	t.Run("Codes", testCodesReload)
 	t.Run("Follows", testFollowsReload)
 	t.Run("Images", testImagesReload)
 	t.Run("Likes", testLikesReload)
@@ -313,6 +340,7 @@ func TestReload(t *testing.T) {
 	t.Run("Studios", testStudiosReload)
 	t.Run("Tattoos", testTattoosReload)
 	t.Run("TokenPasswords", testTokenPasswordsReload)
+	t.Run("Tokens", testTokensReload)
 	t.Run("Users", testUsersReload)
 }
 
@@ -321,6 +349,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesReloadAll)
 	t.Run("Appointments", testAppointmentsReloadAll)
 	t.Run("Auths", testAuthsReloadAll)
+	t.Run("Codes", testCodesReloadAll)
 	t.Run("Follows", testFollowsReloadAll)
 	t.Run("Images", testImagesReloadAll)
 	t.Run("Likes", testLikesReloadAll)
@@ -335,6 +364,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Studios", testStudiosReloadAll)
 	t.Run("Tattoos", testTattoosReloadAll)
 	t.Run("TokenPasswords", testTokenPasswordsReloadAll)
+	t.Run("Tokens", testTokensReloadAll)
 	t.Run("Users", testUsersReloadAll)
 }
 
@@ -343,6 +373,7 @@ func TestSelect(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesSelect)
 	t.Run("Appointments", testAppointmentsSelect)
 	t.Run("Auths", testAuthsSelect)
+	t.Run("Codes", testCodesSelect)
 	t.Run("Follows", testFollowsSelect)
 	t.Run("Images", testImagesSelect)
 	t.Run("Likes", testLikesSelect)
@@ -357,6 +388,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Studios", testStudiosSelect)
 	t.Run("Tattoos", testTattoosSelect)
 	t.Run("TokenPasswords", testTokenPasswordsSelect)
+	t.Run("Tokens", testTokensSelect)
 	t.Run("Users", testUsersSelect)
 }
 
@@ -365,6 +397,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesUpdate)
 	t.Run("Appointments", testAppointmentsUpdate)
 	t.Run("Auths", testAuthsUpdate)
+	t.Run("Codes", testCodesUpdate)
 	t.Run("Follows", testFollowsUpdate)
 	t.Run("Images", testImagesUpdate)
 	t.Run("Likes", testLikesUpdate)
@@ -379,6 +412,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Studios", testStudiosUpdate)
 	t.Run("Tattoos", testTattoosUpdate)
 	t.Run("TokenPasswords", testTokenPasswordsUpdate)
+	t.Run("Tokens", testTokensUpdate)
 	t.Run("Users", testUsersUpdate)
 }
 
@@ -387,6 +421,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("AppointmentImages", testAppointmentImagesSliceUpdateAll)
 	t.Run("Appointments", testAppointmentsSliceUpdateAll)
 	t.Run("Auths", testAuthsSliceUpdateAll)
+	t.Run("Codes", testCodesSliceUpdateAll)
 	t.Run("Follows", testFollowsSliceUpdateAll)
 	t.Run("Images", testImagesSliceUpdateAll)
 	t.Run("Likes", testLikesSliceUpdateAll)
@@ -401,5 +436,6 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Studios", testStudiosSliceUpdateAll)
 	t.Run("Tattoos", testTattoosSliceUpdateAll)
 	t.Run("TokenPasswords", testTokenPasswordsSliceUpdateAll)
+	t.Run("Tokens", testTokensSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
 }

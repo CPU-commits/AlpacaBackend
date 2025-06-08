@@ -32,10 +32,17 @@ func (opts *FindOneOptions) Select(selectOpts SelectOpts) *FindOneOptions {
 	return opts
 }
 
+type UserUpdateData struct {
+	Email *string
+	Name  *string
+	Phone *string
+}
+
 type UserRepository interface {
 	FindOneByEmail(email string) (*model.User, error)
 	FindOneByID(id int64) (*model.User, error)
 	FindOne(criteria *Criteria, opts *FindOneOptions) (*model.User, error)
 	Exists(criteria *Criteria) (bool, error)
 	InsertOne(user *model.User, password string) (*model.User, error)
+	UpdateOne(userId int64, data UserUpdateData) error
 }

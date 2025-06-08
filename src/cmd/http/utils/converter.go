@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	generatorService "github.com/CPU-commits/Template_Go-EventDriven/src/generator/services"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -117,5 +118,9 @@ func init() {
 	errorsService[appointmentService.ErrAppointmentIsFinished] = errRes{
 		StatusCode: http.StatusConflict,
 		MessageId:  "appointment.finished",
+	}
+	errorsService[generatorService.ErrCodeNotValid] = errRes{
+		StatusCode: http.StatusUnprocessableEntity,
+		MessageId:  "code.not_valid",
 	}
 }

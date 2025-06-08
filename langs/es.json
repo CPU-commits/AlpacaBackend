@@ -48,5 +48,8 @@
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"
+	},
+	"code": {
+		"not_valid": "El codigo no es valido"
 	}
 }

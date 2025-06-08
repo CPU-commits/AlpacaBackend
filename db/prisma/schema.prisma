@@ -49,23 +49,25 @@ model sessions {
 }
 
 model users {
-  id                 BigInt               @id @default(sequence())
-  email              String               @unique
-  name               String
-  username String @unique
-  phone              String?
-  created_at         DateTime            @default(now()) @db.Timestamp(6)
-  auths              auths[]
-  roles_users        roles_users[]
-  token_passwords    token_passwords[]
-  profile profiles?
-  follows follows[]
-  studios studio_tattoo_artists[]
-  my_studios studio_admins[]
-  reviews reviews[]
-  likes likes[]
+	id                 BigInt               @id @default(sequence())
+	email              String               @unique
+	name               String
+	username String @unique
+	phone              String?
+	created_at         DateTime            @default(now()) @db.Timestamp(6)
+	auths              auths[]
+	roles_users        roles_users[]
+	token_passwords    token_passwords[]
+	profile profiles?
+	follows follows[]
+	studios studio_tattoo_artists[]
+	my_studios studio_admins[]
+	reviews reviews[]
+	likes likes[]
 	userAppointments        appointments[] @relation("UserAppointments")
-  tattooArtistAppointments appointments[] @relation("TattooArtistAppointments")
+	tattooArtistAppointments appointments[] @relation("TattooArtistAppointments")
+	codes codes[]
+	tokens tokens[]
 }
 
 model token_passwords {
@@ -237,6 +239,31 @@ model appointments {
   user          users @relation("UserAppointments", fields: [id_user], references: [id])
   tattoo_artist users @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
 }
+
+model codes{
+	id 				BigInt @id @default(autoincrement())
+	id_user 		BigInt
+	code 			String
+	is_active 		Boolean @default(true)
+	uses_remaining 	BigInt @default(1)
+	type 			String
+	expires_at 		DateTime @db.Timestamp(6)
+	created_at 		DateTime @default(now()) @db.Timestamp(6)
+
+	user users @relation(fields: [id_user], references: [id], onDelete: Cascade)
+}
+
+model tokens{
+	id         BigInt   @id @default(autoincrement())
+	token      String
+	id_user    BigInt
+	is_used    Boolean  @default(false)
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	expires_at DateTime @db.Timestamp(6)
+
+	users      users    @relation(fields: [id_user], references: [id], onDelete: Cascade)
+}
+
 
 enum tattoo_color {
 	black

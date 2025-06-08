@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
@@ -66,6 +67,19 @@ func (userService *UserService) GetUserById(idUser int64) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData) error {
+
+	if _, err := userService.GetUserById(idUser); err != nil {
+		return err
+	}
+
+	return userService.userRepository.UpdateOne(idUser, user_repository.UserUpdateData{
+		Email: &data.Email,
+		Phone: &data.Phone,
+		Name:  &data.Name,
+	})
 }
 
 func NewUserService(
