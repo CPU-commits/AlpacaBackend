@@ -14,6 +14,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
 	httpUtils "github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	generatorCon "github.com/CPU-commits/Template_Go-EventDriven/src/generator/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
@@ -101,11 +102,15 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	auth := router.Group("api/auth")
 	{
 		// Controllers
-		authController := new(authController.HttpAuthController)
+		authControlle := authController.NewAuthHttpController(bus)
+		userController := authController.NewUserHttpController(bus)
 		// Define routes
-		auth.POST("/login", authController.Login)
-		auth.POST("/refresh", authController.Refresh)
-		auth.POST("/register", authController.Register)
+		auth.POST("/login", authControlle.Login)
+		auth.POST("/refresh", authControlle.Refresh)
+		auth.POST("/register", authControlle.Register)
+		auth.PATCH("/password", middleware.JWTMiddleware(), authControlle.UpdatePassword)
+
+		auth.PATCH("/email", middleware.JWTMiddleware(), userController.UpdateEmail)
 	}
 
 	tattoo := router.Group("api/tattoos")
@@ -142,12 +147,19 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	appointment := router.Group("api/appointments", middleware.JWTMiddleware())
 	{
 		// Controllers
-		appointmentController := appointmentController.NewHTTPAppointmentController()
+		appointmentController := appointmentController.NewHTTPAppointmentController(bus)
 		// Define routes
 		appointment.GET("", appointmentController.GetAppointments)
 		appointment.POST("", appointmentController.RequestAppointment)
 		appointment.PATCH(":idAppointment/schedule", appointmentController.ScheduleAppointment)
 		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)
+	}
+	generator := router.Group("api/generators", middleware.JWTMiddleware())
+	{
+		codeController := generatorCon.NewCodeHttpController(bus)
+
+		generator.POST("code", middleware.JWTMiddleware(), codeController.CreateCode)
+		generator.GET("code/verify/:code", middleware.JWTMiddleware(), codeController.VerifyCode)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -26,7 +26,7 @@ type Token struct {
 	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Token     string    `boil:"token" json:"token" toml:"token" yaml:"token"`
 	IDUser    int64     `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
-	IsUsed    bool      `boil:"is_used" json:"is_used" toml:"is_used" yaml:"is_used"`
+	IsActive  bool      `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	ExpiresAt time.Time `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
 
@@ -38,14 +38,14 @@ var TokenColumns = struct {
 	ID        string
 	Token     string
 	IDUser    string
-	IsUsed    string
+	IsActive  string
 	CreatedAt string
 	ExpiresAt string
 }{
 	ID:        "id",
 	Token:     "token",
 	IDUser:    "id_user",
-	IsUsed:    "is_used",
+	IsActive:  "is_active",
 	CreatedAt: "created_at",
 	ExpiresAt: "expires_at",
 }
@@ -54,14 +54,14 @@ var TokenTableColumns = struct {
 	ID        string
 	Token     string
 	IDUser    string
-	IsUsed    string
+	IsActive  string
 	CreatedAt string
 	ExpiresAt string
 }{
 	ID:        "tokens.id",
 	Token:     "tokens.token",
 	IDUser:    "tokens.id_user",
-	IsUsed:    "tokens.is_used",
+	IsActive:  "tokens.is_active",
 	CreatedAt: "tokens.created_at",
 	ExpiresAt: "tokens.expires_at",
 }
@@ -72,14 +72,14 @@ var TokenWhere = struct {
 	ID        whereHelperint64
 	Token     whereHelperstring
 	IDUser    whereHelperint64
-	IsUsed    whereHelperbool
+	IsActive  whereHelperbool
 	CreatedAt whereHelpertime_Time
 	ExpiresAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"tokens\".\"id\""},
 	Token:     whereHelperstring{field: "\"tokens\".\"token\""},
 	IDUser:    whereHelperint64{field: "\"tokens\".\"id_user\""},
-	IsUsed:    whereHelperbool{field: "\"tokens\".\"is_used\""},
+	IsActive:  whereHelperbool{field: "\"tokens\".\"is_active\""},
 	CreatedAt: whereHelpertime_Time{field: "\"tokens\".\"created_at\""},
 	ExpiresAt: whereHelpertime_Time{field: "\"tokens\".\"expires_at\""},
 }
@@ -112,9 +112,9 @@ func (r *tokenR) GetIDUserUser() *User {
 type tokenL struct{}
 
 var (
-	tokenAllColumns            = []string{"id", "token", "id_user", "is_used", "created_at", "expires_at"}
+	tokenAllColumns            = []string{"id", "token", "id_user", "is_active", "created_at", "expires_at"}
 	tokenColumnsWithoutDefault = []string{"token", "id_user", "expires_at"}
-	tokenColumnsWithDefault    = []string{"id", "is_used", "created_at"}
+	tokenColumnsWithDefault    = []string{"id", "is_active", "created_at"}
 	tokenPrimaryKeyColumns     = []string{"id"}
 	tokenGeneratedColumns      = []string{}
 )
@@ -857,135 +857,6 @@ func (o TokenSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 	return rowsAff, nil
 }
 
-// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
-	if o == nil {
-		return errors.New("models: no tokens provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
-	nzDefaults := queries.NonZeroDefaultSet(tokenColumnsWithDefault, o)
-
-	// Build cache key in-line uglily - mysql vs psql problems
-	buf := strmangle.GetBuffer()
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	for _, c := range updateColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	for _, c := range insertColumns.Cols {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	for _, c := range nzDefaults {
-		buf.WriteString(c)
-	}
-	key := buf.String()
-	strmangle.PutBuffer(buf)
-
-	tokenUpsertCacheMut.RLock()
-	cache, cached := tokenUpsertCache[key]
-	tokenUpsertCacheMut.RUnlock()
-
-	var err error
-
-	if !cached {
-		insert, _ := insertColumns.InsertColumnSet(
-			tokenAllColumns,
-			tokenColumnsWithDefault,
-			tokenColumnsWithoutDefault,
-			nzDefaults,
-		)
-
-		update := updateColumns.UpdateColumnSet(
-			tokenAllColumns,
-			tokenPrimaryKeyColumns,
-		)
-
-		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert tokens, could not build update column list")
-		}
-
-		ret := strmangle.SetComplement(tokenAllColumns, strmangle.SetIntersect(insert, update))
-
-		conflict := conflictColumns
-		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
-			if len(tokenPrimaryKeyColumns) == 0 {
-				return errors.New("models: unable to upsert tokens, could not build conflict column list")
-			}
-
-			conflict = make([]string, len(tokenPrimaryKeyColumns))
-			copy(conflict, tokenPrimaryKeyColumns)
-		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"tokens\"", updateOnConflict, ret, update, conflict, insert, opts...)
-
-		cache.valueMapping, err = queries.BindMapping(tokenType, tokenMapping, insert)
-		if err != nil {
-			return err
-		}
-		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(tokenType, tokenMapping, ret)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
-	if len(cache.retMapping) != 0 {
-		returns = queries.PtrsFromMapping(value, cache.retMapping)
-	}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
-	}
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if errors.Is(err, sql.ErrNoRows) {
-			err = nil // Postgres doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
-	}
-	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert tokens")
-	}
-
-	if !cached {
-		tokenUpsertCacheMut.Lock()
-		tokenUpsertCache[key] = cache
-		tokenUpsertCacheMut.Unlock()
-	}
-
-	return o.doAfterUpsertHooks(ctx, exec)
-}
-
 // Delete deletes a single Token record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1156,4 +1027,126 @@ func TokenExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool
 // Exists checks if the Token row exists.
 func (o *Token) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	return TokenExists(ctx, exec, o.ID)
+}
+
+// Upsert attempts an insert using an executor, and does an update or ignore on conflict.
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+	if o == nil {
+		return errors.New("models: no tokens provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
+	}
+
+	nzDefaults := queries.NonZeroDefaultSet(tokenColumnsWithDefault, o)
+
+	// Build cache key in-line uglily - mysql vs psql problems
+	buf := strmangle.GetBuffer()
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
+	}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	tokenUpsertCacheMut.RLock()
+	cache, cached := tokenUpsertCache[key]
+	tokenUpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		insert, ret := insertColumns.InsertColumnSet(
+			tokenAllColumns,
+			tokenColumnsWithDefault,
+			tokenColumnsWithoutDefault,
+			nzDefaults,
+		)
+		update := updateColumns.UpdateColumnSet(
+			tokenAllColumns,
+			tokenPrimaryKeyColumns,
+		)
+
+		if updateOnConflict && len(update) == 0 {
+			return errors.New("models: unable to upsert tokens, could not build update column list")
+		}
+
+		conflict := conflictColumns
+		if len(conflict) == 0 {
+			conflict = make([]string, len(tokenPrimaryKeyColumns))
+			copy(conflict, tokenPrimaryKeyColumns)
+		}
+		cache.query = buildUpsertQueryCockroachDB(dialect, "\"tokens\"", updateOnConflict, ret, update, conflict, insert)
+
+		cache.valueMapping, err = queries.BindMapping(tokenType, tokenMapping, insert)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping(tokenType, tokenMapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
+
+	if boil.DebugMode {
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
+	}
+
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil // CockcorachDB doesn't return anything when there's no update
+		}
+	} else {
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+	}
+	if err != nil {
+		return fmt.Errorf("models: unable to upsert tokens: %w", err)
+	}
+
+	if !cached {
+		tokenUpsertCacheMut.Lock()
+		tokenUpsertCache[key] = cache
+		tokenUpsertCacheMut.Unlock()
+	}
+
+	return o.doAfterUpsertHooks(ctx, exec)
 }

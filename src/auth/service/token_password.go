@@ -3,13 +3,14 @@ package service
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/tokenpassword_repository"
+	tokenRepository "github.com/CPU-commits/Template_Go-EventDriven/src/generator/repository/token_repository"
 )
 
 var tokenPasswordServiceInstance *TokenPasswordService
 
 type TokenPasswordService struct {
 	tokenPasswordRepository tokenpassword_repository.TokenPasswordRepository
-	tokenGenerator          TokenGenerator
+	tokenGenerator          tokenRepository.TokenGenerator
 }
 
 func (tokenPasswordService *TokenPasswordService) NewTokenPassword(
@@ -30,7 +31,10 @@ func (tokenPasswordService *TokenPasswordService) NewTokenPassword(
 	return firstToken, nil
 }
 
-func NewTokenPasswordService(tokenpasswordRepository tokenpassword_repository.TokenPasswordRepository, tokenGenerator TokenGenerator) *TokenPasswordService {
+func NewTokenPasswordService(
+	tokenpasswordRepository tokenpassword_repository.TokenPasswordRepository,
+	tokenGenerator tokenRepository.TokenGenerator,
+) *TokenPasswordService {
 	if tokenPasswordServiceInstance == nil {
 		tokenPasswordServiceInstance = &TokenPasswordService{
 			tokenPasswordRepository: tokenpasswordRepository,

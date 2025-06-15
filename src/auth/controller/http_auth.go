@@ -5,11 +5,31 @@ import (
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/gin-gonic/gin"
 )
 
-type HttpAuthController struct{}
+type HttpAuthController struct {
+	userService service.UserService
+	authService service.AuthService
+}
+
+func NewAuthHttpController(bus bus.Bus) *HttpAuthController {
+	return &HttpAuthController{
+		userService: *service.NewUserService(
+			sqlUserRepository,
+			sqlRoleRepository,
+			bus,
+		),
+		authService: *service.NewAuthService(
+			sqlAuthRepository,
+			sqlUserRepository,
+			bus,
+		),
+	}
+}
 
 // Register godoc
 //
@@ -23,14 +43,14 @@ type HttpAuthController struct{}
 //	@Failure	409		{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
 //
 //	@Router		/api/auth/register [post]
-func (*HttpAuthController) Register(c *gin.Context) {
+func (httpAuth *HttpAuthController) Register(c *gin.Context) {
 	var registerDto *dto.RegisterDto
 
 	if err := c.BindJSON(&registerDto); err != nil {
 		utils.ResErrValidators(c, err)
 		return
 	}
-	if err := authService.Register(registerDto); err != nil {
+	if err := httpAuth.authService.Register(registerDto); err != nil {
 		utils.ResFromErr(c, err)
 		return
 	}
@@ -50,14 +70,14 @@ func (*HttpAuthController) Register(c *gin.Context) {
 //	@Failure	409		{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
 //
 //	@Router		/api/auth/login [post]
-func (*HttpAuthController) Login(c *gin.Context) {
+func (httpAuth *HttpAuthController) Login(c *gin.Context) {
 	var authDto *dto.AuthDto
 
 	if err := c.BindJSON(&authDto); err != nil {
 		utils.ResErrValidators(c, err)
 		return
 	}
-	user, idAuth, err := authService.Login(*authDto)
+	user, idAuth, err := httpAuth.authService.Login(*authDto)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -93,7 +113,7 @@ func (*HttpAuthController) Login(c *gin.Context) {
 //	@Failure	404			{object}	utils.ProblemDetails	"El token no tiene un usuario registrado en la BD"
 //	@Failure	409			{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
 //	@Router		/api/auth/refresh [post]
-func (*HttpAuthController) Refresh(c *gin.Context) {
+func (httpAuth *HttpAuthController) Refresh(c *gin.Context) {
 	refreshToken := c.GetHeader("X-Refresh")
 	if refreshToken == "" {
 		utils.ResWithMessageID(c, "refresh_not_found", http.StatusForbidden)
@@ -111,7 +131,7 @@ func (*HttpAuthController) Refresh(c *gin.Context) {
 		return
 	}
 	// Refresh session with user
-	user, err := userService.GetUserById(int64(metadata.UID))
+	user, err := httpAuth.userService.GetUserById(int64(metadata.UID))
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -140,4 +160,34 @@ func (*HttpAuthController) Refresh(c *gin.Context) {
 		RefreshToken: tokenSession,
 		User:         user,
 	})
+}
+
+// Update Password godoc
+//
+//	@Summary	Actualizar la contraseña
+//	@Tags		auth
+//	@Success	200
+//	@Param		authDto	body		dto.RegisterDto			true	"name, username, email, password, role"
+//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
+//
+//	@Failure	403		{object}	utils.ProblemDetails	"Credenciales inválidas"
+//	@Failure	409		{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
+//
+//	@Router		/api/auth/password [patch]
+func (httpAuth *HttpAuthController) UpdatePassword(c *gin.Context) {
+	var authDto *dto.UpdateAuthPasswordDTO
+
+	if err := c.BindJSON(&authDto); err != nil {
+		utils.ResErrValidators(c, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	if err := httpAuth.authService.UpdatePassword(claims.ID, *authDto); err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }

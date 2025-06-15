@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/access_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/session_repository"
+	tokenRepository "github.com/CPU-commits/Template_Go-EventDriven/src/generator/repository/token_repository"
 )
 
 // Params
@@ -15,16 +16,10 @@ const (
 	maxAccessSessionTime = time.Hour * 3
 )
 
-type TokenGenerator interface {
-	NewSessionToken(expiredAt time.Time, idUser int64) (string, error)
-	NewAccessToken(expiredAt time.Time, user model.User) (string, error)
-	NewFirstTimeToken(IDUser int64) (string, error)
-}
-
 type sessionService struct {
 	sessionRepository session_repository.SessionRepository
 	accessRepository  access_repository.AccessRepository
-	tokenGenerator    TokenGenerator
+	tokenGenerator    tokenRepository.TokenGenerator
 }
 
 func (sessionService *sessionService) NewSession(
@@ -179,7 +174,7 @@ func (sessionService *sessionService) DeleteExpiredSessions() error {
 func NewSessionService(
 	sessionRepository session_repository.SessionRepository,
 	accessRepository access_repository.AccessRepository,
-	tokenGenerator TokenGenerator,
+	tokenGenerator tokenRepository.TokenGenerator,
 ) *sessionService {
 	return &sessionService{
 		sessionRepository: sessionRepository,

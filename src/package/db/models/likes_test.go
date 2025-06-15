@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testLikesUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(likeAllColumns) == len(likePrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := Like{}
+	if err = randomize.Struct(seed, &o, likeDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Like struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Like: %s", err)
+	}
+
+	count, err := Likes().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, likeDBTypes, false, likePrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Like struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Like: %s", err)
+	}
+
+	count, err = Likes().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -494,32 +542,32 @@ func testLikesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testLikeToOnePostUsingIDPostPost(t *testing.T) {
+func testLikeToOneUserUsingIDUserUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local Like
-	var foreign Post
+	var foreign User
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Like struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, postDBTypes, false, postColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Post struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.IDPost = foreign.ID
+	local.IDUser = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.IDPostPost().One(ctx, tx)
+	check, err := local.IDUserUser().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -529,24 +577,24 @@ func testLikeToOnePostUsingIDPostPost(t *testing.T) {
 	}
 
 	ranAfterSelectHook := false
-	AddPostHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Post) error {
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
 		ranAfterSelectHook = true
 		return nil
 	})
 
 	slice := LikeSlice{&local}
-	if err = local.L.LoadIDPostPost(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
+	if err = local.L.LoadIDUserUser(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDPostPost == nil {
+	if local.R.IDUserUser == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.IDPostPost = nil
-	if err = local.L.LoadIDPostPost(ctx, tx, true, &local, nil); err != nil {
+	local.R.IDUserUser = nil
+	if err = local.L.LoadIDUserUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDPostPost == nil {
+	if local.R.IDUserUser == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,32 +664,32 @@ func testLikeToOneProfileUsingIDProfileProfile(t *testing.T) {
 	}
 }
 
-func testLikeToOneUserUsingIDUserUser(t *testing.T) {
+func testLikeToOnePostUsingIDPostPost(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local Like
-	var foreign User
+	var foreign Post
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, likeDBTypes, false, likeColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Like struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, postDBTypes, false, postColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Post struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.IDUser = foreign.ID
+	local.IDPost = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.IDUserUser().One(ctx, tx)
+	check, err := local.IDPostPost().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -651,24 +699,24 @@ func testLikeToOneUserUsingIDUserUser(t *testing.T) {
 	}
 
 	ranAfterSelectHook := false
-	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+	AddPostHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Post) error {
 		ranAfterSelectHook = true
 		return nil
 	})
 
 	slice := LikeSlice{&local}
-	if err = local.L.LoadIDUserUser(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
+	if err = local.L.LoadIDPostPost(ctx, tx, false, (*[]*Like)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDUserUser == nil {
+	if local.R.IDPostPost == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.IDUserUser = nil
-	if err = local.L.LoadIDUserUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.IDPostPost = nil
+	if err = local.L.LoadIDPostPost(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.IDUserUser == nil {
+	if local.R.IDPostPost == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -677,7 +725,7 @@ func testLikeToOneUserUsingIDUserUser(t *testing.T) {
 	}
 }
 
-func testLikeToOneSetOpPostUsingIDPostPost(t *testing.T) {
+func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -685,16 +733,16 @@ func testLikeToOneSetOpPostUsingIDPostPost(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Like
-	var b, c Post
+	var b, c User
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, likeDBTypes, false, strmangle.SetComplement(likePrimaryKeyColumns, likeColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -705,32 +753,32 @@ func testLikeToOneSetOpPostUsingIDPostPost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Post{&b, &c} {
-		err = a.SetIDPostPost(ctx, tx, i != 0, x)
+	for i, x := range []*User{&b, &c} {
+		err = a.SetIDUserUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.IDPostPost != x {
+		if a.R.IDUserUser != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDPostLikes[0] != &a {
+		if x.R.IDUserLikes[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDPost != x.ID {
-			t.Error("foreign key was wrong value", a.IDPost)
+		if a.IDUser != x.ID {
+			t.Error("foreign key was wrong value", a.IDUser)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDPost))
-		reflect.Indirect(reflect.ValueOf(&a.IDPost)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.IDUser))
+		reflect.Indirect(reflect.ValueOf(&a.IDUser)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDPost != x.ID {
-			t.Error("foreign key was wrong value", a.IDPost, x.ID)
+		if a.IDUser != x.ID {
+			t.Error("foreign key was wrong value", a.IDUser, x.ID)
 		}
 	}
 }
@@ -791,7 +839,7 @@ func testLikeToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 		}
 	}
 }
-func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
+func testLikeToOneSetOpPostUsingIDPostPost(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -799,16 +847,16 @@ func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Like
-	var b, c User
+	var b, c Post
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, likeDBTypes, false, strmangle.SetComplement(likePrimaryKeyColumns, likeColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -819,32 +867,32 @@ func testLikeToOneSetOpUserUsingIDUserUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*User{&b, &c} {
-		err = a.SetIDUserUser(ctx, tx, i != 0, x)
+	for i, x := range []*Post{&b, &c} {
+		err = a.SetIDPostPost(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.IDUserUser != x {
+		if a.R.IDPostPost != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDUserLikes[0] != &a {
+		if x.R.IDPostLikes[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDUser != x.ID {
-			t.Error("foreign key was wrong value", a.IDUser)
+		if a.IDPost != x.ID {
+			t.Error("foreign key was wrong value", a.IDPost)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDUser))
-		reflect.Indirect(reflect.ValueOf(&a.IDUser)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.IDPost))
+		reflect.Indirect(reflect.ValueOf(&a.IDPost)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDUser != x.ID {
-			t.Error("foreign key was wrong value", a.IDUser, x.ID)
+		if a.IDPost != x.ID {
+			t.Error("foreign key was wrong value", a.IDPost, x.ID)
 		}
 	}
 }
@@ -923,7 +971,7 @@ func testLikesSelect(t *testing.T) {
 }
 
 var (
-	likeDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `IDPost`: `bigint`, `CreatedAt`: `timestamp without time zone`}
+	likeDBTypes = map[string]string{`ID`: `int8`, `IDUser`: `int8`, `IDProfile`: `int8`, `IDPost`: `int8`, `CreatedAt`: `timestamp`}
 	_           = bytes.MinRead
 )
 
@@ -1035,53 +1083,5 @@ func testLikesSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testLikesUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(likeAllColumns) == len(likePrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := Like{}
-	if err = randomize.Struct(seed, &o, likeDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Like: %s", err)
-	}
-
-	count, err := Likes().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, likeDBTypes, false, likePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Like struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Like: %s", err)
-	}
-
-	count, err = Likes().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

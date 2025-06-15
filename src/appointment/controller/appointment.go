@@ -10,7 +10,9 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
+	authServices "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
@@ -18,6 +20,7 @@ import (
 
 type HttpAppointmentController struct {
 	appointmentService *service.AppointmentService
+	bus                bus.Bus
 }
 
 func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.Context) {
@@ -136,8 +139,16 @@ func (appointmentController *HttpAppointmentController) ScheduleAppointment(c *g
 	c.JSON(http.StatusOK, nil)
 }
 
-func NewHTTPAppointmentController() *HttpAppointmentController {
+func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 	return &HttpAppointmentController{
-		appointmentService: appointmentService,
+		appointmentService: service.NewAppointmentService(
+			*fileService,
+			appointmentRepository,
+			*authServices.NewUserService(
+				userRepository,
+				roleRepository,
+				bus,
+			),
+		),
 	}
 }

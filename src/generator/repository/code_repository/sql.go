@@ -39,12 +39,18 @@ func (sqlCodeRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IsActive != nil {
 		mod = append(mod, Where("is_active = ?", criteria.IsActive))
 	}
+	if criteria.IDUser != 0 {
+		mod = append(mod, Where("id_user = ?", criteria.IDUser))
+	}
+	if criteria.Type != "" {
+		mod = append(mod, Where("type = ?", criteria.Type))
+	}
 
 	return mod
 }
 
-func (sqlCR sqlCodeRepository) InsertOne(code model.Code, duration int64) (*model.Code, error) {
-	expiresAt := time.Now().Add(time.Duration(duration) * time.Minute)
+func (sqlCR sqlCodeRepository) InsertOne(code model.Code, duration time.Duration) (*model.Code, error) {
+	expiresAt := time.Now().Add(duration * time.Minute)
 	sqlCode := models.Code{
 		IDUser:        code.IDUser,
 		Code:          code.Code,
@@ -59,11 +65,13 @@ func (sqlCR sqlCodeRepository) InsertOne(code model.Code, duration int64) (*mode
 	return sqlCR.sqlCodeToCode(sqlCode), nil
 }
 
-func (sqlCR sqlCodeRepository) VerifyCode(code model.Code) (*model.Code, error) {
+func (sqlCR sqlCodeRepository) VerifyCode(code model.Code, codeType string) (*model.Code, error) {
 
 	where := sqlCR.criteriaToWhere(&Criteria{
+		IDUser:   code.IDUser,
 		Code:     code.Code,
 		IsActive: utils.Bool(true),
+		Type:     codeType,
 	})
 	ctx := context.Background()
 	tx, err := sqlCR.db.BeginTx(ctx, nil)
@@ -74,24 +82,23 @@ func (sqlCR sqlCodeRepository) VerifyCode(code model.Code) (*model.Code, error) 
 	sqlCode, err := models.Codes(where...).One(ctx, tx)
 	if err != nil {
 		tx.Rollback()
-
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, utils.ErrRepositoryFailed
 		}
 		return nil, utils.ErrRepositoryFailed
 	}
-
-	if sqlCode.IsActive {
-		sqlCode.IsActive = false
-		if _, err := sqlCode.Update(ctx, tx, boil.Infer()); err != nil {
-			tx.Rollback()
-			return nil, utils.ErrRepositoryFailed
-		}
-
-		return sqlCR.sqlCodeToCode(*sqlCode), nil
+	sqlCode.IsActive = false
+	if _, err := sqlCode.Update(ctx, tx, boil.Infer()); err != nil {
+		tx.Rollback()
+		return nil, utils.ErrRepositoryFailed
+	}
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return nil, utils.ErrRepositoryFailed
 	}
 
-	return nil, nil
+	return sqlCR.sqlCodeToCode(*sqlCode), nil
+
 }
 
 // func (sqlCR sqlCodeRepository) DeleteExpiredCodes() error {

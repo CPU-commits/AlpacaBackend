@@ -123,4 +123,16 @@ func init() {
 		StatusCode: http.StatusUnprocessableEntity,
 		MessageId:  "code.not_valid",
 	}
+	errorsService[generatorService.ErrTokenNotValid] = errRes{
+		StatusCode: http.StatusUnprocessableEntity,
+		MessageId:  "token.not_valid",
+	}
+	errorsService[authService.ErrNotValidToken] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "auth.not_valid_token",
+	}
+	errorsService[generatorService.ErrCodeTypeNotValid] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "code.type_not_valid",
+	}
 }

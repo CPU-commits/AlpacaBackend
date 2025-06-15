@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testReviewsUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(reviewAllColumns) == len(reviewPrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := Review{}
+	if err = randomize.Struct(seed, &o, reviewDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Review struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Review: %s", err)
+	}
+
+	count, err := Reviews().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, reviewDBTypes, false, reviewPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Review struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Review: %s", err)
+	}
+
+	count, err = Reviews().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -494,67 +542,6 @@ func testReviewsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testReviewToOneProfileUsingIDProfileProfile(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Review
-	var foreign Profile
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, reviewDBTypes, false, reviewColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Review struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Profile struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.IDProfile = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.IDProfileProfile().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddProfileHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Profile) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := ReviewSlice{&local}
-	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Review)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDProfileProfile == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.IDProfileProfile = nil
-	if err = local.L.LoadIDProfileProfile(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDProfileProfile == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-	}
-}
-
 func testReviewToOneUserUsingIDUserUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -616,63 +603,67 @@ func testReviewToOneUserUsingIDUserUser(t *testing.T) {
 	}
 }
 
-func testReviewToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
-	var err error
-
+func testReviewToOneProfileUsingIDProfileProfile(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Review
-	var b, c Profile
+	var local Review
+	var foreign Profile
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &local, reviewDBTypes, false, reviewColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Review struct: %s", err)
 	}
-	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Profile struct: %s", err)
 	}
 
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Profile{&b, &c} {
-		err = a.SetIDProfileProfile(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
+	local.IDProfile = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
 
-		if a.R.IDProfileProfile != x {
-			t.Error("relationship struct not set to correct value")
-		}
+	check, err := local.IDProfileProfile().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if x.R.IDProfileReviews[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile)
-		}
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
 
-		zero := reflect.Zero(reflect.TypeOf(a.IDProfile))
-		reflect.Indirect(reflect.ValueOf(&a.IDProfile)).Set(zero)
+	ranAfterSelectHook := false
+	AddProfileHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Profile) error {
+		ranAfterSelectHook = true
+		return nil
+	})
 
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
+	slice := ReviewSlice{&local}
+	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Review)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDProfileProfile == nil {
+		t.Error("struct should have been eager loaded")
+	}
 
-		if a.IDProfile != x.ID {
-			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
-		}
+	local.R.IDProfileProfile = nil
+	if err = local.L.LoadIDProfileProfile(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDProfileProfile == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
 	}
 }
+
 func testReviewToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
@@ -727,6 +718,63 @@ func testReviewToOneSetOpUserUsingIDUserUser(t *testing.T) {
 
 		if a.IDUser != x.ID {
 			t.Error("foreign key was wrong value", a.IDUser, x.ID)
+		}
+	}
+}
+func testReviewToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Review
+	var b, c Profile
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Profile{&b, &c} {
+		err = a.SetIDProfileProfile(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDProfileProfile != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDProfileReviews[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.IDProfile != x.ID {
+			t.Error("foreign key was wrong value", a.IDProfile)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDProfile))
+		reflect.Indirect(reflect.ValueOf(&a.IDProfile)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.IDProfile != x.ID {
+			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
 		}
 	}
 }
@@ -805,7 +853,7 @@ func testReviewsSelect(t *testing.T) {
 }
 
 var (
-	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`}
+	reviewDBTypes = map[string]string{`ID`: `int8`, `IDUser`: `int8`, `IDProfile`: `int8`, `Content`: `string`, `Stars`: `int4`, `CreatedAt`: `timestamp`}
 	_             = bytes.MinRead
 )
 
@@ -917,53 +965,5 @@ func testReviewsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testReviewsUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(reviewAllColumns) == len(reviewPrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := Review{}
-	if err = randomize.Struct(seed, &o, reviewDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Review struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Review: %s", err)
-	}
-
-	count, err := Reviews().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, reviewDBTypes, false, reviewPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Review struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Review: %s", err)
-	}
-
-	count, err = Reviews().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

@@ -12,3 +12,8 @@ type Code struct {
 	ExpiresAt     time.Time `json:"expiresAt"`
 	CreatedAt     time.Time `json:"createdAt"`
 }
+
+var CodeTypeList = []string{
+	"recoveryEmail",
+	"recoveryPassword",
+}

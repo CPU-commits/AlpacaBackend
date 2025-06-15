@@ -15,7 +15,8 @@
 	"auth": {
 		"err_credentials": "Credenciales inválidas",
 		"unable_role": "No se puede registrar con este rol",
-		"exists_email_or_username": "Ya existe el email o el nombre de usuario"
+		"exists_email_or_username": "Ya existe el email o el nombre de usuario",
+		"not_valid_token": "El token no es valido"
 	},
 	"refresh_not_found": "No se encuentra el Header X-Refresh",
 	"session": {
@@ -50,6 +51,10 @@
 		"date_format_error": "El formato de la fecha no es correcto"
 	},
 	"code": {
-		"not_valid": "El codigo no es valido"
+		"not_valid": "El codigo no es valido",
+		"type_not_valid": "El tipo de codigo no es valido"
+	},
+	"token": {
+		"not_valid": "El token no es valido"
 	}
 }

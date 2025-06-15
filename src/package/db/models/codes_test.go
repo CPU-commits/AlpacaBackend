@@ -15,6 +15,54 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+func testCodesUpsert(t *testing.T) {
+	t.Parallel()
+
+	if len(codeAllColumns) == len(codePrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
+	seed := randomize.NewSeed()
+	var err error
+	// Attempt the INSERT side of an UPSERT
+	o := Code{}
+	if err = randomize.Struct(seed, &o, codeDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Code struct: %s", err)
+	}
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Code: %s", err)
+	}
+
+	count, err := Codes().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+
+	// Attempt the UPDATE side of an UPSERT
+	if err = randomize.Struct(seed, &o, codeDBTypes, false, codePrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Code struct: %s", err)
+	}
+
+	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
+		t.Errorf("Unable to upsert Code: %s", err)
+	}
+
+	count, err = Codes().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("want one record, got:", count)
+	}
+}
+
 var (
 	// Relationships sometimes use the reflection helper queries.Equal/queries.Assign
 	// so force a package dependency in case they don't.
@@ -687,7 +735,7 @@ func testCodesSelect(t *testing.T) {
 }
 
 var (
-	codeDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `Code`: `text`, `IsActive`: `boolean`, `UsesRemaining`: `bigint`, `Type`: `text`, `ExpiresAt`: `timestamp without time zone`, `CreatedAt`: `timestamp without time zone`}
+	codeDBTypes = map[string]string{`ID`: `int8`, `IDUser`: `int8`, `Code`: `string`, `IsActive`: `bool`, `UsesRemaining`: `int8`, `Type`: `string`, `ExpiresAt`: `timestamp`, `CreatedAt`: `timestamp`}
 	_           = bytes.MinRead
 )
 
@@ -799,53 +847,5 @@ func testCodesSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
-	}
-}
-
-func testCodesUpsert(t *testing.T) {
-	t.Parallel()
-
-	if len(codeAllColumns) == len(codePrimaryKeyColumns) {
-		t.Skip("Skipping table with only primary key columns")
-	}
-
-	seed := randomize.NewSeed()
-	var err error
-	// Attempt the INSERT side of an UPSERT
-	o := Code{}
-	if err = randomize.Struct(seed, &o, codeDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Code struct: %s", err)
-	}
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Code: %s", err)
-	}
-
-	count, err := Codes().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
-	}
-
-	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, codeDBTypes, false, codePrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Code struct: %s", err)
-	}
-
-	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Code: %s", err)
-	}
-
-	count, err = Codes().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 1 {
-		t.Error("want one record, got:", count)
 	}
 }

@@ -7,11 +7,15 @@ import (
 	"strconv"
 	"strings"
 
+	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
+	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
+
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -145,7 +149,18 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 		bus: bus,
 		tattooService: *service.NewTattooService(
 			imageStore,
-			*profileService,
+			*userServices.NewProfileService(
+				profileRepository,
+				*authService.NewUserService(
+					userRepository,
+					roleRepository,
+					bus,
+				),
+				cloudinary_store.NewCloudinaryImageStore(),
+				*fileService,
+				&followRepository,
+				publicationRDRepository,
+			),
 			tattooRepository,
 			*fileService,
 		),

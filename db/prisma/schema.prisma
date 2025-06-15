@@ -241,7 +241,7 @@ model appointments {
 }
 
 model codes{
-	id 				BigInt @id @default(autoincrement())
+ 	id              BigInt @id @default(sequence())
 	id_user 		BigInt
 	code 			String
 	is_active 		Boolean @default(true)
@@ -254,12 +254,12 @@ model codes{
 }
 
 model tokens{
-	id         BigInt   @id @default(autoincrement())
-	token      String
-	id_user    BigInt
-	is_used    Boolean  @default(false)
-	created_at DateTime @default(now()) @db.Timestamp(6)
-	expires_at DateTime @db.Timestamp(6)
+  	id          BigInt @id @default(sequence())
+	token      	String
+	id_user    	BigInt
+	is_active   Boolean  @default(true)
+	created_at 	DateTime @default(now()) @db.Timestamp(6)
+	expires_at 	DateTime @db.Timestamp(6)
 
 	users      users    @relation(fields: [id_user], references: [id], onDelete: Cascade)
 }

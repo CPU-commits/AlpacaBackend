@@ -65,7 +65,7 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 		params,
 	)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	return nil
 }

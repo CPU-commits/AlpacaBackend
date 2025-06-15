@@ -5,12 +5,17 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	generatorModel "github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
+
+var userService *UserService
 
 type UserService struct {
 	userRepository user_repository.UserRepository
 	roleRepository role_repository.RoleRepository
+	bus            bus.Bus
 }
 
 func (userService *UserService) UserIsTattooArtist(
@@ -75,19 +80,61 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 		return err
 	}
 
-	return userService.userRepository.UpdateOne(idUser, user_repository.UserUpdateData{
-		Email: &data.Email,
-		Phone: &data.Phone,
-		Name:  &data.Name,
+	var dataUpdate user_repository.UserUpdateData
+	if data.Email != "" {
+		dataUpdate.Email = &data.Email
+	}
+
+	if data.Name != "" {
+		dataUpdate.Name = &data.Name
+	}
+	if data.Phone != "" {
+		dataUpdate.Phone = &data.Phone
+	}
+
+	return userService.userRepository.UpdateOne(idUser, dataUpdate)
+}
+
+func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser int64) error {
+
+	var token generatorModel.RedisToken
+	err := userService.bus.Request(
+		bus.Event{
+			Name:    GET_TOKEN_EMAIL_UPDATE,
+			Payload: utils.Payload(idUser),
+		},
+		&token)
+
+	if err != nil {
+		return err
+	}
+	if token.Token == "" {
+		return ErrNotValidToken
+	}
+	if err := userService.UserUpdate(idUser, dto.UserUpdateData{Email: data.NewEmail}); err != nil {
+		return err
+	}
+
+	go userService.bus.Publish(bus.Event{
+		Name:    UPDATE_TOKEN_STATUS,
+		Payload: utils.Payload(token),
 	})
+
+	return nil
+
 }
 
 func NewUserService(
 	userRepository user_repository.UserRepository,
 	roleRepository role_repository.RoleRepository,
+	bus bus.Bus,
 ) *UserService {
-	return &UserService{
-		userRepository: userRepository,
-		roleRepository: roleRepository,
+	if userService == nil {
+		userService = &UserService{
+			userRepository: userRepository,
+			roleRepository: roleRepository,
+			bus:            bus,
+		}
 	}
+	return userService
 }

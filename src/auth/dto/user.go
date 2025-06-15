@@ -11,3 +11,7 @@ type UserUpdateData struct {
 	Name  string `json:"mame,omitempty"`
 	Phone string `json:"phone,omitempty"`
 }
+
+type UpdateAuthEmailDTO struct {
+	NewEmail string `json:"newEmail" binding:"required,email"`
+}

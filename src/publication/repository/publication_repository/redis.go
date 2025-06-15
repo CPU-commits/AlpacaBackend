@@ -43,19 +43,10 @@ func (rdPublicationRepository *RdPublicationRepository) AddView(idPost int64, id
 
 	_, err = rdPublicationRepository.rd.Expire(context.Background(), key, timeExpired).Result()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	return nil
-}
-
-func (rdPublicationRepository *RdPublicationRepository) ExistView(idPost int64, idUser int64) (bool, error) {
-	isMember, err := rdPublicationRepository.rd.SIsMember(context.TODO(), fmt.Sprintf("user_view:%d", idUser), idPost).Result()
-	if err != nil {
-		return false, err
-	}
-
-	return isMember, nil
 }
 
 // UserViews = Los post visto por el usuario - Son temporales

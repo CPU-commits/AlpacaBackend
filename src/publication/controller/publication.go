@@ -7,12 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
+	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -237,16 +239,28 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 }
 
 func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
+	profileService := *userServices.NewProfileService(
+		profileRepository,
+		*authService.NewUserService(
+			userRepository,
+			roleRepository,
+			bus,
+		),
+		imageStore,
+		*fileService,
+		&followRepository,
+		publicationRDRepository,
+	)
 	return &HttpPublicationController{
 		bus: bus,
 		publicationService: service.NewPublicationService(
 			*tattooService.NewTattooService(
 				imageStore,
-				*profileService,
+				profileService,
 				tattooRepository,
 				*fileService,
 			),
-			*profileService,
+			profileService,
 			imageStore,
 			publicationRepository,
 			likeRepository,

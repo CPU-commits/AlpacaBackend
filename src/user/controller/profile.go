@@ -5,13 +5,17 @@ import (
 	"net/http"
 	"strings"
 
+	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/gin-gonic/gin"
 )
 
 type HttpProfileController struct {
+	profileService service.ProfileService
 }
 
 // Get godoc
@@ -23,10 +27,10 @@ type HttpProfileController struct {
 //	@Param		page		query		int						true	"numero de pagina"
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/profiles/{username} [Get]
-func (*HttpProfileController) GetProfile(c *gin.Context) {
+func (httpProfile *HttpProfileController) GetProfile(c *gin.Context) {
 	username := c.Param("username")
 
-	profile, err := profileService.GetProfile(username)
+	profile, err := httpProfile.profileService.GetProfile(username)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -43,7 +47,7 @@ func (*HttpProfileController) GetProfile(c *gin.Context) {
 //	@Param		UpdateProfileDto	body	dto.UpdateProfileDto	true	"username"
 //	@Failure	503					object	utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/profiles [patch]
-func (*HttpProfileController) UpdateProfile(c *gin.Context) {
+func (httpProfile *HttpProfileController) UpdateProfile(c *gin.Context) {
 	var updateProfileDto *dto.UpdateProfileDto
 	if err := c.BindJSON(&updateProfileDto); err != nil {
 		utils.ResErrValidators(c, err)
@@ -51,7 +55,7 @@ func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 	}
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	if err := profileService.UpdateProfile(updateProfileDto, claims.ID); err != nil {
+	if err := httpProfile.profileService.UpdateProfile(updateProfileDto, claims.ID); err != nil {
 		utils.ResFromErr(c, err)
 		return
 	}
@@ -69,7 +73,7 @@ func (*HttpProfileController) UpdateProfile(c *gin.Context) {
 //	@Failure	400		{object}	utils.ProblemDetails				"Archivo no recibido o inválido"
 //	@Failure	503		{object}	utils.ProblemDetails				"Error con la base de datos"
 //	@Router		/api/profiles/avatar [patch]
-func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
+func (httpProfile *HttpProfileController) ChangeAvatar(c *gin.Context) {
 	avatar, err := c.FormFile("avatar")
 	if err != nil {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
@@ -84,7 +88,7 @@ func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
 	claims, _ := utils.NewClaimsFromContext(c)
 	mimeType := mime.TypeByExtension("." + fileSplit[len(fileSplit)-1])
 
-	key, err := profileService.ChangeAvatar(store.ImageDto{
+	key, err := httpProfile.profileService.ChangeAvatar(store.ImageDto{
 		File:     file,
 		Name:     avatar.Filename,
 		MimeType: mimeType,
@@ -107,10 +111,10 @@ func (profileHTTP *HttpProfileController) ChangeAvatar(c *gin.Context) {
 //	@Param		idUser	path		string					true	"idUser"
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/profiles/{idUser}/views [Get]
-func (*HttpProfileController) GetAllUserViews(c *gin.Context) {
+func (httpProfile *HttpProfileController) GetAllUserViews(c *gin.Context) {
 	identifier := c.Param("identifier")
 
-	userViews, err := profileService.GetAllUserView(identifier)
+	userViews, err := httpProfile.profileService.GetAllUserView(identifier)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -121,5 +125,18 @@ func (*HttpProfileController) GetAllUserViews(c *gin.Context) {
 }
 
 func NewHTTProfileController() HttpProfileController {
-	return HttpProfileController{}
+	return HttpProfileController{
+		profileService: *service.NewProfileService(
+			profileRepository,
+			*authService.NewUserService(
+				userRepository,
+				roleRepository,
+				nil,
+			),
+			cloudinary_store.NewCloudinaryImageStore(),
+			*fileService,
+			&followRepository,
+			publicationRDRepository,
+		),
+	}
 }
