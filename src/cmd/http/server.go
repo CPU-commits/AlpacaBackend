@@ -110,6 +110,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		auth.POST("/register", authControlle.Register)
 		auth.PATCH("/password", middleware.JWTMiddleware(), authControlle.UpdatePassword)
 
+		auth.PATCH("/user", middleware.JWTMiddleware(), userController.UpdateUser)
 		auth.PATCH("/email", middleware.JWTMiddleware(), userController.UpdateEmail)
 	}
 

@@ -16,7 +16,8 @@
 		"err_credentials": "Credenciales inválidas",
 		"unable_role": "No se puede registrar con este rol",
 		"exists_email_or_username": "Ya existe el email o el nombre de usuario",
-		"not_valid_token": "El token no es valido"
+		"not_valid_token": "El token no es valido",
+		"invalid_params": "Algunos de los parametros es invalido"
 	},
 	"refresh_not_found": "No se encuentra el Header X-Refresh",
 	"session": {

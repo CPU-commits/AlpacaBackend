@@ -7,7 +7,6 @@ type UserCreatedEvent struct {
 }
 
 type UserUpdateData struct {
-	Email string `json:"email,omitempty"`
 	Name  string `json:"mame,omitempty"`
 	Phone string `json:"phone,omitempty"`
 }

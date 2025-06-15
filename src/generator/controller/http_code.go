@@ -39,8 +39,8 @@ func NewCodeHttpController(bus bus.Bus) *HttpCodeController {
 //	@Tags		code
 //	@Success	201
 //	@Param		newCodeDTO	body		dto.NewCodeDTO			true	"usesRemaining, type y duration"
-//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
-//	@Failure	404		{object}	utils.ProblemDetails	"Usuario no encontrado"
+//	@Failure	503			{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Failure	404			{object}	utils.ProblemDetails	"Usuario no encontrado"
 //	@Router		/api/generators/code [post]
 func (httpCode *HttpCodeController) CreateCode(c *gin.Context) {
 	var newCodeDTO *dto.NewCodeDTO
@@ -66,7 +66,7 @@ func (httpCode *HttpCodeController) CreateCode(c *gin.Context) {
 //	@Summary	Verificar si un codigo es valido
 //	@Tags		code
 //	@Success	200
-//	@Param		CodeDTO	body		dto.CodeDTO			true	"code"
+//	@Param		CodeDTO	body		dto.CodeDTO				true	"code"
 //	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
 //	@Failure	404		{object}	utils.ProblemDetails	"Usuario no encontrado"
 //	@Router		/api/generators/code/verify/{code} [get]

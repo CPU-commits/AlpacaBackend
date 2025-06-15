@@ -29,6 +29,25 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/auth/email": {
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Actualizar el correo electronico",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/api/auth/login": {
             "post": {
                 "tags": [
@@ -52,6 +71,48 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/controller.LoginResponse"
                         }
+                    },
+                    "403": {
+                        "description": "Credenciales inválidas",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "La sesión no existe. Probablemente porque la eliminaron",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password": {
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Actualizar la contraseña",
+                "parameters": [
+                    {
+                        "description": "name, username, email, password, role",
+                        "name": "authDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "403": {
                         "description": "Credenciales inválidas",
@@ -168,6 +229,97 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/auth/user": {
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Actualizar informacion del usuario, name || phone",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/generators/code": {
+            "post": {
+                "tags": [
+                    "code"
+                ],
+                "summary": "Crear codigo",
+                "parameters": [
+                    {
+                        "description": "usesRemaining, type y duration",
+                        "name": "newCodeDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewCodeDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/generators/code/verify/{code}": {
+            "get": {
+                "tags": [
+                    "code"
+                ],
+                "summary": "Verificar si un codigo es valido",
+                "parameters": [
+                    {
+                        "description": "code",
+                        "name": "CodeDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CodeDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/api/profiles": {
             "patch": {
                 "tags": [
@@ -227,6 +379,37 @@ const docTemplate = `{
                         "description": "Archivo no recibido o inválido",
                         "schema": {
                             "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/profiles/{idUser}/views": {
+            "get": {
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Recibir los views temporales de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "idUser",
+                        "name": "idUser",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetUserViews"
                         }
                     },
                     "503": {
@@ -456,6 +639,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/publications/{idPublication}/view": {
+            "post": {
+                "tags": [
+                    "publications"
+                ],
+                "summary": "Añadir una \"view\" a una publicacion",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id de publicacion",
+                        "name": "idPublication",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/api/tattoos": {
             "post": {
                 "description": "` + "`" + `` + "`" + `` + "`" + `json\n{\n\"tattoos\": [\n{\n\"description\": \"Descripción del tatuaje\",\n\"image\": \"archivo_imagen\",\n\"coord\": {\"x\": 100, \"y\": 200},\n}]\n}\n` + "`" + `` + "`" + `` + "`" + `",
@@ -574,7 +785,7 @@ const docTemplate = `{
         "controller.GetLikeResponse": {
             "type": "object",
             "properties": {
-                "is_like": {
+                "isLiked": {
                     "type": "boolean"
                 }
             }
@@ -605,6 +816,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Tattoo"
+                    }
+                }
+            }
+        },
+        "controller.GetUserViews": {
+            "type": "object",
+            "properties": {
+                "views": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
                     }
                 }
             }
@@ -664,6 +886,44 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.CodeDTO": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "idUser": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewCodeDTO": {
+            "type": "object",
+            "required": [
+                "duration",
+                "type",
+                "usesRemaining"
+            ],
+            "properties": {
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "idUser": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "usesRemaining": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -807,6 +1067,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.Tattoo"
                     }
+                },
+                "views": {
+                    "type": "integer"
                 }
             }
         },

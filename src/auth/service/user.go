@@ -81,9 +81,6 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 	}
 
 	var dataUpdate user_repository.UserUpdateData
-	if data.Email != "" {
-		dataUpdate.Email = &data.Email
-	}
 
 	if data.Name != "" {
 		dataUpdate.Name = &data.Name
@@ -111,7 +108,13 @@ func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser 
 	if token.Token == "" {
 		return ErrNotValidToken
 	}
-	if err := userService.UserUpdate(idUser, dto.UserUpdateData{Email: data.NewEmail}); err != nil {
+	if data.NewEmail == "" {
+		return ErrInvalidParams
+	}
+
+	if err := userService.userRepository.UpdateOne(idUser, user_repository.UserUpdateData{
+		Email: &data.NewEmail,
+	}); err != nil {
 		return err
 	}
 

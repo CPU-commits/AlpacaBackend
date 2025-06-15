@@ -4,7 +4,7 @@ consumes:
 definitions:
   controller.GetLikeResponse:
     properties:
-      is_like:
+      isLiked:
         type: boolean
     type: object
   controller.GetPublicationResponse:
@@ -24,6 +24,13 @@ definitions:
       tattoos:
         items:
           $ref: '#/definitions/model.Tattoo'
+        type: array
+    type: object
+  controller.GetUserViews:
+    properties:
+      views:
+        items:
+          type: integer
         type: array
     type: object
   controller.LoginResponse:
@@ -64,6 +71,32 @@ definitions:
     required:
     - password
     - username
+    type: object
+  dto.CodeDTO:
+    properties:
+      code:
+        type: string
+      idUser:
+        type: integer
+    required:
+    - code
+    type: object
+  dto.NewCodeDTO:
+    properties:
+      duration:
+        minimum: 1
+        type: integer
+      idUser:
+        type: integer
+      type:
+        type: string
+      usesRemaining:
+        minimum: 1
+        type: integer
+    required:
+    - duration
+    - type
+    - usesRemaining
     type: object
   dto.RegisterDto:
     properties:
@@ -160,6 +193,8 @@ definitions:
         items:
           $ref: '#/definitions/model.Tattoo'
         type: array
+      views:
+        type: integer
     type: object
   model.Role:
     enum:
@@ -256,6 +291,18 @@ info:
   title: API
   version: "1.0"
 paths:
+  /api/auth/email:
+    patch:
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar el correo electronico
+      tags:
+      - auth
   /api/auth/login:
     post:
       parameters:
@@ -283,6 +330,33 @@ paths:
           schema:
             $ref: '#/definitions/utils.ProblemDetails'
       summary: Loggearse dentro de la aplicación de NeoHome
+      tags:
+      - auth
+  /api/auth/password:
+    patch:
+      parameters:
+      - description: name, username, email, password, role
+        in: body
+        name: authDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterDto'
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: Credenciales inválidas
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "409":
+          description: La sesión no existe. Probablemente porque la eliminaron
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar la contraseña
       tags:
       - auth
   /api/auth/refresh:
@@ -346,6 +420,64 @@ paths:
       summary: Registrase dentro de la aplicación de AlpacaTatto
       tags:
       - auth
+  /api/auth/user:
+    patch:
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar informacion del usuario, name || phone
+      tags:
+      - auth
+  /api/generators/code:
+    post:
+      parameters:
+      - description: usesRemaining, type y duration
+        in: body
+        name: newCodeDTO
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCodeDTO'
+      responses:
+        "201":
+          description: Created
+        "404":
+          description: Usuario no encontrado
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Crear codigo
+      tags:
+      - code
+  /api/generators/code/verify/{code}:
+    get:
+      parameters:
+      - description: code
+        in: body
+        name: CodeDTO
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CodeDTO'
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Usuario no encontrado
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Verificar si un codigo es valido
+      tags:
+      - code
   /api/profiles:
     patch:
       parameters:
@@ -363,6 +495,26 @@ paths:
           schema:
             $ref: '#/definitions/utils.ProblemDetails'
       summary: Actualizar el perfil de un usuario
+      tags:
+      - profile
+  /api/profiles/{idUser}/views:
+    get:
+      parameters:
+      - description: idUser
+        in: path
+        name: idUser
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetUserViews'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir los views temporales de un usuario
       tags:
       - profile
   /api/profiles/{username}:
@@ -498,6 +650,24 @@ paths:
           schema:
             $ref: '#/definitions/utils.ProblemDetails'
       summary: Eliminar una publicacion
+      tags:
+      - publications
+  /api/publications/{idPublication}/view:
+    post:
+      parameters:
+      - description: Id de publicacion
+        in: path
+        name: idPublication
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Añadir una "view" a una publicacion
       tags:
       - publications
   /api/publications/username/{username}:

@@ -135,4 +135,8 @@ func init() {
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "code.type_not_valid",
 	}
+	errorsService[authService.ErrInvalidParams] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "auth.invalid_params",
+	}
 }
