@@ -167,7 +167,7 @@ func (httpAuth *HttpAuthController) Refresh(c *gin.Context) {
 //	@Summary	Actualizar la contraseña
 //	@Tags		auth
 //	@Success	200
-//	@Param		authDto	body		dto.RegisterDto			true	"name, username, email, password, role"
+//	@Param		authDto	body		dto.UpdateAuthPasswordDTO			true	"newPassword"
 //	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
 //
 //	@Failure	403		{object}	utils.ProblemDetails	"Credenciales inválidas"
@@ -177,11 +177,11 @@ func (httpAuth *HttpAuthController) Refresh(c *gin.Context) {
 func (httpAuth *HttpAuthController) UpdatePassword(c *gin.Context) {
 	var authDto *dto.UpdateAuthPasswordDTO
 
-	if err := c.BindJSON(&authDto); err != nil {
+	if err := c.ShouldBindJSON(&authDto); err != nil {
 		utils.ResErrValidators(c, err)
+
 		return
 	}
-
 	claims, _ := utils.NewClaimsFromContext(c)
 
 	if err := httpAuth.authService.UpdatePassword(claims.ID, *authDto); err != nil {

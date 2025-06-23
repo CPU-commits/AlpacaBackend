@@ -6,5 +6,5 @@ type AuthDto struct {
 }
 
 type UpdateAuthPasswordDTO struct {
-	NewPassword string `json:"newPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=6"`
 }

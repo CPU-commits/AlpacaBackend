@@ -35,6 +35,16 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Actualizar el correo electronico",
+                "parameters": [
+                    {
+                        "description": "nuevo email",
+                        "name": "newEmail",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAuthEmailDTO"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -101,12 +111,12 @@ const docTemplate = `{
                 "summary": "Actualizar la contraseña",
                 "parameters": [
                     {
-                        "description": "name, username, email, password, role",
+                        "description": "newPassword",
                         "name": "authDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RegisterDto"
+                            "$ref": "#/definitions/dto.UpdateAuthPasswordDTO"
                         }
                     }
                 ],
@@ -235,6 +245,16 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Actualizar informacion del usuario, name || phone",
+                "parameters": [
+                    {
+                        "description": "name || phone",
+                        "name": "UserUpdateData",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserUpdateData"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -292,13 +312,16 @@ const docTemplate = `{
                 "summary": "Verificar si un codigo es valido",
                 "parameters": [
                     {
+                        "type": "string",
                         "description": "code",
-                        "name": "CodeDTO",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CodeDTO"
-                        }
+                        "name": "code",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "type",
+                        "name": "type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -889,20 +912,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CodeDTO": {
-            "type": "object",
-            "required": [
-                "code"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "idUser": {
-                    "type": "integer"
-                }
-            }
-        },
         "dto.NewCodeDTO": {
             "type": "object",
             "required": [
@@ -957,12 +966,45 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateAuthEmailDTO": {
+            "type": "object",
+            "required": [
+                "newEmail"
+            ],
+            "properties": {
+                "newEmail": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateAuthPasswordDTO": {
+            "type": "object",
+            "required": [
+                "newPassword"
+            ],
+            "properties": {
+                "newPassword": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateProfileDto": {
             "type": "object",
             "properties": {
                 "description": {
                     "type": "string",
                     "maxLength": 500
+                }
+            }
+        },
+        "dto.UserUpdateData": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
                 }
             }
         },
@@ -1137,6 +1179,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "roles": {

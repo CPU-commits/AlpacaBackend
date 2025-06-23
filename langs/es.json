@@ -10,7 +10,8 @@
 	"form": {
 		"error": "Error en el formulario",
 		"required": "Requerido",
-		"min": "Mínimo"
+		"min": "Mínimo",
+		"email": "Email invalido"
 	},
 	"auth": {
 		"err_credentials": "Credenciales inválidas",

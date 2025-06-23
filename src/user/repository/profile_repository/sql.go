@@ -58,6 +58,8 @@ func (sqlProfileRepository) SqlProfileToProfile(
 			ID:        sqlUser.ID,
 			Roles:     roles,
 			Name:      sqlUser.Name,
+			Email:     sqlUser.Email,
+			Phone:     sqlUser.Phone.String,
 			Username:  sqlUser.Username,
 			CreatedAt: sqlUser.CreatedAt,
 		}

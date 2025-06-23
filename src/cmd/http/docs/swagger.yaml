@@ -72,15 +72,6 @@ definitions:
     - password
     - username
     type: object
-  dto.CodeDTO:
-    properties:
-      code:
-        type: string
-      idUser:
-        type: integer
-    required:
-    - code
-    type: object
   dto.NewCodeDTO:
     properties:
       duration:
@@ -120,10 +111,31 @@ definitions:
     - role
     - username
     type: object
+  dto.UpdateAuthEmailDTO:
+    properties:
+      newEmail:
+        type: string
+    required:
+    - newEmail
+    type: object
+  dto.UpdateAuthPasswordDTO:
+    properties:
+      newPassword:
+        type: string
+    required:
+    - newPassword
+    type: object
   dto.UpdateProfileDto:
     properties:
       description:
         maxLength: 500
+        type: string
+    type: object
+  dto.UserUpdateData:
+    properties:
+      name:
+        type: string
+      phone:
         type: string
     type: object
   model.Coord:
@@ -241,6 +253,8 @@ definitions:
         type: integer
       name:
         type: string
+      phone:
+        type: string
       roles:
         items:
           $ref: '#/definitions/model.Role'
@@ -293,6 +307,12 @@ info:
 paths:
   /api/auth/email:
     patch:
+      parameters:
+      - description: nuevo email
+        in: body
+        name: newEmail
+        schema:
+          $ref: '#/definitions/dto.UpdateAuthEmailDTO'
       responses:
         "200":
           description: OK
@@ -335,12 +355,12 @@ paths:
   /api/auth/password:
     patch:
       parameters:
-      - description: name, username, email, password, role
+      - description: newPassword
         in: body
         name: authDto
         required: true
         schema:
-          $ref: '#/definitions/dto.RegisterDto'
+          $ref: '#/definitions/dto.UpdateAuthPasswordDTO'
       responses:
         "200":
           description: OK
@@ -422,6 +442,12 @@ paths:
       - auth
   /api/auth/user:
     patch:
+      parameters:
+      - description: name || phone
+        in: body
+        name: UserUpdateData
+        schema:
+          $ref: '#/definitions/dto.UserUpdateData'
       responses:
         "200":
           description: OK
@@ -459,11 +485,13 @@ paths:
     get:
       parameters:
       - description: code
-        in: body
-        name: CodeDTO
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CodeDTO'
+        in: path
+        name: code
+        type: string
+      - description: type
+        in: query
+        name: type
+        type: string
       responses:
         "200":
           description: OK

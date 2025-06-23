@@ -66,7 +66,8 @@ func (httpCode *HttpCodeController) CreateCode(c *gin.Context) {
 //	@Summary	Verificar si un codigo es valido
 //	@Tags		code
 //	@Success	200
-//	@Param		CodeDTO	body		dto.CodeDTO				true	"code"
+//	@Param		code	path		string					false	"code"
+//	@Param		type	query		string					false	"type"
 //	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
 //	@Failure	404		{object}	utils.ProblemDetails	"Usuario no encontrado"
 //	@Router		/api/generators/code/verify/{code} [get]

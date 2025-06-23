@@ -36,8 +36,10 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 		Load(profile_repository.LoadOpts{
 			Avatar: true,
 			User: &user_repository.SelectOpts{
-				Name: utils.Bool(true),
-				ID:   utils.Bool(true),
+				Name:  utils.Bool(true),
+				ID:    utils.Bool(true),
+				Email: utils.Bool(true),
+				Phone: utils.Bool(true),
 			},
 			Roles: true,
 		})

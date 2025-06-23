@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
@@ -104,15 +103,12 @@ func (sqlTR sqlTokenRepository) DeactiveToken(token model.RedisToken) error {
 
 	tx, err := sqlTR.db.BeginTx(ctx, nil)
 	if err != nil {
-		fmt.Printf("err1: %v\n", err)
 		return utils.ErrRepositoryFailed
 	}
 
 	tokenSql, err := models.Tokens(where...).One(ctx, tx)
 	if err != nil {
 		tx.Rollback()
-		fmt.Printf("err2: %v\n", err)
-
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
@@ -122,15 +118,12 @@ func (sqlTR sqlTokenRepository) DeactiveToken(token model.RedisToken) error {
 	tokenSql.IsActive = false
 
 	if _, err := tokenSql.Update(ctx, tx, boil.Infer()); err != nil {
-		fmt.Printf("err3: %v\n", err)
 		tx.Rollback()
 
 		return utils.ErrRepositoryFailed
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Printf("err4: %v\n", err)
-
 		tx.Rollback()
 		return utils.ErrRepositoryFailed
 	}

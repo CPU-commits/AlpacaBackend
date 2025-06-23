@@ -7,10 +7,10 @@ type UserCreatedEvent struct {
 }
 
 type UserUpdateData struct {
-	Name  string `json:"mame,omitempty"`
+	Name  string `json:"name,omitempty"`
 	Phone string `json:"phone,omitempty"`
 }
 
 type UpdateAuthEmailDTO struct {
-	NewEmail string `json:"newEmail" binding:"required,email"`
+	NewEmail string `json:"newEmail" binding:"required,email" validate:"required"`
 }

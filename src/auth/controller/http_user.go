@@ -30,6 +30,7 @@ func NewUserHttpController(bus bus.Bus) *HttpUserController {
 //
 //	@Summary	Actualizar el correo electronico
 //	@Tags		auth
+//	@Param		newEmail	body dto.UpdateAuthEmailDTO	false	"nuevo email"
 //	@Success	200
 //	@Failure	503	object	utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/auth/email [patch]
@@ -54,6 +55,7 @@ func (httpUser *HttpUserController) UpdateEmail(c *gin.Context) {
 //	@Summary	Actualizar informacion del usuario, name || phone
 //	@Tags		auth
 //	@Success	200
+//	@Param UserUpdateData body dto.UserUpdateData false "name || phone"
 //	@Failure	503	object	utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/auth/user [patch]
 func (httpUser *HttpUserController) UpdateUser(c *gin.Context) {

@@ -28,6 +28,7 @@ func (sqlUserRepository) sqlUserToUser(
 		ID:    sqlUser.ID,
 		Email: sqlUser.Email,
 		Name:  sqlUser.Name,
+		Phone: sqlUser.Phone.String,
 		Roles: utils.MapNoError(roles, func(role string) model.Role {
 			return model.Role(role)
 		}),
@@ -85,6 +86,9 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.Email != nil && *selectOpts.Email {
 		mod = append(mod, Select(models.UserColumns.Email))
+	}
+	if selectOpts.Phone != nil && *selectOpts.Phone {
+		mod = append(mod, Select(models.UserColumns.Phone))
 	}
 	if selectOpts.Username != nil && *selectOpts.Username {
 		mod = append(mod, Select(models.UserColumns.Username))
