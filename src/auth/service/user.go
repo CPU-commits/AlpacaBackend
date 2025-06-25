@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
@@ -112,6 +114,16 @@ func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser 
 		return ErrInvalidParams
 	}
 
+	emailExist, err := userService.userRepository.Exists(&user_repository.Criteria{
+		Email: data.NewEmail,
+	})
+	if err != nil {
+		return err
+	}
+	if emailExist {
+		return ErrExistsEmail
+	}
+
 	if err := userService.userRepository.UpdateOne(idUser, user_repository.UserUpdateData{
 		Email: &data.NewEmail,
 	}); err != nil {
@@ -125,6 +137,36 @@ func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser 
 
 	return nil
 
+}
+
+func (userService *UserService) IsOwner(userId int64, params dto.QueryIsOwner) error {
+	if params.ID == 0 && params.UserName == "" {
+		return ErrInvalidParams
+
+	}
+
+	user, err := userService.userRepository.FindOne(&user_repository.Criteria{
+		Or: []user_repository.Criteria{
+			{
+				Username: params.UserName,
+			},
+			{
+				ID: params.ID,
+			},
+		},
+	}, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("user: %v\n", user)
+	if user == nil {
+		return ErrUserNotFound
+	}
+	if user.ID != userId {
+		return ErrUserNotFound
+	}
+
+	return nil
 }
 
 func NewUserService(

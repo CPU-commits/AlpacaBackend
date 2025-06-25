@@ -121,6 +121,7 @@ definitions:
   dto.UpdateAuthPasswordDTO:
     properties:
       newPassword:
+        minLength: 6
         type: string
     required:
     - newPassword
@@ -305,6 +306,29 @@ info:
   title: API
   version: "1.0"
 paths:
+  /api/auth:
+    get:
+      parameters:
+      - description: idUser
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: userName
+        in: query
+        name: userName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Ver si el usuario es owner
+      tags:
+      - auth
   /api/auth/email:
     patch:
       parameters:

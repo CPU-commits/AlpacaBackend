@@ -112,6 +112,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 
 		auth.PATCH("/user", middleware.JWTMiddleware(), userController.UpdateUser)
 		auth.PATCH("/email", middleware.JWTMiddleware(), userController.UpdateEmail)
+		auth.GET("", middleware.JWTMiddleware(), userController.IsOwner)
 	}
 
 	tattoo := router.Group("api/tattoos")

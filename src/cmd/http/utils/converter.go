@@ -139,4 +139,8 @@ func init() {
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "auth.invalid_params",
 	}
+	errorsService[authService.ErrExistsEmail] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "auth.exist_email",
+	}
 }

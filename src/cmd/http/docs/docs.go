@@ -29,6 +29,41 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/auth": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Ver si el usuario es owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "idUser",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "userName",
+                        "name": "userName",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/api/auth/email": {
             "patch": {
                 "tags": [
@@ -984,7 +1019,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "newPassword": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         },

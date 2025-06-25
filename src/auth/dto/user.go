@@ -14,3 +14,8 @@ type UserUpdateData struct {
 type UpdateAuthEmailDTO struct {
 	NewEmail string `json:"newEmail" binding:"required,email" validate:"required"`
 }
+
+type QueryIsOwner struct {
+	ID       int64  `form:"id,omitempty"`
+	UserName string `form:"userName,omitempty" `
+}

@@ -167,11 +167,11 @@ func (httpAuth *HttpAuthController) Refresh(c *gin.Context) {
 //	@Summary	Actualizar la contraseña
 //	@Tags		auth
 //	@Success	200
-//	@Param		authDto	body		dto.UpdateAuthPasswordDTO			true	"newPassword"
-//	@Failure	503		{object}	utils.ProblemDetails	"Error con la base de datos"
+//	@Param		authDto	body		dto.UpdateAuthPasswordDTO	true	"newPassword"
+//	@Failure	503		{object}	utils.ProblemDetails		"Error con la base de datos"
 //
-//	@Failure	403		{object}	utils.ProblemDetails	"Credenciales inválidas"
-//	@Failure	409		{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
+//	@Failure	403		{object}	utils.ProblemDetails		"Credenciales inválidas"
+//	@Failure	409		{object}	utils.ProblemDetails		"La sesión no existe. Probablemente porque la eliminaron"
 //
 //	@Router		/api/auth/password [patch]
 func (httpAuth *HttpAuthController) UpdatePassword(c *gin.Context) {
