@@ -10,12 +10,18 @@ type Event struct {
 	Metadata map[string]string
 }
 
+type Metadata interface {
+	Get(key string) string
+	GetDefault(key string, defaultValue string) string
+}
+
 type Context struct {
 	Data         []byte
 	BindData     func(toBind interface{}) error
 	Kill         func(reason string) error
 	FollowUp     func(delay time.Duration) error
 	EventTrigger string
+	Metadata     Metadata
 }
 
 type BusResponse struct {

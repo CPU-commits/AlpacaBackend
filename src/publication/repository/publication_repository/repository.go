@@ -7,8 +7,9 @@ import (
 )
 
 type Criteria struct {
-	ID        int64
-	IDProfile int64
+	ID         int64
+	IDProfile  int64
+	Categories []string
 }
 
 type SelectOpts struct {
@@ -99,6 +100,41 @@ type UpdateData struct {
 	SumViews int
 }
 
+type SearchOptions struct {
+	limit      *int
+	skip       *int
+	include    *Include
+	selectOpts *SelectOpts
+}
+
+func (opts *SearchOptions) Limit(limit int) *SearchOptions {
+	opts.limit = &limit
+
+	return opts
+}
+
+func (opts *SearchOptions) Skip(skip int) *SearchOptions {
+	opts.skip = &skip
+
+	return opts
+}
+
+func (opts *SearchOptions) Select(selectOpts SelectOpts) *SearchOptions {
+	opts.selectOpts = &selectOpts
+
+	return opts
+}
+
+func (opts *SearchOptions) Include(include Include) *SearchOptions {
+	opts.include = &include
+
+	return opts
+}
+
+func NewSearchOptions() *SearchOptions {
+	return &SearchOptions{}
+}
+
 type PublicationRepository interface {
 	Insert(publication model.Publication, idProfile int64) (*model.Publication, error)
 	FindOne(criteria *Criteria, opts *FindOneOptions) (*model.Publication, error)
@@ -108,4 +144,5 @@ type PublicationRepository interface {
 	UpdateOne(criteria *Criteria, data UpdateData) error
 	Delete(criteria *Criteria) error
 	FindImages(idPublication int64) ([]fileModel.Image, error)
+	Search(q string, criteria *Criteria, opts *SearchOptions) ([]model.Publication, int64, error)
 }

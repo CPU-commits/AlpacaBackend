@@ -123,11 +123,14 @@ func (appointmentController *HttpAppointmentController) ScheduleAppointment(c *g
 		return
 	}
 	claims, _ := utils.NewClaimsFromContext(c)
+	timezone := c.Query("timezone")
 
 	if err := appointmentController.appointmentService.ScheduleAppointment(
 		int64(idAppointment),
 		claims.ID,
 		*scheduleAppointment,
+		timezone,
+		utils.GetI18nLocalizer(c),
 	); err != nil {
 		utils.ResFromErr(c, err)
 		return

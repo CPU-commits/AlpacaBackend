@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	embeddingapi "github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding/embedding_api"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 )
@@ -23,6 +24,7 @@ func NewCronPublication(
 				*profileService,
 				tattooRepository,
 				*fileService,
+				embeddingapi.NewAPIEmbedding(),
 			),
 			*profileService,
 			imageStore,

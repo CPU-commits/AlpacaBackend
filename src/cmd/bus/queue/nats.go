@@ -18,7 +18,7 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 )
 
-const NATS_QUEUE = "auth"
+const NATS_QUEUE = "main"
 
 type NatsClient struct {
 	conn      *nats.Conn
@@ -92,7 +92,24 @@ func (natsClient *NatsClient) GetStream(stream string) jetstream.Stream {
 func (natsClient *NatsClient) Publish(
 	event bus.Event,
 ) error {
-	_, err := natsClient.js.Publish(context.Background(), string(event.Name), event.Payload)
+	if event.Metadata == nil {
+		_, err := natsClient.js.Publish(
+			context.Background(),
+			string(event.Name),
+			event.Payload,
+		)
+		return err
+	}
+	msg := nats.NewMsg(string(event.Name))
+	for item, value := range event.Metadata {
+		msg.Header.Set(item, value)
+	}
+	msg.Data = event.Payload
+	_, err := natsClient.js.PublishMsg(
+		context.Background(),
+		msg,
+	)
+
 	return err
 }
 
@@ -172,6 +189,7 @@ func (natsClient *NatsClient) SubscribeAndRespond(
 
 				return nil
 			},
+			Metadata: natsClient.newHeaders(msg.Header),
 		})
 		if err != nil {
 			resBytes, _ := json.Marshal(bus.BusResponse{
@@ -189,6 +207,29 @@ func (natsClient *NatsClient) SubscribeAndRespond(
 	})
 	if err != nil {
 		panic(err)
+	}
+}
+
+type Headers struct {
+	headers nats.Header
+}
+
+func (h Headers) Get(key string) string {
+	return h.headers.Get(key)
+}
+
+func (h Headers) GetDefault(key string, defaultValue string) string {
+	v := h.Get(key)
+	if v == "" {
+		v = defaultValue
+	}
+
+	return v
+}
+
+func (*NatsClient) newHeaders(headers nats.Header) bus.Metadata {
+	return Headers{
+		headers: headers,
 	}
 }
 
@@ -267,6 +308,7 @@ func (natsClient *NatsClient) Subscribe(
 						}
 						return natsClient.validate.Struct(toBind)
 					},
+					Metadata: natsClient.newHeaders(msg.Headers()),
 				})
 				if err == nil {
 					msg.Ack()

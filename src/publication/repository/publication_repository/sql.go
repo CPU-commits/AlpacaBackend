@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
@@ -21,9 +22,10 @@ import (
 )
 
 type sqlPublicationRepository struct {
-	db                *sql.DB
-	ts                *typesense.Client
-	sqlUserRepository user_repository.SqlUserRepository
+	db                      *sql.DB
+	ts                      *typesense.Client
+	sqlUserRepository       user_repository.SqlUserRepository
+	tsPublicationRepository tsPublicationRepository
 }
 
 func (sqlPublicationRepository) sqlPostToPublication(
@@ -304,6 +306,55 @@ func (sqlPR sqlPublicationRepository) Find(criteria *Criteria, opts *FindOptions
 	}), nil
 }
 
+func (sqlPR sqlPublicationRepository) searchOptionsToMod(opts *SearchOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlPR.includeOpts(opts.include, opts.selectOpts)...)
+	if opts.limit != nil {
+		mod = append(mod, Limit(*opts.limit))
+	}
+	if opts.skip != nil {
+		mod = append(mod, Offset(*opts.skip))
+	}
+
+	return mod
+}
+
+func (sqlPR sqlPublicationRepository) Search(
+	q string,
+	criteria *Criteria,
+	opts *SearchOptions,
+) ([]model.Publication, int64, error) {
+	idPublications, found, err := sqlPR.tsPublicationRepository.Search(q, criteria, opts)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return nil, 0, utils.ErrRepositoryFailed
+	}
+
+	mod := sqlPR.searchOptionsToMod(opts)
+	sqlPublications, err := models.Posts(append(
+		mod,
+		models.PostWhere.ID.IN(idPublications),
+	)...).All(context.Background(), sqlPR.db)
+	if err != nil {
+		return nil, 0, utils.ErrRepositoryFailed
+	}
+	order := make(map[int64]int)
+	for i, id := range idPublications {
+		order[id] = i
+	}
+
+	sort.Slice(sqlPublications, func(i, j int) bool {
+		return order[sqlPublications[i].ID] < order[sqlPublications[j].ID]
+	})
+
+	return utils.MapNoError(sqlPublications, func(post *models.Post) model.Publication {
+		return *sqlPR.sqlPostToPublication(post)
+	}), int64(found), nil
+}
+
 func (sqlPR sqlPublicationRepository) FindOne(criteria *Criteria, opts *FindOneOptions) (*model.Publication, error) {
 	mod := sqlPR.findOneOptionsToMod(opts)
 	where := sqlPR.criteriaToWhere(criteria)
@@ -442,12 +493,13 @@ func (sqlPR sqlPublicationRepository) UpdateOne(criteria *Criteria, data UpdateD
 	return nil
 }
 
-func NewSqlPublicationRepository(sqlDb *sql.DB) PublicationRepository {
+func NewSqlPublicationRepository() PublicationRepository {
 	return sqlPublicationRepository{
-		db: sqlDb,
+		db: db.DB,
 		sqlUserRepository: user_repository.SqlExplicitUserRepository(
-			sqlDb,
+			db.DB,
 		),
-		ts: db.TSClient,
+		ts:                      db.TSClient,
+		tsPublicationRepository: NewTsPublicationRepository(),
 	}
 }

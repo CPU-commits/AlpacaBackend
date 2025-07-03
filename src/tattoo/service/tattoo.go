@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
@@ -19,6 +20,7 @@ type TattooService struct {
 	profileService   service.ProfileService
 	tattooRepository tattoo_repository.TattooRepository
 	fileService      file_service.FileService
+	embedding        embedding.Embedding
 }
 
 func (tattooService *TattooService) updateViews(idTattoos []int64) {
@@ -28,6 +30,68 @@ func (tattooService *TattooService) updateViews(idTattoos []int64) {
 type TattoosMetadata struct {
 	Limit int
 	Total int
+}
+
+func (tattooService *TattooService) GetUrlImageTattoo(
+	idTattoo int64,
+) (string, error) {
+	opts := tattoo_repository.NewFindOneOptions().Include(tattoo_repository.Include{
+		Image: true,
+	})
+
+	tattoo, err := tattooService.tattooRepository.FindOne(
+		&tattoo_repository.Criteria{
+			ID: idTattoo,
+		},
+		opts,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return tattoo.Image.Key, nil
+}
+
+func (tattooService *TattooService) SearchByImage(
+	params SearchByImageParams,
+	page int,
+) ([]model.Tattoo, *TattoosMetadata, error) {
+	limit := 10
+
+	paramsSimilarity := tattoo_repository.SimilarityParams{}
+	if params.Image != nil {
+		embedding, err := tattooService.embedding.EmbedImage(
+			params.Image,
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+		paramsSimilarity.Embedding = embedding
+	} else if params.IsLikeTattooID != 0 {
+		paramsSimilarity.IDTattoo = params.IsLikeTattooID
+	}
+	opts := tattoo_repository.NewSimilarityOptions().
+		Limit(limit).
+		Skip(limit * page).
+		Include(tattoo_repository.Include{
+			Image:         true,
+			Categories:    true,
+			ProfileAvatar: true,
+			ProfileUser:   true,
+		})
+
+	tattoos, total, err := tattooService.tattooRepository.TattooSimilarity(
+		paramsSimilarity,
+		opts,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return tattoos, &TattoosMetadata{
+		Limit: limit,
+		Total: int(total),
+	}, nil
 }
 
 func (tattooService *TattooService) GetTattoos(username string, page int) ([]model.Tattoo, *TattoosMetadata, error) {
@@ -147,7 +211,7 @@ func NewTattooService(
 	profileService service.ProfileService,
 	tattooRepository tattoo_repository.TattooRepository,
 	fileService file_service.FileService,
-
+	embedding embedding.Embedding,
 ) *TattooService {
 	if tattooService == nil {
 		tattooService = &TattooService{
@@ -155,6 +219,7 @@ func NewTattooService(
 			profileService:   profileService,
 			tattooRepository: tattooRepository,
 			fileService:      fileService,
+			embedding:        embedding,
 		}
 	}
 

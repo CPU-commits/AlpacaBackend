@@ -55,6 +55,7 @@ model users {
   username String @unique
   phone              String?
   created_at         DateTime            @default(now()) @db.Timestamp(6)
+  location String?
   auths              auths[]
   roles_users        roles_users[]
   token_passwords    token_passwords[]
@@ -221,6 +222,7 @@ model appointments {
   id_user           BigInt
   id_tattoo_artist  BigInt
   status            appointment_status
+  id_calendar String?
   phone String?
   has_idea Boolean
   area tattoo_area?

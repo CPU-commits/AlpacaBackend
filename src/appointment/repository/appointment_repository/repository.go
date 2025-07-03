@@ -23,6 +23,11 @@ type Sort struct {
 	CreatedAt string
 }
 
+type SelectOpts struct {
+	IDUser     *bool
+	IDCalendar *bool
+}
+
 type findOptions struct {
 	sort  *Sort
 	limit *int64
@@ -66,6 +71,20 @@ func NewFindOptions() *findOptions {
 	return &findOptions{}
 }
 
+type findOneOptions struct {
+	selectOpts *SelectOpts
+}
+
+func (f *findOneOptions) Select(selectOpts SelectOpts) *findOneOptions {
+	f.selectOpts = &selectOpts
+
+	return f
+}
+
+func NewFindOneOptions() *findOneOptions {
+	return &findOneOptions{}
+}
+
 type UpdateData struct {
 	Status          model.AppointmentStatus
 	ScheduledAt     time.Time
@@ -73,10 +92,12 @@ type UpdateData struct {
 	FinishedAt      time.Time
 	UnsetDuration   bool
 	UnsetFinishedAt bool
+	IDCalendar      string
 }
 
 type AppointmentRepository interface {
 	Find(criteria *Criteria, opts *findOptions) ([]model.Appointment, error)
+	FindOne(criteria *Criteria, opts *findOneOptions) (*model.Appointment, error)
 	Count(criteria *Criteria) (int64, error)
 	Exists(criteria *Criteria) (bool, error)
 	Update(criteria *Criteria, data *UpdateData) error

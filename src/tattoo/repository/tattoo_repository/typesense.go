@@ -3,6 +3,8 @@ package tattoo_repository
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
@@ -26,7 +28,7 @@ func NewTsTattooRepository() tsTattooRepository {
 type TSTattoo struct {
 	ID            string  `json:"id"`
 	IDProfile     int64   `json:"id_profile"`
-	IDPublication int64   `json:"id_publication"`
+	IDPublication string  `json:"id_publication"`
 	IDImage       int64   `json:"id_image"`
 	Likes         int32   `json:"likes"`
 	Views         int32   `json:"views"`
@@ -47,14 +49,74 @@ type TSTattoo struct {
 // 	return nil
 // }
 
+func (tsTR *tsTattooRepository) Search(
+	params SimilarityParams,
+	opts *SimilarityOptions,
+) (idTattoos []int64, found int64, err error) {
+	var perPage *int
+	var page *int
+	if opts != nil {
+		perPage = opts.limit
+		if opts.skip != nil && opts.limit != nil {
+			pageInt := (*opts.skip) * (*opts.limit)
+
+			page = &pageInt
+		}
+	}
+
+	var vectorQuery string
+	if params.Embedding != nil {
+		jsonData, _ := json.Marshal(params.Embedding)
+
+		vectorQuery = fmt.Sprintf("embedding:(%v)", string(jsonData))
+	} else if params.IDTattoo != 0 {
+		vectorQuery = fmt.Sprintf("embedding:([], id:%d)", params.IDTattoo)
+	}
+
+	multiSearchResult, err := tsTR.ts.MultiSearch.Perform(
+		context.Background(),
+		&api.MultiSearchParams{},
+		api.MultiSearchSearchesParameter{Searches: []api.MultiSearchCollectionParameters{{
+			Q:           pointer.String("*"),
+			VectorQuery: pointer.String(vectorQuery),
+			SortBy:      pointer.String("rating:desc,_vector_distance:asc"),
+			PerPage:     perPage,
+			Page:        page,
+			Collection:  pointer.String("tattoos"),
+		}}},
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+	result := multiSearchResult.Results[0]
+
+	found = int64(*result.Found)
+	if result.Hits != nil {
+		hits := *result.Hits
+		for _, hit := range hits {
+			tattoo := (*hit.Document)
+			idTattooStr := tattoo["id"].(string)
+			idTattoo, err := strconv.Atoi(idTattooStr)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			idTattoos = append(idTattoos, int64(idTattoo))
+		}
+	}
+
+	return
+}
+
 func (tsTR *tsTattooRepository) IndexTattoo(tattoo *model.Tattoo) error {
 
 	strID := strconv.FormatInt(tattoo.ID, 10)
+	strIDPublication := strconv.FormatInt(tattoo.IDPublication, 10)
 	params := &api.DocumentIndexParameters{}
 	tsTattoo := TSTattoo{
 		ID:            strID,
 		IDProfile:     tattoo.Profile.ID,
-		IDPublication: tattoo.IDPublication,
+		IDPublication: strIDPublication,
 		IDImage:       tattoo.Image.ID,
 		Likes:         int32(tattoo.Likes),
 		Views:         int32(tattoo.Views),
@@ -117,10 +179,13 @@ func init() {
 	client := db.TSClient
 
 	fields := []api.Field{
-		{Name: "id", Type: "string", Facet: pointer.True()},
 		{Name: "id_profile", Type: "int64", Facet: pointer.True()},
-		{Name: "id_image", Type: "int64", Index: pointer.True()},
-		{Name: "id_publication", Type: "int64", Index: pointer.True()},
+		{Name: "id_image", Type: "int64", Facet: pointer.True()},
+		{
+			Name:      "id_publication",
+			Type:      "string",
+			Reference: pointer.String("publications.id"),
+		},
 		{Name: "likes", Type: "int32", Facet: pointer.True()},
 		{Name: "views", Type: "int32", Facet: pointer.True()},
 		{Name: "popularity", Type: "int64", Facet: pointer.True()},

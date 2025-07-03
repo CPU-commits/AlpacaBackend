@@ -114,6 +114,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		tattooController := tattooController.NewTattooHttpController(bus)
 		// Define routes
 		tattoo.GET("/:username", tattooController.GetTattoos)
+		tattoo.GET("/urlKey/:idTattoo", tattooController.GetUrlImageTattoo)
+		tattoo.POST("/searchByImage", tattooController.SearchByImage)
 		tattoo.GET("/latest/:username", tattooController.GetLatestTattoos)
 		tattoo.POST("", middleware.JWTMiddleware(), tattooController.UploadTattoos)
 	}
@@ -133,7 +135,9 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publicationController := publicationController.NewPublicationHttpController(bus)
 		// Define routes
 		publication.GET("/username/:username", publicationController.GetPublications)
+		publication.GET("/:idPost", publicationController.GetPublication)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
+		publication.GET("/search", publicationController.Search)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.POST("/:idPost/view", publicationController.AddViewPublication)

@@ -57,6 +57,7 @@ type Appointment struct {
 	TattooArtist        *authModel.User    `json:"tattooArtist,omitempty"`
 	TattooArtistProfile *userModel.Profile `json:"tattooArtistProfile,omitempty"`
 	IDUser              int64              `json:"idUser"`
+	IDCalendar          string             `json:"idCalendar,omitempty"`
 	UserProfile         *userModel.Profile `json:"userProfile,omitempty"`
 	User                *authModel.User    `json:"user,omitempty"`
 	Status              AppointmentStatus  `json:"status"`

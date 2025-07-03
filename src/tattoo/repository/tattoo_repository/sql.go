@@ -21,8 +21,9 @@ import (
 )
 
 type sqlTattooRepository struct {
-	db *sql.DB
-	ts *typesense.Client
+	db                 *sql.DB
+	ts                 *typesense.Client
+	tsTattooRepository tsTattooRepository
 }
 
 func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tattoo {
@@ -84,6 +85,9 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	mod := []QueryMod{}
 	if criteria == nil {
 		return mod
+	}
+	if criteria.ID != 0 {
+		mod = append(mod, models.TattooWhere.ID.EQ(criteria.ID))
 	}
 	if criteria.IDs != nil {
 		mod = append(mod, models.TattooWhere.ID.IN(criteria.IDs))
@@ -354,9 +358,75 @@ func (sqlTR sqlTattooRepository) Update(criteria *Criteria, data UpdateData) err
 	return nil
 }
 
+func (sqlTR sqlTattooRepository) tattooSimilarityOptionsToMod(opts *SimilarityOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlTR.includeOpts(opts.include)...)
+	if opts.limit != nil {
+		mod = append(mod, Limit(*opts.limit))
+	}
+	if opts.skip != nil {
+		mod = append(mod, Offset(*opts.skip))
+	}
+
+	return mod
+}
+
+func (sqlTR sqlTattooRepository) TattooSimilarity(
+	params SimilarityParams,
+	opts *SimilarityOptions,
+) ([]model.Tattoo, int64, error) {
+	idTattoos, found, err := sqlTR.tsTattooRepository.Search(
+		params,
+		opts,
+	)
+	if err != nil {
+		return nil, 0, utils.ErrRepositoryFailed
+	}
+	mod := sqlTR.tattooSimilarityOptionsToMod(opts)
+
+	tattoos, err := models.Tattoos(append(mod, models.TattooWhere.ID.IN(idTattoos))...).All(context.Background(), sqlTR.db)
+	if err != nil {
+		return nil, 0, utils.ErrRepositoryFailed
+	}
+
+	return utils.MapNoError(tattoos, func(sqlTattoo *models.Tattoo) model.Tattoo {
+		return sqlTR.sqlTattooToTattoo(sqlTattoo)
+	}), found, nil
+}
+
+func (sqlTR sqlTattooRepository) findOneOptionsToMod(opts *FindOneOpts) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlTR.includeOpts(opts.include)...)
+
+	return mod
+}
+
+func (sqlTR sqlTattooRepository) FindOne(criteria *Criteria, opts *FindOneOpts) (*model.Tattoo, error) {
+	where := sqlTR.criteriaToWhere(criteria)
+	mod := sqlTR.findOneOptionsToMod(opts)
+
+	sqlTattoo, err := models.Tattoos(append(mod, where...)...).One(context.Background(), sqlTR.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, utils.ErrRepositoryFailed
+	}
+	tattoo := sqlTR.sqlTattooToTattoo(sqlTattoo)
+
+	return &tattoo, nil
+}
+
 func NewSqlTattooRepository(sqlDB *sql.DB) TattooRepository {
 	return sqlTattooRepository{
-		db: sqlDB,
-		ts: db.TSClient,
+		db:                 sqlDB,
+		ts:                 db.TSClient,
+		tsTattooRepository: NewTsTattooRepository(),
 	}
 }

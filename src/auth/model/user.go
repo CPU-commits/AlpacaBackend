@@ -15,6 +15,7 @@ const (
 
 type User struct {
 	ID        int64     `json:"id,omitempty"`
+	Location  string    `json:"location,omitempty"`
 	Email     string    `json:"email,omitempty"`
 	Name      string    `json:"name"`
 	Username  string    `json:"username"`

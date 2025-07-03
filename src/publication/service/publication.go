@@ -127,6 +127,46 @@ func (publicationService *PublicationService) GetPublication(
 	return publication, nil
 }
 
+func (publicationService *PublicationService) Search(
+	q string,
+	categories []string,
+	page int,
+) ([]model.Publication, *PublicationsMetadata, error) {
+	limit := 10
+	opts := publication_repository.NewSearchOptions().
+		Include(publication_repository.Include{
+			Tattoos:       true,
+			TattoosImage:  true,
+			Images:        true,
+			Categories:    true,
+			Profile:       true,
+			ProfileAvatar: true,
+			ProfileUser:   true,
+		}).
+		Limit(limit).
+		Skip(page * limit).
+		Select(publication_repository.SelectOpts{
+			User: &user_repository.SelectOpts{
+				ID:       utils.Bool(true),
+				Username: utils.Bool(true),
+				Name:     utils.Bool(true),
+			},
+		})
+
+	publications, founded, err := publicationService.publicationRepository.Search(
+		q,
+		&publication_repository.Criteria{
+			Categories: categories,
+		},
+		opts,
+	)
+
+	return publications, &PublicationsMetadata{
+		Total: int(founded),
+		Limit: limit,
+	}, err
+}
+
 func (publicationService *PublicationService) GetMyLike(
 	idPost int64,
 	idUser int64,

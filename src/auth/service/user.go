@@ -68,6 +68,27 @@ func (userService *UserService) GetUserById(idUser int64) (*model.User, error) {
 	return user, nil
 }
 
+func (userService *UserService) GetEmailUserById(idUser int64) (string, error) {
+	opts := user_repository.NewFindOneOptions().Select(user_repository.SelectOpts{
+		Email: utils.Bool(true),
+	})
+
+	user, err := userService.userRepository.FindOne(
+		&user_repository.Criteria{
+			ID: idUser,
+		},
+		opts,
+	)
+	if err != nil {
+		return "", nil
+	}
+	if user == nil {
+		return "", ErrUserNotFound
+	}
+
+	return user.Email, nil
+}
+
 func NewUserService(
 	userRepository user_repository.UserRepository,
 	roleRepository role_repository.RoleRepository,

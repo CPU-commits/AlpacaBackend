@@ -10,14 +10,17 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/calendar"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type AppointmentService struct {
 	fileService           fileService.FileService
 	appointmentRepository appointment_repository.AppointmentRepository
 	userService           service.UserService
+	calendar              calendar.ICalendar
 }
 
 var appointmentService *AppointmentService
@@ -127,7 +130,7 @@ func (appointmentService *AppointmentService) CancelAppointment(
 		return ErrAppointmentIsFinished
 	}
 
-	return appointmentService.appointmentRepository.Update(
+	err = appointmentService.appointmentRepository.Update(
 		&appointment_repository.Criteria{
 			ID: idAppointment,
 		},
@@ -135,12 +138,35 @@ func (appointmentService *AppointmentService) CancelAppointment(
 			Status: model.STATUS_CANCELED,
 		},
 	)
+	go func() {
+		opts := appointment_repository.NewFindOneOptions().Select(
+			appointment_repository.SelectOpts{
+				IDCalendar: utils.Bool(true),
+			},
+		)
+
+		appointment, err := appointmentService.appointmentRepository.FindOne(
+			&appointment_repository.Criteria{
+				ID: idAppointment,
+			},
+			opts,
+		)
+		if err != nil {
+			return
+		}
+
+		appointmentService.calendar.Delete(calendar.EventID(appointment.IDCalendar))
+	}()
+
+	return err
 }
 
 func (appointmentService *AppointmentService) ScheduleAppointment(
 	idAppointment,
 	idTattooArtist int64,
 	scheduleAppointment dto.ScheduleAppointmentDto,
+	timezone string,
+	localizer *i18n.Localizer,
 ) error {
 	scheduledAt, finishedAt, err := scheduleAppointment.ToTimes()
 	if err != nil {
@@ -151,6 +177,13 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 	}
 	if !finishedAt.IsZero() && scheduledAt.After(finishedAt) {
 		return ErrScheduleDateMusteBeAfterFinished
+	}
+	var duration float64
+	if !finishedAt.IsZero() {
+		duration = finishedAt.Sub(scheduledAt).Seconds()
+	} else {
+		duration = 3600 // 1 hora por defecto
+		finishedAt = scheduledAt.Add(1 * time.Hour)
 	}
 
 	if err := appointmentService.hasAccessToAppointment(
@@ -181,6 +214,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 			IDNE:           idAppointment,
 			ScheduledAtGTE: scheduledAt,
 			FinishedAtLTE:  finishedAt,
+			IDTattooArtist: idTattooArtist,
 		},
 	)
 	if err != nil {
@@ -190,15 +224,20 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 		return ErrScheduleIsBussy
 	}
 
-	var duration float64
-	if !finishedAt.IsZero() {
-		duration = finishedAt.Sub(scheduledAt).Seconds()
-	} else {
-		duration = 3600 // 1 hora por defecto
-		finishedAt = scheduledAt.Add(1 * time.Hour)
+	isScheduled, err := appointmentService.appointmentRepository.Exists(&appointment_repository.Criteria{
+		ID:     idAppointment,
+		Status: model.STATUS_SCHEDULED,
+	})
+	if err != nil {
+		return err
+	}
+	var idCalendarStr string
+	if !isScheduled {
+		idCalendar := appointmentService.calendar.GenerateEventID()
+		idCalendarStr = string(idCalendar)
 	}
 
-	return appointmentService.appointmentRepository.Update(
+	if err = appointmentService.appointmentRepository.Update(
 		&appointment_repository.Criteria{
 			ID: idAppointment,
 		},
@@ -207,8 +246,67 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 			ScheduledAt: scheduledAt,
 			FinishedAt:  finishedAt,
 			Duration:    duration,
+			IDCalendar:  idCalendarStr,
 		},
-	)
+	); err != nil {
+		return err
+	}
+
+	var timezoneCalendar string = timezone
+	if timezoneCalendar == "" {
+		timezoneCalendar = "America/Santiago"
+	}
+
+	go func() {
+		opts := appointment_repository.NewFindOneOptions().Select(appointment_repository.SelectOpts{
+			IDUser:     utils.Bool(true),
+			IDCalendar: utils.Bool(true),
+		})
+
+		appointment, err := appointmentService.appointmentRepository.FindOne(
+			&appointment_repository.Criteria{
+				ID: idAppointment,
+			},
+			opts,
+		)
+		if err != nil {
+			return
+		}
+		if !isScheduled {
+			// Get users
+			tattooArtist, err := appointmentService.userService.GetUserById(idTattooArtist)
+			if err != nil {
+				return
+			}
+			userEmail, err := appointmentService.userService.GetEmailUserById(appointment.IDUser)
+			if err != nil {
+				return
+			}
+			appointmentService.calendar.Send(calendar.Event{
+				ID:       calendar.EventID(idCalendarStr),
+				Start:    scheduledAt,
+				End:      finishedAt,
+				TimeZone: timezoneCalendar,
+				Summary: localizer.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "appointment.scheduled",
+					TemplateData: map[string]interface{}{
+						"TattooArtist": tattooArtist.Name,
+					},
+				}),
+				Location:           tattooArtist.Location,
+				ParticipantsEmails: []string{tattooArtist.Email, userEmail},
+			})
+		} else {
+			appointmentService.calendar.Update(calendar.Event{
+				Start:    scheduledAt,
+				End:      finishedAt,
+				TimeZone: timezoneCalendar,
+				ID:       calendar.EventID(appointment.IDCalendar),
+			})
+		}
+	}()
+
+	return nil
 }
 
 func (appointmentService *AppointmentService) RequestAppointment(
@@ -248,12 +346,14 @@ func NewAppointmentService(
 	fileService fileService.FileService,
 	appointmentRepository appointment_repository.AppointmentRepository,
 	userService service.UserService,
+	iCalendar calendar.ICalendar,
 ) *AppointmentService {
 	if appointmentService == nil {
 		appointmentService = &AppointmentService{
 			fileService:           fileService,
 			appointmentRepository: appointmentRepository,
 			userService:           userService,
+			calendar:              iCalendar,
 		}
 	}
 
