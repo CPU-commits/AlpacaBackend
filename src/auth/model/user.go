@@ -18,6 +18,7 @@ type User struct {
 	Location  string    `json:"location,omitempty"`
 	Email     string    `json:"email,omitempty"`
 	Name      string    `json:"name"`
+	Phone     string    `json:"phone,omitempty"`
 	Username  string    `json:"username"`
 	Roles     []Role    `json:"roles,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`

@@ -1,16 +1,31 @@
 package controller
 
 import (
+	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
 
-type QueuePublicationController struct{}
+type QueuePublicationController struct {
+	profileService service.ProfileService
+}
 
-func NewPublicationQueueController() *QueuePublicationController {
-	return &QueuePublicationController{}
+func NewPublicationQueueController(
+	bus bus.Bus,
+) *QueuePublicationController {
+	return &QueuePublicationController{
+		profileService: *service.NewProfileService(
+			profileRepository,
+			*authService.NewUserService(userRepository, roleRepository, bus),
+			imageStore,
+			*fileService,
+			followRepository,
+			publicationRDRepository,
+		),
+	}
 }
 
 func (*QueuePublicationController) IndexPublication(c bus.Context) error {
@@ -35,7 +50,7 @@ func (*QueuePublicationController) InteractionEvent(c bus.Context) error {
 	)
 }
 
-func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
+func (queueController *QueuePublicationController) UpdateRatings(c bus.Context) error {
 	BatchSize := 20
 
 	rPublication, err := publicationRDRepository.GetAllPublications()
@@ -53,7 +68,7 @@ func (*QueuePublicationController) UpdateRatings(c bus.Context) error {
 		if publication == nil {
 			return nil
 		}
-		follows, err := profileService.GetFollows(rPublication.IDProfile)
+		follows, err := queueController.profileService.GetFollows(rPublication.IDProfile)
 		if err != nil {
 			return err
 		}

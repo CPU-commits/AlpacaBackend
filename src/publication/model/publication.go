@@ -12,7 +12,7 @@ type Publication struct {
 	ID         int64                `json:"id"`
 	Content    string               `json:"content"`
 	Likes      int                  `json:"likes"`
-	Views      int                  `json:"Views"`
+	Views      int                  `json:"views"`
 	IDProfile  int64                `json:"idProfile"`
 	Images     []model.Image        `json:"images,omitempty"`
 	Tattoos    []tattooModel.Tattoo `json:"tattoos,omitempty"`

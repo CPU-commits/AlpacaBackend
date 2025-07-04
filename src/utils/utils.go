@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"strings"
 	"time"
@@ -26,11 +29,40 @@ func ExtractWords[T comparable](text string, delimiter string) []T {
 
 func DaysSinceCreation(createdAt time.Time) (int, error) {
 
-	// Truncar ambas fechas al día para contar días calendario
 	createdDate := time.Date(createdAt.Year(), createdAt.Month(), createdAt.Day(), 0, 0, 0, 0, time.UTC)
 	today := time.Now().UTC().Truncate(24 * time.Hour)
 
 	days := int(today.Sub(createdDate).Hours() / 24)
 
 	return days, nil
+}
+
+func VerifyNotExpiredAt(expiration time.Time, clockType string, err error) error {
+	var now time.Time
+
+	switch clockType {
+	case "utc":
+		now = time.Now().UTC()
+	case "local":
+		now = time.Now()
+	default:
+		return errors.New("invalid clock type: must be 'utc' or 'local'")
+	}
+
+	if now.After(expiration) {
+		return err
+	}
+
+	return nil
+}
+
+func GenerateRandomString(length int) (string, error) {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	code := strings.ToUpper(base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b))
+	return code[:length], nil
 }

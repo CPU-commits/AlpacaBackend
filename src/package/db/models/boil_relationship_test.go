@@ -14,6 +14,7 @@ func TestToOne(t *testing.T) {
 	t.Run("AppointmentToUserUsingIDTattooArtistUser", testAppointmentToOneUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserUser", testAppointmentToOneUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserUser", testAuthToOneUserUsingIDUserUser)
+	t.Run("CodeToUserUsingIDUserUser", testCodeToOneUserUsingIDUserUser)
 	t.Run("FollowToProfileUsingIDProfileProfile", testFollowToOneProfileUsingIDProfileProfile)
 	t.Run("FollowToUserUsingIDUserUser", testFollowToOneUserUsingIDUserUser)
 	t.Run("LikeToPostUsingIDPostPost", testLikeToOnePostUsingIDPostPost)
@@ -37,6 +38,7 @@ func TestToOne(t *testing.T) {
 	t.Run("TattooToPostUsingIDPostPost", testTattooToOnePostUsingIDPostPost)
 	t.Run("TattooToProfileUsingIDProfileProfile", testTattooToOneProfileUsingIDProfileProfile)
 	t.Run("TokenPasswordToUserUsingIDUserUser", testTokenPasswordToOneUserUsingIDUserUser)
+	t.Run("TokenToUserUsingIDUserUser", testTokenToOneUserUsingIDUserUser)
 }
 
 // TestOneToOne tests cannot be run in parallel
@@ -70,12 +72,14 @@ func TestToMany(t *testing.T) {
 	t.Run("StudioToIDStudioStudioTattooArtists", testStudioToManyIDStudioStudioTattooArtists)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyIDUserAppointments)
+	t.Run("UserToIDUserCodes", testUserToManyIDUserCodes)
 	t.Run("UserToIDUserFollows", testUserToManyIDUserFollows)
 	t.Run("UserToIDUserLikes", testUserToManyIDUserLikes)
 	t.Run("UserToIDUserReviews", testUserToManyIDUserReviews)
 	t.Run("UserToIDUserRolesUsers", testUserToManyIDUserRolesUsers)
 	t.Run("UserToIDOwnerStudioAdmins", testUserToManyIDOwnerStudioAdmins)
 	t.Run("UserToIDTattooArtistStudioTattooArtists", testUserToManyIDTattooArtistStudioTattooArtists)
+	t.Run("UserToIDUserTokens", testUserToManyIDUserTokens)
 }
 
 // TestToOneSet tests cannot be run in parallel
@@ -87,6 +91,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneSetOpUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserAppointments", testAppointmentToOneSetOpUserUsingIDUserUser)
 	t.Run("AuthToUserUsingIDUserAuth", testAuthToOneSetOpUserUsingIDUserUser)
+	t.Run("CodeToUserUsingIDUserCodes", testCodeToOneSetOpUserUsingIDUserUser)
 	t.Run("FollowToProfileUsingIDProfileFollows", testFollowToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("FollowToUserUsingIDUserFollows", testFollowToOneSetOpUserUsingIDUserUser)
 	t.Run("LikeToPostUsingIDPostLikes", testLikeToOneSetOpPostUsingIDPostPost)
@@ -110,6 +115,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("TattooToPostUsingIDPostTattoos", testTattooToOneSetOpPostUsingIDPostPost)
 	t.Run("TattooToProfileUsingIDProfileTattoos", testTattooToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("TokenPasswordToUserUsingIDUserTokenPassword", testTokenPasswordToOneSetOpUserUsingIDUserUser)
+	t.Run("TokenToUserUsingIDUserTokens", testTokenToOneSetOpUserUsingIDUserUser)
 }
 
 // TestToOneRemove tests cannot be run in parallel
@@ -156,12 +162,14 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("StudioToIDStudioStudioTattooArtists", testStudioToManyAddOpIDStudioStudioTattooArtists)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyAddOpIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyAddOpIDUserAppointments)
+	t.Run("UserToIDUserCodes", testUserToManyAddOpIDUserCodes)
 	t.Run("UserToIDUserFollows", testUserToManyAddOpIDUserFollows)
 	t.Run("UserToIDUserLikes", testUserToManyAddOpIDUserLikes)
 	t.Run("UserToIDUserReviews", testUserToManyAddOpIDUserReviews)
 	t.Run("UserToIDUserRolesUsers", testUserToManyAddOpIDUserRolesUsers)
 	t.Run("UserToIDOwnerStudioAdmins", testUserToManyAddOpIDOwnerStudioAdmins)
 	t.Run("UserToIDTattooArtistStudioTattooArtists", testUserToManyAddOpIDTattooArtistStudioTattooArtists)
+	t.Run("UserToIDUserTokens", testUserToManyAddOpIDUserTokens)
 }
 
 // TestToManySet tests cannot be run in parallel

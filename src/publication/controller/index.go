@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
-	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
@@ -12,7 +11,6 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
-	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 )
 
 var imageStore = cloudinary_store.NewCloudinaryImageStore()
@@ -32,18 +30,6 @@ var (
 
 // Services
 var (
-	userService = authService.NewUserService(
-		userRepository,
-		roleRepository,
-	)
-	profileService = userServices.NewProfileService(
-		profileRepository,
-		*userService,
-		imageStore,
-		*fileService,
-		followRepository,
-		publicationRDRepository,
-	)
 	fileService = file_service.NewFileService(
 		imageStore,
 	)

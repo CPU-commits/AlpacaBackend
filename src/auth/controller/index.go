@@ -8,13 +8,13 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/tokenpassword_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/repository/token_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/jwt"
 )
 
 // Generator
-var generator = utils.NewGeneratorToken()
 
 // Repositories
 var (
@@ -24,6 +24,7 @@ var (
 	sqlAccessRepository        = access_repository.NewSQLAccessRepository(db.DB)
 	sqlTokenPasswordRepository = tokenpassword_repository.NewSQLTokenPasswordRepository(db.DB)
 	sqlRoleRepository          = role_repository.NewSQLRoleRepository()
+	tokenGenerator             = token_repository.NewGeneratorToken(jwt.JwtKey)
 )
 
 // Events
@@ -33,21 +34,13 @@ const (
 
 // Services
 var (
-	authService = service.NewAuthService(
-		sqlAuthRepository,
-		sqlUserRepository,
-	)
 	sessionService = service.NewSessionService(
 		sqlSessionRepository,
 		sqlAccessRepository,
-		generator,
-	)
-	userService = service.NewUserService(
-		sqlUserRepository,
-		sqlRoleRepository,
+		tokenGenerator,
 	)
 	tokenPasswordService = service.NewTokenPasswordService(
 		sqlTokenPasswordRepository,
-		generator,
+		tokenGenerator,
 	)
 )

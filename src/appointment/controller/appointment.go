@@ -11,14 +11,18 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
+	authServices "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type HttpAppointmentController struct {
 	appointmentService *service.AppointmentService
+	bus                bus.Bus
 }
 
 func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.Context) {
@@ -214,8 +218,29 @@ func (appointmentController *HttpAppointmentController) ReviewAppointment(c *gin
 	c.JSON(http.StatusCreated, nil)
 }
 
-func NewHTTPAppointmentController() *HttpAppointmentController {
+func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
+	userService := authServices.NewUserService(
+		userRepository,
+		roleRepository,
+		bus,
+	)
+	profileService := userServices.NewProfileService(
+		profileRepository,
+		*userService,
+		fileStore,
+		*fileService,
+		followRepository,
+		publicationRDRepository,
+	)
+
 	return &HttpAppointmentController{
-		appointmentService: appointmentService,
+		appointmentService: service.NewAppointmentService(
+			*fileService,
+			appointmentRepository,
+			*userService,
+			googleCalendar,
+			reviewRepository,
+			*profileService,
+		),
 	}
 }

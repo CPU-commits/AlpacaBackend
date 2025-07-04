@@ -8,6 +8,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/crypto/bcrypt"
@@ -27,6 +28,7 @@ func (sqlUserRepository) sqlUserToUser(
 		ID:    sqlUser.ID,
 		Email: sqlUser.Email,
 		Name:  sqlUser.Name,
+		Phone: sqlUser.Phone.String,
 		Roles: utils.MapNoError(roles, func(role string) model.Role {
 			return model.Role(role)
 		}),
@@ -85,6 +87,9 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.Email != nil && *selectOpts.Email {
 		mod = append(mod, Select(models.UserColumns.Email))
+	}
+	if selectOpts.Phone != nil && *selectOpts.Phone {
+		mod = append(mod, Select(models.UserColumns.Phone))
 	}
 	if selectOpts.Username != nil && *selectOpts.Username {
 		mod = append(mod, Select(models.UserColumns.Username))
@@ -227,6 +232,37 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 	return sqlUR.sqlUserToUser(&sqlUser, utils.MapNoError(user.Roles, func(role model.Role) string {
 		return string(role)
 	})), nil
+}
+
+func (sqlUR sqlUserRepository) UpdateOne(userId int64, data UserUpdateData) error {
+	user, err := models.FindUser(context.Background(), sqlUR.db, userId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return utils.ErrRepositoryFailed
+	}
+	var cols []string
+
+	if data.Email != nil {
+		user.Email = *data.Email
+		cols = append(cols, models.UserColumns.Email)
+	}
+	if data.Name != nil {
+		user.Name = *data.Name
+		cols = append(cols, models.UserColumns.Name)
+	}
+
+	if data.Phone != nil {
+		user.Phone = null.StringFrom(*data.Phone)
+		cols = append(cols, models.UserColumns.Phone)
+	}
+
+	_, err = user.Update(context.Background(), sqlUR.db, boil.Whitelist(cols...))
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+	return nil
 }
 
 func NewSQLUserRepository(db *sql.DB) UserRepository {

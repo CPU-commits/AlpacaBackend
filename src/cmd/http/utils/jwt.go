@@ -11,7 +11,6 @@ import (
 )
 
 var jwtKey = settings.GetSettings().JWT_SECRET_KEY
-var jwtKeyByte = []byte(jwtKey)
 
 type Claims struct {
 	ID    int64

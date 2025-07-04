@@ -99,24 +99,28 @@ var UserRels = struct {
 	IDUserTokenPassword               string
 	IDTattooArtistAppointments        string
 	IDUserAppointments                string
+	IDUserCodes                       string
 	IDUserFollows                     string
 	IDUserLikes                       string
 	IDUserReviews                     string
 	IDUserRolesUsers                  string
 	IDOwnerStudioAdmins               string
 	IDTattooArtistStudioTattooArtists string
+	IDUserTokens                      string
 }{
 	IDUserAuth:                        "IDUserAuth",
 	IDUserProfile:                     "IDUserProfile",
 	IDUserTokenPassword:               "IDUserTokenPassword",
 	IDTattooArtistAppointments:        "IDTattooArtistAppointments",
 	IDUserAppointments:                "IDUserAppointments",
+	IDUserCodes:                       "IDUserCodes",
 	IDUserFollows:                     "IDUserFollows",
 	IDUserLikes:                       "IDUserLikes",
 	IDUserReviews:                     "IDUserReviews",
 	IDUserRolesUsers:                  "IDUserRolesUsers",
 	IDOwnerStudioAdmins:               "IDOwnerStudioAdmins",
 	IDTattooArtistStudioTattooArtists: "IDTattooArtistStudioTattooArtists",
+	IDUserTokens:                      "IDUserTokens",
 }
 
 // userR is where relationships are stored.
@@ -126,12 +130,14 @@ type userR struct {
 	IDUserTokenPassword               *TokenPassword          `boil:"IDUserTokenPassword" json:"IDUserTokenPassword" toml:"IDUserTokenPassword" yaml:"IDUserTokenPassword"`
 	IDTattooArtistAppointments        AppointmentSlice        `boil:"IDTattooArtistAppointments" json:"IDTattooArtistAppointments" toml:"IDTattooArtistAppointments" yaml:"IDTattooArtistAppointments"`
 	IDUserAppointments                AppointmentSlice        `boil:"IDUserAppointments" json:"IDUserAppointments" toml:"IDUserAppointments" yaml:"IDUserAppointments"`
+	IDUserCodes                       CodeSlice               `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
 	IDUserFollows                     FollowSlice             `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
 	IDUserLikes                       LikeSlice               `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
 	IDUserReviews                     ReviewSlice             `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
 	IDUserRolesUsers                  RolesUserSlice          `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
 	IDOwnerStudioAdmins               StudioAdminSlice        `boil:"IDOwnerStudioAdmins" json:"IDOwnerStudioAdmins" toml:"IDOwnerStudioAdmins" yaml:"IDOwnerStudioAdmins"`
 	IDTattooArtistStudioTattooArtists StudioTattooArtistSlice `boil:"IDTattooArtistStudioTattooArtists" json:"IDTattooArtistStudioTattooArtists" toml:"IDTattooArtistStudioTattooArtists" yaml:"IDTattooArtistStudioTattooArtists"`
+	IDUserTokens                      TokenSlice              `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
 }
 
 // NewStruct creates a new relationship struct
@@ -174,6 +180,13 @@ func (r *userR) GetIDUserAppointments() AppointmentSlice {
 	return r.IDUserAppointments
 }
 
+func (r *userR) GetIDUserCodes() CodeSlice {
+	if r == nil {
+		return nil
+	}
+	return r.IDUserCodes
+}
+
 func (r *userR) GetIDUserFollows() FollowSlice {
 	if r == nil {
 		return nil
@@ -214,6 +227,13 @@ func (r *userR) GetIDTattooArtistStudioTattooArtists() StudioTattooArtistSlice {
 		return nil
 	}
 	return r.IDTattooArtistStudioTattooArtists
+}
+
+func (r *userR) GetIDUserTokens() TokenSlice {
+	if r == nil {
+		return nil
+	}
+	return r.IDUserTokens
 }
 
 // userL is where Load methods for each relationship are stored.
@@ -593,6 +613,20 @@ func (o *User) IDUserAppointments(mods ...qm.QueryMod) appointmentQuery {
 	return Appointments(queryMods...)
 }
 
+// IDUserCodes retrieves all the code's Codes with an executor via id_user column.
+func (o *User) IDUserCodes(mods ...qm.QueryMod) codeQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"codes\".\"id_user\"=?", o.ID),
+	)
+
+	return Codes(queryMods...)
+}
+
 // IDUserFollows retrieves all the follow's Follows with an executor via id_user column.
 func (o *User) IDUserFollows(mods ...qm.QueryMod) followQuery {
 	var queryMods []qm.QueryMod
@@ -675,6 +709,20 @@ func (o *User) IDTattooArtistStudioTattooArtists(mods ...qm.QueryMod) studioTatt
 	)
 
 	return StudioTattooArtists(queryMods...)
+}
+
+// IDUserTokens retrieves all the token's Tokens with an executor via id_user column.
+func (o *User) IDUserTokens(mods ...qm.QueryMod) tokenQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"tokens\".\"id_user\"=?", o.ID),
+	)
+
+	return Tokens(queryMods...)
 }
 
 // LoadIDUserAuth allows an eager lookup of values, cached into the
@@ -1244,6 +1292,119 @@ func (userL) LoadIDUserAppointments(ctx context.Context, e boil.ContextExecutor,
 				local.R.IDUserAppointments = append(local.R.IDUserAppointments, foreign)
 				if foreign.R == nil {
 					foreign.R = &appointmentR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDUserCodes allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserCodes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`codes`),
+		qm.WhereIn(`codes.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load codes")
+	}
+
+	var resultSlice []*Code
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice codes")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on codes")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for codes")
+	}
+
+	if len(codeAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserCodes = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &codeR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDUser {
+				local.R.IDUserCodes = append(local.R.IDUserCodes, foreign)
+				if foreign.R == nil {
+					foreign.R = &codeR{}
 				}
 				foreign.R.IDUserUser = local
 				break
@@ -1932,6 +2093,119 @@ func (userL) LoadIDTattooArtistStudioTattooArtists(ctx context.Context, e boil.C
 	return nil
 }
 
+// LoadIDUserTokens allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserTokens(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`tokens`),
+		qm.WhereIn(`tokens.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load tokens")
+	}
+
+	var resultSlice []*Token
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice tokens")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on tokens")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tokens")
+	}
+
+	if len(tokenAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserTokens = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &tokenR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDUser {
+				local.R.IDUserTokens = append(local.R.IDUserTokens, foreign)
+				if foreign.R == nil {
+					foreign.R = &tokenR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDUserAuth of the user to the related item.
 // Sets o.R.IDUserAuth to related.
 // Adds o to related.R.IDUserUser.
@@ -2179,6 +2453,59 @@ func (o *User) AddIDUserAppointments(ctx context.Context, exec boil.ContextExecu
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &appointmentR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
+		}
+	}
+	return nil
+}
+
+// AddIDUserCodes adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserCodes.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserCodes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Code) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDUser = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"codes\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, codePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDUser = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserCodes: related,
+		}
+	} else {
+		o.R.IDUserCodes = append(o.R.IDUserCodes, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &codeR{
 				IDUserUser: o,
 			}
 		} else {
@@ -2501,6 +2828,59 @@ func (o *User) AddIDTattooArtistStudioTattooArtists(ctx context.Context, exec bo
 			}
 		} else {
 			rel.R.IDTattooArtistUser = o
+		}
+	}
+	return nil
+}
+
+// AddIDUserTokens adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserTokens.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Token) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDUser = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"tokens\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, tokenPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDUser = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserTokens: related,
+		}
+	} else {
+		o.R.IDUserTokens = append(o.R.IDUserTokens, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &tokenR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
 		}
 	}
 	return nil

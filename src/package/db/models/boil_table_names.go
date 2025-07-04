@@ -8,6 +8,7 @@ var TableNames = struct {
 	AppointmentImages   string
 	Appointments        string
 	Auths               string
+	Codes               string
 	Follows             string
 	Images              string
 	Likes               string
@@ -22,12 +23,14 @@ var TableNames = struct {
 	Studios             string
 	Tattoos             string
 	TokenPasswords      string
+	Tokens              string
 	Users               string
 }{
 	Accesses:            "accesses",
 	AppointmentImages:   "appointment_images",
 	Appointments:        "appointments",
 	Auths:               "auths",
+	Codes:               "codes",
 	Follows:             "follows",
 	Images:              "images",
 	Likes:               "likes",
@@ -42,5 +45,6 @@ var TableNames = struct {
 	Studios:             "studios",
 	Tattoos:             "tattoos",
 	TokenPasswords:      "token_passwords",
+	Tokens:              "tokens",
 	Users:               "users",
 }

@@ -29,6 +29,8 @@ func msgForTag(tag string) string {
 		return "form.required"
 	case "min":
 		return "form.min"
+	case "email":
+		return "form.email"
 	}
 	return ""
 }
