@@ -5,6 +5,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 )
 
@@ -14,8 +15,8 @@ type Criteria struct {
 	Status         model.AppointmentStatus
 	IDUser         int64
 	IDTattooArtist int64
+	FinishedAt     *repository.CriteriaTime
 	ScheduledAtGTE time.Time
-	FinishedAtLTE  time.Time
 	Or             []Criteria
 }
 
@@ -24,8 +25,9 @@ type Sort struct {
 }
 
 type SelectOpts struct {
-	IDUser     *bool
-	IDCalendar *bool
+	IDUser         *bool
+	IDTattooArtist *bool
+	IDCalendar     *bool
 }
 
 type findOptions struct {

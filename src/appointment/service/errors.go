@@ -10,4 +10,6 @@ var (
 	ErrScheduleDateMusteBeAfterFinished = errors.New("err: schedule date must be after finished")
 	ErrScheduleIsBussy                  = errors.New("err: schedule is bussy")
 	ErrAppointmentIsFinished            = errors.New("err: appointment is finished")
+	ErrReviewExists                     = errors.New("err: review exists")
+	ErrAppointmentIsNotFinished         = errors.New("err: appointment is not finished")
 )

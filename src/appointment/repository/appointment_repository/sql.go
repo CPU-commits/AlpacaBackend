@@ -132,9 +132,23 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 		where = append(where, models.AppointmentWhere.ScheduledAt.IsNotNull())
 		where = append(where, models.AppointmentWhere.ScheduledAt.GTE(null.TimeFrom(criteria.ScheduledAtGTE)))
 	}
-	if !criteria.FinishedAtLTE.IsZero() {
+	if criteria.FinishedAt != nil {
 		where = append(where, models.AppointmentWhere.FinishedAt.IsNotNull())
-		where = append(where, models.AppointmentWhere.FinishedAt.LTE(null.TimeFrom(criteria.FinishedAtLTE)))
+		if !criteria.FinishedAt.LTE.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.LTE(null.TimeFrom(criteria.FinishedAt.LTE)))
+		}
+		if !criteria.FinishedAt.LT.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.LT(null.TimeFrom(criteria.FinishedAt.LT)))
+		}
+		if !criteria.FinishedAt.GTE.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.GTE(null.TimeFrom(criteria.FinishedAt.GTE)))
+		}
+		if !criteria.FinishedAt.GT.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.GT(null.TimeFrom(criteria.FinishedAt.GT)))
+		}
+		if !criteria.FinishedAt.EQ.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.EQ(null.TimeFrom(criteria.FinishedAt.EQ)))
+		}
 	}
 
 	var orMods []QueryMod
@@ -252,6 +266,9 @@ func (appointmentRepositorySql) selectToMod(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.IDCalendar != nil && *selectOpts.IDCalendar {
 		mod = append(mod, Select(models.AppointmentColumns.IDCalendar))
+	}
+	if selectOpts.IDTattooArtist != nil && *selectOpts.IDTattooArtist {
+		mod = append(mod, Select(models.AppointmentColumns.IDTattooArtist))
 	}
 
 	return mod

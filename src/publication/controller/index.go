@@ -41,7 +41,7 @@ var (
 		*userService,
 		imageStore,
 		*fileService,
-		&followRepository,
+		followRepository,
 		publicationRDRepository,
 	)
 	fileService = file_service.NewFileService(

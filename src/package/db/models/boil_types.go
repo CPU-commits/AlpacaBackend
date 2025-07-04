@@ -53,18 +53,18 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for AppointmentStatus
 const (
-	AppointmentStatusPaid      string = "paid"
 	AppointmentStatusCreated   string = "created"
 	AppointmentStatusScheduled string = "scheduled"
 	AppointmentStatusCanceled  string = "canceled"
+	AppointmentStatusReviewed  string = "reviewed"
 )
 
 func AllAppointmentStatus() []string {
 	return []string{
-		AppointmentStatusPaid,
 		AppointmentStatusCreated,
 		AppointmentStatusScheduled,
 		AppointmentStatusCanceled,
+		AppointmentStatusReviewed,
 	}
 }
 

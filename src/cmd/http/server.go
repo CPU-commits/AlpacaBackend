@@ -10,6 +10,7 @@ import (
 
 	appointmentController "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/controller"
 	authController "github.com/CPU-commits/Template_Go-EventDriven/src/auth/controller"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
@@ -149,8 +150,18 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		appointmentController := appointmentController.NewHTTPAppointmentController()
 		// Define routes
 		appointment.GET("", appointmentController.GetAppointments)
+		appointment.GET(
+			"/pendingCount",
+			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
+			appointmentController.GetAppointmentsPending,
+		)
 		appointment.POST("", appointmentController.RequestAppointment)
-		appointment.PATCH(":idAppointment/schedule", appointmentController.ScheduleAppointment)
+		appointment.POST(":idAppointment/review", appointmentController.ReviewAppointment)
+		appointment.PATCH(
+			":idAppointment/schedule",
+			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
+			appointmentController.ScheduleAppointment,
+		)
 		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)
 	}
 	// Route docs

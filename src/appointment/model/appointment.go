@@ -12,10 +12,10 @@ import (
 type AppointmentStatus string
 
 const (
-	STATUS_PAID      AppointmentStatus = "paid"
 	STATUS_CREATED   AppointmentStatus = "created"
 	STATUS_CANCELED  AppointmentStatus = "canceled"
 	STATUS_SCHEDULED AppointmentStatus = "scheduled"
+	STATUS_REVIEWED  AppointmentStatus = "reviewed"
 )
 
 // Area

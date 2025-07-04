@@ -494,6 +494,67 @@ func testReviewsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testReviewToOneAppointmentUsingIDAppointmentAppointment(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Review
+	var foreign Appointment
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, reviewDBTypes, false, reviewColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Review struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.IDAppointment = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDAppointmentAppointment().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddAppointmentHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Appointment) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ReviewSlice{&local}
+	if err = local.L.LoadIDAppointmentAppointment(ctx, tx, false, (*[]*Review)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAppointmentAppointment == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDAppointmentAppointment = nil
+	if err = local.L.LoadIDAppointmentAppointment(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAppointmentAppointment == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testReviewToOneProfileUsingIDProfileProfile(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -616,6 +677,63 @@ func testReviewToOneUserUsingIDUserUser(t *testing.T) {
 	}
 }
 
+func testReviewToOneSetOpAppointmentUsingIDAppointmentAppointment(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Review
+	var b, c Appointment
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Appointment{&b, &c} {
+		err = a.SetIDAppointmentAppointment(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDAppointmentAppointment != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDAppointmentReview != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.IDAppointment != x.ID {
+			t.Error("foreign key was wrong value", a.IDAppointment)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDAppointment))
+		reflect.Indirect(reflect.ValueOf(&a.IDAppointment)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.IDAppointment != x.ID {
+			t.Error("foreign key was wrong value", a.IDAppointment, x.ID)
+		}
+	}
+}
 func testReviewToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	var err error
 
@@ -805,7 +923,7 @@ func testReviewsSelect(t *testing.T) {
 }
 
 var (
-	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`}
+	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDAppointment`: `bigint`}
 	_             = bytes.MinRead
 )
 

@@ -167,10 +167,12 @@ model reviews {
 	id BigInt @id @default(sequence())
 	id_user BigInt
 	id_profile BigInt
+	id_appointment BigInt @unique
 	content String
 	stars Int
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	user users @relation(fields: [id_user], references: [id])
+	appointment appointments @relation(fields: [id_appointment], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
 }
 
@@ -233,9 +235,11 @@ model appointments {
   scheduled_at DateTime?
   duration Float?
   finished_at DateTime?
+  is_paid Boolean @default(false)
   created_at        DateTime @default(now()) @db.Timestamp(6)
 
   images appointment_images[]
+  review reviews?
   user          users @relation("UserAppointments", fields: [id_user], references: [id])
   tattoo_artist users @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
 }
@@ -260,10 +264,10 @@ enum tattoo_area {
 }
 
 enum appointment_status {
-	paid
 	scheduled
 	canceled
 	created
+	reviewed
 }
 
 enum role_name {

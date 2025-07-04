@@ -118,4 +118,12 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "appointment.finished",
 	}
+	errorsService[appointmentService.ErrReviewExists] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.review_exists",
+	}
+	errorsService[appointmentService.ErrAppointmentIsNotFinished] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.not_finished",
+	}
 }

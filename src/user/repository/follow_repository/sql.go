@@ -31,7 +31,7 @@ func (sqlFR *sqlFollowRepository) criteriaToWhere(criteria *FollowCriteria) []Qu
 	return mod
 }
 
-func (sqlFR *sqlFollowRepository) CountProfileFollowers(criteria *FollowCriteria) (int64, error) {
+func (sqlFR sqlFollowRepository) CountProfileFollowers(criteria *FollowCriteria) (int64, error) {
 	where := sqlFR.criteriaToWhere(criteria)
 
 	count, err := models.Follows(where...).Count(context.Background(), sqlFR.db)
@@ -44,7 +44,7 @@ func (sqlFR *sqlFollowRepository) CountProfileFollowers(criteria *FollowCriteria
 	return count, nil
 }
 
-func NewSqlFollowRepository(db *sql.DB) sqlFollowRepository {
+func NewSqlFollowRepository(db *sql.DB) FollowRepository {
 	return sqlFollowRepository{
 		db: db,
 	}

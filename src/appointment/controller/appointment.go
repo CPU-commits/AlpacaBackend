@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
@@ -29,9 +30,40 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	paginated := c.DefaultQuery("paginated", "true")
+
+	fromDateStr := c.Query("from")
+	var fromDate time.Time
+	if fromDateStr != "" {
+		var err error
+
+		fromDate, err = time.Parse(time.RFC3339, fromDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toDateStr := c.Query("to")
+	var toDate time.Time
+	if toDateStr != "" {
+		var err error
+
+		toDate, err = time.Parse(time.RFC3339, toDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	statuses := domainUtils.FilterNoError(strings.Split(c.Query("statuses"), ","), func(x string) bool {
+		return x != ""
+	})
 
 	params := service.AppointmentParams{
-		Page: page,
+		Page:      page,
+		Paginated: paginated == "true",
+		FromDate:  fromDate,
+		ToDate:    toDate,
+		Statuses:  statuses,
 	}
 
 	appointments, count, err := appointmentController.appointmentService.GetAppointments(
@@ -47,6 +79,22 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	c.Header("X-Total", strconv.Itoa(int(count)))
 	c.Header("X-Per-Page", "10")
 	c.JSON(http.StatusOK, appointments)
+}
+
+func (appointmentController *HttpAppointmentController) GetAppointmentsPending(c *gin.Context) {
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	pendingAppointments, err := appointmentController.appointmentService.GetPendingAppointments(
+		claims.ID,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"count": pendingAppointments,
+	})
 }
 
 func (appointmentController *HttpAppointmentController) RequestAppointment(c *gin.Context) {
@@ -137,6 +185,33 @@ func (appointmentController *HttpAppointmentController) ScheduleAppointment(c *g
 	}
 
 	c.JSON(http.StatusOK, nil)
+}
+
+func (appointmentController *HttpAppointmentController) ReviewAppointment(c *gin.Context) {
+	var reviewDto *dto.ReviewDTO
+	if err := c.BindJSON(&reviewDto); err != nil {
+		utils.ResErrValidators(c, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+	idAppointmentStr := c.Param("idAppointment")
+	idAppointment, err := strconv.Atoi(idAppointmentStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	if err := appointmentController.appointmentService.ReviewAppointment(
+		*reviewDto,
+		claims.ID,
+		int64(idAppointment),
+	); err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, nil)
 }
 
 func NewHTTPAppointmentController() *HttpAppointmentController {

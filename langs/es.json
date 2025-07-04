@@ -45,7 +45,9 @@
 		"scheduled_at_finished": "La fecha de agendamiento no puede ser pasada a la de finzalización",
 		"bussy": "El horario ya está ocupado por otra cita",
 		"finished": "La cita ya finalizó",
-		"scheduled": "Cita agendada con {{.TattooArtist}} - AlpacaTattoo"
+		"scheduled": "Cita agendada con {{.TattooArtist}} - AlpacaTattoo",
+		"review_exists": "La cita ya fue reseñada",
+		"not_finished": "La cita todavía no finaliza"
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"

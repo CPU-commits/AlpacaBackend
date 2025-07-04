@@ -7,11 +7,14 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/repository/appointment_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/repository/review_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/calendar"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
+	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -21,6 +24,8 @@ type AppointmentService struct {
 	appointmentRepository appointment_repository.AppointmentRepository
 	userService           service.UserService
 	calendar              calendar.ICalendar
+	reviewRepository      review_repository.ReviewRepository
+	profileService        userService.ProfileService
 }
 
 var appointmentService *AppointmentService
@@ -81,14 +86,35 @@ func (appointmentService *AppointmentService) GetAppointments(
 			ID:       utils.Bool(true),
 		}
 	}
+	if !params.FromDate.IsZero() {
+		criteria.ScheduledAtGTE = params.FromDate
+	}
+	if !params.ToDate.IsZero() {
+		criteria.FinishedAt = &repository.CriteriaTime{
+			LTE: params.ToDate,
+		}
+	}
+	if params.Statuses != nil {
+		or := []appointment_repository.Criteria{}
+
+		for _, status := range params.Statuses {
+			or = append(or, appointment_repository.Criteria{
+				Status: model.AppointmentStatus(status),
+			})
+		}
+		criteria.Or = or
+	}
 
 	opts := appointment_repository.NewFindOptions().
-		Limit(10).
-		Skip(int64(params.Page) * 10).
 		Sort(appointment_repository.Sort{
 			CreatedAt: "DESC",
 		}).
 		Load(load)
+	if params.Paginated {
+		opts = opts.
+			Limit(10).
+			Skip(int64(params.Page) * 10)
+	}
 
 	appointments, err := appointmentService.appointmentRepository.Find(
 		criteria,
@@ -106,6 +132,15 @@ func (appointmentService *AppointmentService) GetAppointments(
 	return appointments, total, nil
 }
 
+func (appointmentService *AppointmentService) GetPendingAppointments(
+	idTattooArtist int64,
+) (int64, error) {
+	return appointmentService.appointmentRepository.Count(&appointment_repository.Criteria{
+		IDTattooArtist: idTattooArtist,
+		Status:         model.STATUS_CREATED,
+	})
+}
+
 func (appointmentService *AppointmentService) CancelAppointment(
 	idAppointment,
 	idTattooArtist int64,
@@ -119,8 +154,10 @@ func (appointmentService *AppointmentService) CancelAppointment(
 	}
 	appointmentIsFinished, err := appointmentService.appointmentRepository.Exists(
 		&appointment_repository.Criteria{
-			ID:            idAppointment,
-			FinishedAtLTE: time.Now(),
+			ID: idAppointment,
+			FinishedAt: &repository.CriteriaTime{
+				LTE: time.Now(),
+			},
 		},
 	)
 	if err != nil {
@@ -213,7 +250,9 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 		&appointment_repository.Criteria{
 			IDNE:           idAppointment,
 			ScheduledAtGTE: scheduledAt,
-			FinishedAtLTE:  finishedAt,
+			FinishedAt: &repository.CriteriaTime{
+				LTE: finishedAt,
+			},
 			IDTattooArtist: idTattooArtist,
 		},
 	)
@@ -309,6 +348,70 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 	return nil
 }
 
+func (appointmentService *AppointmentService) appointmentIsFinished(idAppointment int64) (bool, error) {
+	return appointmentService.appointmentRepository.Exists(&appointment_repository.Criteria{
+		FinishedAt: &repository.CriteriaTime{
+			GT: time.Now(),
+		},
+		ID: idAppointment,
+	})
+}
+
+func (appointmentService *AppointmentService) ReviewAppointment(
+	review dto.ReviewDTO,
+	idUser,
+	idAppointment int64,
+) error {
+	if err := appointmentService.hasAccessToAppointment(
+		idAppointment,
+		idUser,
+		false,
+	); err != nil {
+		return err
+	}
+	existsReview, err := appointmentService.reviewRepository.Exists(&review_repository.Criteria{
+		IDAppointment: idAppointment,
+	})
+	if err != nil {
+		return err
+	}
+	if existsReview {
+		return ErrReviewExists
+	}
+	// Is finished ?
+	isFinished, err := appointmentService.appointmentIsFinished(
+		idAppointment,
+	)
+	if err != nil {
+		return err
+	}
+	if !isFinished {
+		return ErrAppointmentIsNotFinished
+	}
+
+	appointment, err := appointmentService.appointmentRepository.FindOne(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		appointment_repository.NewFindOneOptions().Select(appointment_repository.SelectOpts{
+			IDTattooArtist: utils.Bool(true),
+		}),
+	)
+	if err != nil {
+		return err
+	}
+	idProfile, err := appointmentService.profileService.GetProfileIDFromIDUser(appointment.IDTattooArtist)
+	if err != nil {
+		return err
+	}
+
+	return appointmentService.reviewRepository.InsertOne(review.ToModel(
+		idUser,
+		idProfile,
+		idAppointment,
+	))
+}
+
 func (appointmentService *AppointmentService) RequestAppointment(
 	appointmentDto *dto.AppointmentDto,
 	idUser int64,
@@ -347,6 +450,8 @@ func NewAppointmentService(
 	appointmentRepository appointment_repository.AppointmentRepository,
 	userService service.UserService,
 	iCalendar calendar.ICalendar,
+	reviewRepository review_repository.ReviewRepository,
+	profileService userService.ProfileService,
 ) *AppointmentService {
 	if appointmentService == nil {
 		appointmentService = &AppointmentService{
@@ -354,6 +459,8 @@ func NewAppointmentService(
 			appointmentRepository: appointmentRepository,
 			userService:           userService,
 			calendar:              iCalendar,
+			reviewRepository:      reviewRepository,
+			profileService:        profileService,
 		}
 	}
 

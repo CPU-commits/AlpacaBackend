@@ -40,7 +40,7 @@ var (
 		*userService,
 		cloudinary_store.NewCloudinaryImageStore(),
 		*fileService,
-		&followRepository,
+		followRepository,
 		publicationRDRepository,
 	)
 )
