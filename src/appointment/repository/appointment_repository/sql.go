@@ -104,6 +104,19 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 		}
 		appointment.TattooArtist = user
 	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDAppointmentReview != nil {
+		sqlReview := sqlAppointment.R.IDAppointmentReview
+		review := &model.Review{
+			ID:            sqlReview.ID,
+			IDUser:        sqlReview.IDUser,
+			IDProfile:     sqlReview.IDProfile,
+			IDAppointment: sqlReview.IDAppointment,
+			Stars:         int16(sqlReview.Stars),
+			Review:        sqlReview.Content,
+		}
+
+		appointment.Review = review
+	}
 
 	return appointment
 }
@@ -168,9 +181,10 @@ func (appointmentRepositorySql) sortToMod(sort *Sort) []QueryMod {
 	if sort == nil {
 		return mod
 	}
-	if sort.CreatedAt == "ASC" {
+	switch sort.CreatedAt {
+	case "ASC":
 		mod = append(mod, OrderBy(fmt.Sprintf("%s asc", models.AppointmentColumns.CreatedAt)))
-	} else if sort.CreatedAt == "DESC" {
+	case "DESC":
 		mod = append(mod, OrderBy(fmt.Sprintf("%s desc", models.AppointmentColumns.CreatedAt)))
 	}
 
@@ -184,6 +198,9 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 	}
 	if load.Images {
 		mod = append(mod, Load(Rels(models.AppointmentRels.IDAppointmentAppointmentImages, models.AppointmentImageRels.IDImageImage)))
+	}
+	if load.Review {
+		mod = append(mod, Load(models.AppointmentRels.IDAppointmentReview))
 	}
 	if load.User != nil {
 		mod = append(mod, Load(

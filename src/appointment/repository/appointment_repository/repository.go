@@ -43,6 +43,7 @@ type LoadOpts struct {
 	Profile       *profile_repository.SelectOpts
 	ProfileAvatar bool
 	Images        bool
+	Review        bool
 }
 
 func (f *findOptions) Skip(skip int64) *findOptions {

@@ -69,6 +69,7 @@ func (appointmentService *AppointmentService) GetAppointments(
 			IDUser: utils.Bool(true),
 		},
 		ProfileAvatar: true,
+		Review:        true,
 	}
 	if isArtist {
 		criteria.IDTattooArtist = idUser
@@ -351,7 +352,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 func (appointmentService *AppointmentService) appointmentIsFinished(idAppointment int64) (bool, error) {
 	return appointmentService.appointmentRepository.Exists(&appointment_repository.Criteria{
 		FinishedAt: &repository.CriteriaTime{
-			GT: time.Now(),
+			LT: time.Now(),
 		},
 		ID: idAppointment,
 	})
@@ -405,11 +406,22 @@ func (appointmentService *AppointmentService) ReviewAppointment(
 		return err
 	}
 
-	return appointmentService.reviewRepository.InsertOne(review.ToModel(
+	if err = appointmentService.reviewRepository.InsertOne(review.ToModel(
 		idUser,
 		idProfile,
 		idAppointment,
-	))
+	)); err != nil {
+		return err
+	}
+
+	return appointmentService.appointmentRepository.Update(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		&appointment_repository.UpdateData{
+			Status: model.STATUS_REVIEWED,
+		},
+	)
 }
 
 func (appointmentService *AppointmentService) RequestAppointment(

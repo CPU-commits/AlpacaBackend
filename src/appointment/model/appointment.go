@@ -63,6 +63,7 @@ type Appointment struct {
 	Status              AppointmentStatus  `json:"status"`
 	Phone               string             `json:"phone,omitempty"`
 	HasIdea             *bool              `json:"hasIdea,omitempty"`
+	Review              *Review            `json:"review,omitempty"`
 	Area                AppointmentArea    `json:"area,omitempty"`
 	Height              float32            `json:"height,omitempty"`
 	Width               float32            `json:"width,omitempty"`
