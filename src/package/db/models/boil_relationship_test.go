@@ -25,10 +25,7 @@ func TestToOne(t *testing.T) {
 	t.Run("PostToProfileUsingIDProfileProfile", testPostToOneProfileUsingIDProfileProfile)
 	t.Run("ProfileToImageUsingIDAvatarImage", testProfileToOneImageUsingIDAvatarImage)
 	t.Run("ProfileToUserUsingIDUserUser", testProfileToOneUserUsingIDUserUser)
-<<<<<<< HEAD
-=======
 	t.Run("ReviewToAppointmentUsingIDAppointmentAppointment", testReviewToOneAppointmentUsingIDAppointmentAppointment)
->>>>>>> origin/master
 	t.Run("ReviewToProfileUsingIDProfileProfile", testReviewToOneProfileUsingIDProfileProfile)
 	t.Run("ReviewToUserUsingIDUserUser", testReviewToOneUserUsingIDUserUser)
 	t.Run("RolesUserToUserUsingIDUserUser", testRolesUserToOneUserUsingIDUserUser)
@@ -105,10 +102,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("PostToProfileUsingIDProfilePosts", testPostToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("ProfileToImageUsingIDAvatarProfile", testProfileToOneSetOpImageUsingIDAvatarImage)
 	t.Run("ProfileToUserUsingIDUserProfile", testProfileToOneSetOpUserUsingIDUserUser)
-<<<<<<< HEAD
-=======
 	t.Run("ReviewToAppointmentUsingIDAppointmentReview", testReviewToOneSetOpAppointmentUsingIDAppointmentAppointment)
->>>>>>> origin/master
 	t.Run("ReviewToProfileUsingIDProfileReviews", testReviewToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("ReviewToUserUsingIDUserReviews", testReviewToOneSetOpUserUsingIDUserUser)
 	t.Run("RolesUserToUserUsingIDUserRolesUsers", testRolesUserToOneSetOpUserUsingIDUserUser)

@@ -93,13 +93,6 @@ var ReviewWhere = struct {
 
 // ReviewRels is where relationship names are stored.
 var ReviewRels = struct {
-<<<<<<< HEAD
-	IDProfileProfile string
-	IDUserUser       string
-}{
-	IDProfileProfile: "IDProfileProfile",
-	IDUserUser:       "IDUserUser",
-=======
 	IDAppointmentAppointment string
 	IDProfileProfile         string
 	IDUserUser               string
@@ -107,19 +100,13 @@ var ReviewRels = struct {
 	IDAppointmentAppointment: "IDAppointmentAppointment",
 	IDProfileProfile:         "IDProfileProfile",
 	IDUserUser:               "IDUserUser",
->>>>>>> origin/master
 }
 
 // reviewR is where relationships are stored.
 type reviewR struct {
-<<<<<<< HEAD
-	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
-	IDUserUser       *User    `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
-=======
 	IDAppointmentAppointment *Appointment `boil:"IDAppointmentAppointment" json:"IDAppointmentAppointment" toml:"IDAppointmentAppointment" yaml:"IDAppointmentAppointment"`
 	IDProfileProfile         *Profile     `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
 	IDUserUser               *User        `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
->>>>>>> origin/master
 }
 
 // NewStruct creates a new relationship struct
@@ -127,20 +114,28 @@ func (*reviewR) NewStruct() *reviewR {
 	return &reviewR{}
 }
 
-<<<<<<< HEAD
+func (o *Review) GetIDAppointmentAppointment() *Appointment {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDAppointmentAppointment()
+}
+
+func (r *reviewR) GetIDAppointmentAppointment() *Appointment {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDAppointmentAppointment
+}
+
 func (o *Review) GetIDProfileProfile() *Profile {
 	if o == nil {
 		return nil
 	}
 
 	return o.R.GetIDProfileProfile()
-=======
-func (r *reviewR) GetIDAppointmentAppointment() *Appointment {
-	if r == nil {
-		return nil
-	}
-	return r.IDAppointmentAppointment
->>>>>>> origin/master
 }
 
 func (r *reviewR) GetIDProfileProfile() *Profile {
@@ -151,7 +146,6 @@ func (r *reviewR) GetIDProfileProfile() *Profile {
 	return r.IDProfileProfile
 }
 
-<<<<<<< HEAD
 func (o *Review) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -160,16 +154,11 @@ func (o *Review) GetIDUserUser() *User {
 	return o.R.GetIDUserUser()
 }
 
-=======
->>>>>>> origin/master
 func (r *reviewR) GetIDUserUser() *User {
 	if r == nil {
 		return nil
 	}
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
 	return r.IDUserUser
 }
 
@@ -489,8 +478,6 @@ func (q reviewQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (boo
 	return count > 0, nil
 }
 
-<<<<<<< HEAD
-=======
 // IDAppointmentAppointment pointed to by the foreign key.
 func (o *Review) IDAppointmentAppointment(mods ...qm.QueryMod) appointmentQuery {
 	queryMods := []qm.QueryMod{
@@ -502,7 +489,6 @@ func (o *Review) IDAppointmentAppointment(mods ...qm.QueryMod) appointmentQuery 
 	return Appointments(queryMods...)
 }
 
->>>>>>> origin/master
 // IDProfileProfile pointed to by the foreign key.
 func (o *Review) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 	queryMods := []qm.QueryMod{
@@ -518,13 +504,6 @@ func (o *Review) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 func (o *Review) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("\"id\" = ?", o.IDUser),
-<<<<<<< HEAD
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Users(queryMods...)
-=======
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -650,7 +629,6 @@ func (reviewL) LoadIDAppointmentAppointment(ctx context.Context, e boil.ContextE
 	}
 
 	return nil
->>>>>>> origin/master
 }
 
 // LoadIDProfileProfile allows an eager lookup of values, cached into the
@@ -798,43 +776,6 @@ func (reviewL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singu
 			if !ok {
 				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeReview))
 			}
-<<<<<<< HEAD
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &reviewR{}
-		}
-		args[object.IDUser] = struct{}{}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &reviewR{}
-			}
-
-			args[obj.IDUser] = struct{}{}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`users`),
-		qm.WhereIn(`users.id in ?`, argsSlice...),
-=======
 		}
 	}
 
@@ -945,64 +886,18 @@ func (o *Review) SetIDAppointmentAppointment(ctx context.Context, exec boil.Cont
 		"UPDATE \"reviews\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"id_appointment"}),
 		strmangle.WhereClause("\"", "\"", 2, reviewPrimaryKeyColumns),
->>>>>>> origin/master
 	)
-	if mods != nil {
-		mods.Apply(query)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
 	}
 
-<<<<<<< HEAD
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
-	}
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for users")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.IDUserUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.IDUserReviews = append(foreign.R.IDUserReviews, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.IDUser == foreign.ID {
-				local.R.IDUserUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.IDUserReviews = append(foreign.R.IDUserReviews, local)
-				break
-			}
-		}
-=======
 	o.IDAppointment = related.ID
 	if o.R == nil {
 		o.R = &reviewR{
@@ -1018,7 +913,6 @@ func (o *Review) SetIDAppointmentAppointment(ctx context.Context, exec boil.Cont
 		}
 	} else {
 		related.R.IDAppointmentReview = o
->>>>>>> origin/master
 	}
 
 	return nil

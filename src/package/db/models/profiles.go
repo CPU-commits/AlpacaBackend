@@ -158,7 +158,6 @@ func (*profileR) NewStruct() *profileR {
 	return &profileR{}
 }
 
-<<<<<<< HEAD
 func (o *Profile) GetIDAvatarImage() *Image {
 	if o == nil {
 		return nil
@@ -167,8 +166,6 @@ func (o *Profile) GetIDAvatarImage() *Image {
 	return o.R.GetIDAvatarImage()
 }
 
-=======
->>>>>>> origin/master
 func (r *profileR) GetIDAvatarImage() *Image {
 	if r == nil {
 		return nil
@@ -177,7 +174,6 @@ func (r *profileR) GetIDAvatarImage() *Image {
 	return r.IDAvatarImage
 }
 
-<<<<<<< HEAD
 func (o *Profile) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -186,13 +182,10 @@ func (o *Profile) GetIDUserUser() *User {
 	return o.R.GetIDUserUser()
 }
 
-=======
->>>>>>> origin/master
 func (r *profileR) GetIDUserUser() *User {
 	if r == nil {
 		return nil
 	}
-<<<<<<< HEAD
 
 	return r.IDUserUser
 }
@@ -205,11 +198,6 @@ func (o *Profile) GetIDProfileFollows() FollowSlice {
 	return o.R.GetIDProfileFollows()
 }
 
-=======
-	return r.IDUserUser
-}
-
->>>>>>> origin/master
 func (r *profileR) GetIDProfileFollows() FollowSlice {
 	if r == nil {
 		return nil

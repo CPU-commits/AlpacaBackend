@@ -2466,11 +2466,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-<<<<<<< HEAD
-	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Username`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`}
-=======
-	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `Username`: `text`, `Location`: `text`}
->>>>>>> origin/master
+	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Username`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `Location`: `text`}
 	_           = bytes.MinRead
 )
 

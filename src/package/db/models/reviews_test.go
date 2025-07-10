@@ -494,8 +494,6 @@ func testReviewsInsertWhitelist(t *testing.T) {
 	}
 }
 
-<<<<<<< HEAD
-=======
 func testReviewToOneAppointmentUsingIDAppointmentAppointment(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -557,7 +555,6 @@ func testReviewToOneAppointmentUsingIDAppointmentAppointment(t *testing.T) {
 	}
 }
 
->>>>>>> origin/master
 func testReviewToOneProfileUsingIDProfileProfile(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -620,8 +617,6 @@ func testReviewToOneProfileUsingIDProfileProfile(t *testing.T) {
 }
 
 func testReviewToOneUserUsingIDUserUser(t *testing.T) {
-<<<<<<< HEAD
-=======
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -685,67 +680,31 @@ func testReviewToOneUserUsingIDUserUser(t *testing.T) {
 func testReviewToOneSetOpAppointmentUsingIDAppointmentAppointment(t *testing.T) {
 	var err error
 
->>>>>>> origin/master
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-<<<<<<< HEAD
-	var local Review
-	var foreign User
-=======
 	var a Review
 	var b, c Appointment
->>>>>>> origin/master
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, reviewDBTypes, false, reviewColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Review struct: %s", err)
+	if err = randomize.Struct(seed, &a, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
 	}
-<<<<<<< HEAD
-	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-=======
 	if err = randomize.Struct(seed, &b, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &c, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
->>>>>>> origin/master
 		t.Fatal(err)
 	}
 
-	local.IDUser = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-<<<<<<< HEAD
-	check, err := local.IDUserUser().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := ReviewSlice{&local}
-	if err = local.L.LoadIDUserUser(ctx, tx, false, (*[]*Review)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDUserUser == nil {
-		t.Error("struct should have been eager loaded")
-	}
-=======
 	for i, x := range []*Appointment{&b, &c} {
 		err = a.SetIDAppointmentAppointment(ctx, tx, i != 0, x)
 		if err != nil {
@@ -765,27 +724,16 @@ func testReviewToOneSetOpAppointmentUsingIDAppointmentAppointment(t *testing.T) 
 
 		zero := reflect.Zero(reflect.TypeOf(a.IDAppointment))
 		reflect.Indirect(reflect.ValueOf(&a.IDAppointment)).Set(zero)
->>>>>>> origin/master
 
-	local.R.IDUserUser = nil
-	if err = local.L.LoadIDUserUser(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDUserUser == nil {
-		t.Error("struct should have been eager loaded")
-	}
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
 
-<<<<<<< HEAD
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-=======
 		if a.IDAppointment != x.ID {
 			t.Error("foreign key was wrong value", a.IDAppointment, x.ID)
 		}
->>>>>>> origin/master
 	}
 }
-
 func testReviewToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	var err error
 
@@ -975,11 +923,7 @@ func testReviewsSelect(t *testing.T) {
 }
 
 var (
-<<<<<<< HEAD
-	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`}
-=======
 	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDAppointment`: `bigint`}
->>>>>>> origin/master
 	_             = bytes.MinRead
 )
 

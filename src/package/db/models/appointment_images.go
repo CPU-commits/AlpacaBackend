@@ -23,44 +23,44 @@ import (
 
 // AppointmentImage is an object representing the database table.
 type AppointmentImage struct {
+	ID            int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDAppointment int64 `boil:"id_appointment" json:"id_appointment" toml:"id_appointment" yaml:"id_appointment"`
 	IDImage       int64 `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
-	ID            int64 `boil:"id" json:"id" toml:"id" yaml:"id"`
 
 	R *appointmentImageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L appointmentImageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AppointmentImageColumns = struct {
+	ID            string
 	IDAppointment string
 	IDImage       string
-	ID            string
 }{
+	ID:            "id",
 	IDAppointment: "id_appointment",
 	IDImage:       "id_image",
-	ID:            "id",
 }
 
 var AppointmentImageTableColumns = struct {
+	ID            string
 	IDAppointment string
 	IDImage       string
-	ID            string
 }{
+	ID:            "appointment_images.id",
 	IDAppointment: "appointment_images.id_appointment",
 	IDImage:       "appointment_images.id_image",
-	ID:            "appointment_images.id",
 }
 
 // Generated where
 
 var AppointmentImageWhere = struct {
+	ID            whereHelperint64
 	IDAppointment whereHelperint64
 	IDImage       whereHelperint64
-	ID            whereHelperint64
 }{
+	ID:            whereHelperint64{field: "\"appointment_images\".\"id\""},
 	IDAppointment: whereHelperint64{field: "\"appointment_images\".\"id_appointment\""},
 	IDImage:       whereHelperint64{field: "\"appointment_images\".\"id_image\""},
-	ID:            whereHelperint64{field: "\"appointment_images\".\"id\""},
 }
 
 // AppointmentImageRels is where relationship names are stored.
@@ -83,7 +83,6 @@ func (*appointmentImageR) NewStruct() *appointmentImageR {
 	return &appointmentImageR{}
 }
 
-<<<<<<< HEAD
 func (o *AppointmentImage) GetIDAppointmentAppointment() *Appointment {
 	if o == nil {
 		return nil
@@ -92,8 +91,6 @@ func (o *AppointmentImage) GetIDAppointmentAppointment() *Appointment {
 	return o.R.GetIDAppointmentAppointment()
 }
 
-=======
->>>>>>> origin/master
 func (r *appointmentImageR) GetIDAppointmentAppointment() *Appointment {
 	if r == nil {
 		return nil
@@ -102,7 +99,6 @@ func (r *appointmentImageR) GetIDAppointmentAppointment() *Appointment {
 	return r.IDAppointmentAppointment
 }
 
-<<<<<<< HEAD
 func (o *AppointmentImage) GetIDImageImage() *Image {
 	if o == nil {
 		return nil
@@ -111,16 +107,11 @@ func (o *AppointmentImage) GetIDImageImage() *Image {
 	return o.R.GetIDImageImage()
 }
 
-=======
->>>>>>> origin/master
 func (r *appointmentImageR) GetIDImageImage() *Image {
 	if r == nil {
 		return nil
 	}
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
 	return r.IDImageImage
 }
 
@@ -128,7 +119,7 @@ func (r *appointmentImageR) GetIDImageImage() *Image {
 type appointmentImageL struct{}
 
 var (
-	appointmentImageAllColumns            = []string{"id_appointment", "id_image", "id"}
+	appointmentImageAllColumns            = []string{"id", "id_appointment", "id_image"}
 	appointmentImageColumnsWithoutDefault = []string{"id_appointment", "id_image"}
 	appointmentImageColumnsWithDefault    = []string{"id"}
 	appointmentImagePrimaryKeyColumns     = []string{"id"}

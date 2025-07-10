@@ -90,7 +90,6 @@ func (*studioAdminR) NewStruct() *studioAdminR {
 	return &studioAdminR{}
 }
 
-<<<<<<< HEAD
 func (o *StudioAdmin) GetIDOwnerUser() *User {
 	if o == nil {
 		return nil
@@ -99,8 +98,6 @@ func (o *StudioAdmin) GetIDOwnerUser() *User {
 	return o.R.GetIDOwnerUser()
 }
 
-=======
->>>>>>> origin/master
 func (r *studioAdminR) GetIDOwnerUser() *User {
 	if r == nil {
 		return nil
@@ -109,7 +106,6 @@ func (r *studioAdminR) GetIDOwnerUser() *User {
 	return r.IDOwnerUser
 }
 
-<<<<<<< HEAD
 func (o *StudioAdmin) GetIDStudioStudio() *Studio {
 	if o == nil {
 		return nil
@@ -118,16 +114,11 @@ func (o *StudioAdmin) GetIDStudioStudio() *Studio {
 	return o.R.GetIDStudioStudio()
 }
 
-=======
->>>>>>> origin/master
 func (r *studioAdminR) GetIDStudioStudio() *Studio {
 	if r == nil {
 		return nil
 	}
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
 	return r.IDStudioStudio
 }
 

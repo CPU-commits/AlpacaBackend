@@ -805,11 +805,7 @@ func testAppointmentImagesSelect(t *testing.T) {
 }
 
 var (
-<<<<<<< HEAD
 	appointmentImageDBTypes = map[string]string{`ID`: `bigint`, `IDAppointment`: `bigint`, `IDImage`: `bigint`}
-=======
-	appointmentImageDBTypes = map[string]string{`IDAppointment`: `bigint`, `IDImage`: `bigint`, `ID`: `bigint`}
->>>>>>> origin/master
 	_                       = bytes.MinRead
 )
 
