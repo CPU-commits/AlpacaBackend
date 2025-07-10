@@ -10,6 +10,7 @@ import (
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	embeddingapi "github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding/embedding_api"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
@@ -47,6 +48,52 @@ func (httpPC *HttpPublicationController) GetPublications(c *gin.Context) {
 
 	publications, metadata, err := httpPC.publicationService.GetPublications(
 		username,
+		page,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	// Headers
+	c.Header("X-Per-Page", strconv.Itoa(metadata.Limit))
+	c.Header("X-Total", strconv.Itoa(metadata.Total))
+
+	c.JSON(http.StatusOK, publications)
+}
+
+func (httpPC *HttpPublicationController) GetPublication(c *gin.Context) {
+	idPostStr := c.Param("idPost")
+	idPost, err := strconv.Atoi(idPostStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	publications, err := httpPC.publicationService.GetPublication(
+		int64(idPost),
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, publications)
+}
+
+func (httpPC *HttpPublicationController) Search(c *gin.Context) {
+	q := c.Query("q")
+	categories := domainUtils.FilterNoError(strings.Split(c.Query("categories"), ","), func(category string) bool {
+		return category != ""
+	})
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	publications, metadata, err := httpPC.publicationService.Search(
+		q,
+		categories,
 		page,
 	)
 	if err != nil {
@@ -248,7 +295,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		),
 		imageStore,
 		*fileService,
-		&followRepository,
+		followRepository,
 		publicationRDRepository,
 	)
 	return &HttpPublicationController{
@@ -259,6 +306,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 				profileService,
 				tattooRepository,
 				*fileService,
+				embeddingapi.NewAPIEmbedding(),
 			),
 			profileService,
 			imageStore,

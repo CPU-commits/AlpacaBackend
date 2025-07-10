@@ -10,6 +10,7 @@ import (
 
 	appointmentController "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/controller"
 	authController "github.com/CPU-commits/Template_Go-EventDriven/src/auth/controller"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
@@ -121,6 +122,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		tattooController := tattooController.NewTattooHttpController(bus)
 		// Define routes
 		tattoo.GET("/:username", tattooController.GetTattoos)
+		tattoo.GET("/urlKey/:idTattoo", tattooController.GetUrlImageTattoo)
+		tattoo.POST("/searchByImage", tattooController.SearchByImage)
 		tattoo.GET("/latest/:username", tattooController.GetLatestTattoos)
 		tattoo.POST("", middleware.JWTMiddleware(), tattooController.UploadTattoos)
 	}
@@ -140,7 +143,9 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publicationController := publicationController.NewPublicationHttpController(bus)
 		// Define routes
 		publication.GET("/username/:username", publicationController.GetPublications)
+		publication.GET("/:idPost", publicationController.GetPublication)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
+		publication.GET("/search", publicationController.Search)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.POST("/:idPost/view", publicationController.AddViewPublication)
@@ -152,8 +157,18 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		appointmentController := appointmentController.NewHTTPAppointmentController(bus)
 		// Define routes
 		appointment.GET("", appointmentController.GetAppointments)
+		appointment.GET(
+			"/pendingCount",
+			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
+			appointmentController.GetAppointmentsPending,
+		)
 		appointment.POST("", appointmentController.RequestAppointment)
-		appointment.PATCH(":idAppointment/schedule", appointmentController.ScheduleAppointment)
+		appointment.POST(":idAppointment/review", appointmentController.ReviewAppointment)
+		appointment.PATCH(
+			":idAppointment/schedule",
+			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
+			appointmentController.ScheduleAppointment,
+		)
 		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)
 	}
 	generator := router.Group("api/generators", middleware.JWTMiddleware())

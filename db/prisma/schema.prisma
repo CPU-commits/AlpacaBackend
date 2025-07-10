@@ -49,21 +49,22 @@ model sessions {
 }
 
 model users {
-	id                 BigInt               @id @default(sequence())
-	email              String               @unique
-	name               String
-	username String @unique
-	phone              String?
-	created_at         DateTime            @default(now()) @db.Timestamp(6)
-	auths              auths[]
-	roles_users        roles_users[]
-	token_passwords    token_passwords[]
-	profile profiles?
-	follows follows[]
-	studios studio_tattoo_artists[]
-	my_studios studio_admins[]
-	reviews reviews[]
-	likes likes[]
+  id                 BigInt               @id @default(sequence())
+  email              String               @unique
+  name               String
+  username String @unique
+  phone              String?
+  created_at         DateTime            @default(now()) @db.Timestamp(6)
+  location String?
+  auths              auths[]
+  roles_users        roles_users[]
+  token_passwords    token_passwords[]
+  profile profiles?
+  follows follows[]
+  studios studio_tattoo_artists[]
+  my_studios studio_admins[]
+  reviews reviews[]
+  likes likes[]
 	userAppointments        appointments[] @relation("UserAppointments")
 	tattooArtistAppointments appointments[] @relation("TattooArtistAppointments")
 	codes codes[]
@@ -168,10 +169,12 @@ model reviews {
 	id BigInt @id @default(sequence())
 	id_user BigInt
 	id_profile BigInt
+	id_appointment BigInt @unique
 	content String
 	stars Int
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	user users @relation(fields: [id_user], references: [id])
+	appointment appointments @relation(fields: [id_appointment], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
 }
 
@@ -223,6 +226,7 @@ model appointments {
   id_user           BigInt
   id_tattoo_artist  BigInt
   status            appointment_status
+  id_calendar String?
   phone String?
   has_idea Boolean
   area tattoo_area?
@@ -233,9 +237,11 @@ model appointments {
   scheduled_at DateTime?
   duration Float?
   finished_at DateTime?
+  is_paid Boolean @default(false)
   created_at        DateTime @default(now()) @db.Timestamp(6)
 
   images appointment_images[]
+  review reviews?
   user          users @relation("UserAppointments", fields: [id_user], references: [id])
   tattoo_artist users @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
 }
@@ -285,10 +291,10 @@ enum tattoo_area {
 }
 
 enum appointment_status {
-	paid
 	scheduled
 	canceled
 	created
+	reviewed
 }
 
 enum role_name {

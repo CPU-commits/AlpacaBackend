@@ -30,6 +30,7 @@ type settings struct {
 	SMTPFROM         string
 	SMTPPASS         string
 	SMTPPORT         string
+	REPLICATE_KEY    string
 }
 
 func validateSettings(settings *settings) {
@@ -71,6 +72,9 @@ func validateSettings(settings *settings) {
 	if settings.OPENAI_KEY == "" {
 		missing = append(missing, "OPENAI_KEY")
 	}
+	if settings.REPLICATE_KEY == "" {
+		missing = append(missing, "REPLICATE_KEY")
+	}
 	if settings.SMTPHOST == "" {
 		missing = append(missing, "SMTPHOST")
 	}
@@ -102,6 +106,7 @@ func newSettings() *settings {
 		REDIS_CONNECTION: os.Getenv("REDIS_CONNECTION"),
 		REDIS_PASS:       os.Getenv("REDIS_PASS"),
 		OPENAI_KEY:       os.Getenv("OPENAI_KEY"),
+		REPLICATE_KEY:    os.Getenv("REPLICATE_KEY"),
 		SMTPHOST:         os.Getenv("SMTPHOST"),
 		SMTPFROM:         os.Getenv("SMTPFROM"),
 		SMTPPASS:         os.Getenv("SMTPPASS"),

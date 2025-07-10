@@ -494,6 +494,129 @@ func testAppointmentsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testAppointmentOneToOneReviewUsingIDAppointmentReview(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign Review
+	var local Appointment
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, reviewDBTypes, true, reviewColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Review struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.IDAppointment = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDAppointmentReview().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.IDAppointment != foreign.IDAppointment {
+		t.Errorf("want: %v, got %v", foreign.IDAppointment, check.IDAppointment)
+	}
+
+	ranAfterSelectHook := false
+	AddReviewHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Review) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := AppointmentSlice{&local}
+	if err = local.L.LoadIDAppointmentReview(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAppointmentReview == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDAppointmentReview = nil
+	if err = local.L.LoadIDAppointmentReview(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAppointmentReview == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testAppointmentOneToOneSetOpReviewUsingIDAppointmentReview(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b, c Review
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, reviewDBTypes, false, strmangle.SetComplement(reviewPrimaryKeyColumns, reviewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Review{&b, &c} {
+		err = a.SetIDAppointmentReview(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDAppointmentReview != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.IDAppointmentAppointment != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.IDAppointment {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.IDAppointment))
+		reflect.Indirect(reflect.ValueOf(&x.IDAppointment)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.ID != x.IDAppointment {
+			t.Error("foreign key was wrong value", a.ID, x.IDAppointment)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
 func testAppointmentToManyIDAppointmentAppointmentImages(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -958,7 +1081,11 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
+<<<<<<< HEAD
 	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('paid','scheduled','canceled','created')`, `Phone`: `text`, `HasIdea`: `boolean`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Height`: `double precision`, `Width`: `double precision`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `ScheduledAt`: `timestamp without time zone`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `CreatedAt`: `timestamp without time zone`}
+=======
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('created','scheduled','canceled','reviewed')`, `CreatedAt`: `timestamp without time zone`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `HasIdea`: `boolean`, `Height`: `double precision`, `Phone`: `text`, `Width`: `double precision`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `ScheduledAt`: `timestamp without time zone`, `IDCalendar`: `text`, `IsPaid`: `boolean`}
+>>>>>>> origin/master
 	_                  = bytes.MinRead
 )
 

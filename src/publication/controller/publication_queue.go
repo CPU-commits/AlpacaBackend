@@ -22,7 +22,7 @@ func NewPublicationQueueController(
 			*authService.NewUserService(userRepository, roleRepository, bus),
 			imageStore,
 			*fileService,
-			&followRepository,
+			followRepository,
 			publicationRDRepository,
 		),
 	}

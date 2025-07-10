@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"mime"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	embeddingapi "github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding/embedding_api"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
@@ -45,6 +47,74 @@ func (httpTattoo *HttpTattooController) GetTattoos(c *gin.Context) {
 
 	tattoos, metadata, err := httpTattoo.tattooService.GetTattoos(username, page)
 	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	// Headers
+	c.Header("X-Per-Page", strconv.Itoa(metadata.Limit))
+	c.Header("X-Total", strconv.Itoa(metadata.Total))
+
+	c.JSON(http.StatusOK, tattoos)
+}
+
+func (httpTattoo *HttpTattooController) GetUrlImageTattoo(c *gin.Context) {
+	idTattooStr := c.Param("idTattoo")
+	idTattoo, err := strconv.Atoi(idTattooStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	tattooKey, err := httpTattoo.tattooService.GetUrlImageTattoo(int64(idTattoo))
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"key": tattooKey,
+	})
+}
+
+func (httpTattoo *HttpTattooController) SearchByImage(c *gin.Context) {
+	var errNoSuchFile error = fmt.Errorf("http: no such file")
+
+	tattooImageForm, err := c.FormFile("image")
+	if err != nil && err.Error() != errNoSuchFile.Error() {
+		fmt.Printf("%v\n", err)
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	var tattooImage multipart.File
+	if tattooImageForm != nil {
+		tattooImage, err = tattooImageForm.Open()
+		if err != nil || tattooImage == nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	idTattooStr := c.DefaultQuery("isLikeidTattoo", "0")
+	idTattoo, err := strconv.Atoi(idTattooStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	tattoos, metadata, err := httpTattoo.tattooService.SearchByImage(
+		service.SearchByImageParams{
+			Image:          tattooImage,
+			IsLikeTattooID: int64(idTattoo),
+		},
+		page,
+	)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		utils.ResFromErr(c, err)
 		return
 	}
@@ -158,11 +228,12 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 				),
 				cloudinary_store.NewCloudinaryImageStore(),
 				*fileService,
-				&followRepository,
+				followRepository,
 				publicationRDRepository,
 			),
 			tattooRepository,
 			*fileService,
+			embeddingapi.NewAPIEmbedding(),
 		),
 	}
 }

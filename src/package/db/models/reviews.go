@@ -23,80 +23,103 @@ import (
 
 // Review is an object representing the database table.
 type Review struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDUser    int64     `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
-	IDProfile int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	Content   string    `boil:"content" json:"content" toml:"content" yaml:"content"`
-	Stars     int       `boil:"stars" json:"stars" toml:"stars" yaml:"stars"`
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID            int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDUser        int64     `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
+	IDProfile     int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	Content       string    `boil:"content" json:"content" toml:"content" yaml:"content"`
+	Stars         int       `boil:"stars" json:"stars" toml:"stars" yaml:"stars"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDAppointment int64     `boil:"id_appointment" json:"id_appointment" toml:"id_appointment" yaml:"id_appointment"`
 
 	R *reviewR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reviewL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ReviewColumns = struct {
-	ID        string
-	IDUser    string
-	IDProfile string
-	Content   string
-	Stars     string
-	CreatedAt string
+	ID            string
+	IDUser        string
+	IDProfile     string
+	Content       string
+	Stars         string
+	CreatedAt     string
+	IDAppointment string
 }{
-	ID:        "id",
-	IDUser:    "id_user",
-	IDProfile: "id_profile",
-	Content:   "content",
-	Stars:     "stars",
-	CreatedAt: "created_at",
+	ID:            "id",
+	IDUser:        "id_user",
+	IDProfile:     "id_profile",
+	Content:       "content",
+	Stars:         "stars",
+	CreatedAt:     "created_at",
+	IDAppointment: "id_appointment",
 }
 
 var ReviewTableColumns = struct {
-	ID        string
-	IDUser    string
-	IDProfile string
-	Content   string
-	Stars     string
-	CreatedAt string
+	ID            string
+	IDUser        string
+	IDProfile     string
+	Content       string
+	Stars         string
+	CreatedAt     string
+	IDAppointment string
 }{
-	ID:        "reviews.id",
-	IDUser:    "reviews.id_user",
-	IDProfile: "reviews.id_profile",
-	Content:   "reviews.content",
-	Stars:     "reviews.stars",
-	CreatedAt: "reviews.created_at",
+	ID:            "reviews.id",
+	IDUser:        "reviews.id_user",
+	IDProfile:     "reviews.id_profile",
+	Content:       "reviews.content",
+	Stars:         "reviews.stars",
+	CreatedAt:     "reviews.created_at",
+	IDAppointment: "reviews.id_appointment",
 }
 
 // Generated where
 
 var ReviewWhere = struct {
-	ID        whereHelperint64
-	IDUser    whereHelperint64
-	IDProfile whereHelperint64
-	Content   whereHelperstring
-	Stars     whereHelperint
-	CreatedAt whereHelpertime_Time
+	ID            whereHelperint64
+	IDUser        whereHelperint64
+	IDProfile     whereHelperint64
+	Content       whereHelperstring
+	Stars         whereHelperint
+	CreatedAt     whereHelpertime_Time
+	IDAppointment whereHelperint64
 }{
-	ID:        whereHelperint64{field: "\"reviews\".\"id\""},
-	IDUser:    whereHelperint64{field: "\"reviews\".\"id_user\""},
-	IDProfile: whereHelperint64{field: "\"reviews\".\"id_profile\""},
-	Content:   whereHelperstring{field: "\"reviews\".\"content\""},
-	Stars:     whereHelperint{field: "\"reviews\".\"stars\""},
-	CreatedAt: whereHelpertime_Time{field: "\"reviews\".\"created_at\""},
+	ID:            whereHelperint64{field: "\"reviews\".\"id\""},
+	IDUser:        whereHelperint64{field: "\"reviews\".\"id_user\""},
+	IDProfile:     whereHelperint64{field: "\"reviews\".\"id_profile\""},
+	Content:       whereHelperstring{field: "\"reviews\".\"content\""},
+	Stars:         whereHelperint{field: "\"reviews\".\"stars\""},
+	CreatedAt:     whereHelpertime_Time{field: "\"reviews\".\"created_at\""},
+	IDAppointment: whereHelperint64{field: "\"reviews\".\"id_appointment\""},
 }
 
 // ReviewRels is where relationship names are stored.
 var ReviewRels = struct {
+<<<<<<< HEAD
 	IDProfileProfile string
 	IDUserUser       string
 }{
 	IDProfileProfile: "IDProfileProfile",
 	IDUserUser:       "IDUserUser",
+=======
+	IDAppointmentAppointment string
+	IDProfileProfile         string
+	IDUserUser               string
+}{
+	IDAppointmentAppointment: "IDAppointmentAppointment",
+	IDProfileProfile:         "IDProfileProfile",
+	IDUserUser:               "IDUserUser",
+>>>>>>> origin/master
 }
 
 // reviewR is where relationships are stored.
 type reviewR struct {
+<<<<<<< HEAD
 	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
 	IDUserUser       *User    `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+=======
+	IDAppointmentAppointment *Appointment `boil:"IDAppointmentAppointment" json:"IDAppointmentAppointment" toml:"IDAppointmentAppointment" yaml:"IDAppointmentAppointment"`
+	IDProfileProfile         *Profile     `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDUserUser               *User        `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+>>>>>>> origin/master
 }
 
 // NewStruct creates a new relationship struct
@@ -104,12 +127,20 @@ func (*reviewR) NewStruct() *reviewR {
 	return &reviewR{}
 }
 
+<<<<<<< HEAD
 func (o *Review) GetIDProfileProfile() *Profile {
 	if o == nil {
 		return nil
 	}
 
 	return o.R.GetIDProfileProfile()
+=======
+func (r *reviewR) GetIDAppointmentAppointment() *Appointment {
+	if r == nil {
+		return nil
+	}
+	return r.IDAppointmentAppointment
+>>>>>>> origin/master
 }
 
 func (r *reviewR) GetIDProfileProfile() *Profile {
@@ -120,6 +151,7 @@ func (r *reviewR) GetIDProfileProfile() *Profile {
 	return r.IDProfileProfile
 }
 
+<<<<<<< HEAD
 func (o *Review) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -128,11 +160,16 @@ func (o *Review) GetIDUserUser() *User {
 	return o.R.GetIDUserUser()
 }
 
+=======
+>>>>>>> origin/master
 func (r *reviewR) GetIDUserUser() *User {
 	if r == nil {
 		return nil
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 	return r.IDUserUser
 }
 
@@ -140,8 +177,8 @@ func (r *reviewR) GetIDUserUser() *User {
 type reviewL struct{}
 
 var (
-	reviewAllColumns            = []string{"id", "id_user", "id_profile", "content", "stars", "created_at"}
-	reviewColumnsWithoutDefault = []string{"id_user", "id_profile", "content", "stars"}
+	reviewAllColumns            = []string{"id", "id_user", "id_profile", "content", "stars", "created_at", "id_appointment"}
+	reviewColumnsWithoutDefault = []string{"id_user", "id_profile", "content", "stars", "id_appointment"}
 	reviewColumnsWithDefault    = []string{"id", "created_at"}
 	reviewPrimaryKeyColumns     = []string{"id"}
 	reviewGeneratedColumns      = []string{}
@@ -452,6 +489,20 @@ func (q reviewQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (boo
 	return count > 0, nil
 }
 
+<<<<<<< HEAD
+=======
+// IDAppointmentAppointment pointed to by the foreign key.
+func (o *Review) IDAppointmentAppointment(mods ...qm.QueryMod) appointmentQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDAppointment),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Appointments(queryMods...)
+}
+
+>>>>>>> origin/master
 // IDProfileProfile pointed to by the foreign key.
 func (o *Review) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 	queryMods := []qm.QueryMod{
@@ -467,11 +518,139 @@ func (o *Review) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 func (o *Review) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("\"id\" = ?", o.IDUser),
+<<<<<<< HEAD
 	}
 
 	queryMods = append(queryMods, mods...)
 
 	return Users(queryMods...)
+=======
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// LoadIDAppointmentAppointment allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (reviewL) LoadIDAppointmentAppointment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeReview interface{}, mods queries.Applicator) error {
+	var slice []*Review
+	var object *Review
+
+	if singular {
+		var ok bool
+		object, ok = maybeReview.(*Review)
+		if !ok {
+			object = new(Review)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeReview)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeReview))
+			}
+		}
+	} else {
+		s, ok := maybeReview.(*[]*Review)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeReview)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeReview))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &reviewR{}
+		}
+		args[object.IDAppointment] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &reviewR{}
+			}
+
+			args[obj.IDAppointment] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`appointments`),
+		qm.WhereIn(`appointments.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Appointment")
+	}
+
+	var resultSlice []*Appointment
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Appointment")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for appointments")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for appointments")
+	}
+
+	if len(appointmentAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDAppointmentAppointment = foreign
+		if foreign.R == nil {
+			foreign.R = &appointmentR{}
+		}
+		foreign.R.IDAppointmentReview = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDAppointment == foreign.ID {
+				local.R.IDAppointmentAppointment = foreign
+				if foreign.R == nil {
+					foreign.R = &appointmentR{}
+				}
+				foreign.R.IDAppointmentReview = local
+				break
+			}
+		}
+	}
+
+	return nil
+>>>>>>> origin/master
 }
 
 // LoadIDProfileProfile allows an eager lookup of values, cached into the
@@ -619,6 +798,43 @@ func (reviewL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singu
 			if !ok {
 				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeReview))
 			}
+<<<<<<< HEAD
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &reviewR{}
+		}
+		args[object.IDUser] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &reviewR{}
+			}
+
+			args[obj.IDUser] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+=======
 		}
 	}
 
@@ -709,6 +925,100 @@ func (reviewL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singu
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetIDAppointmentAppointment of the review to the related item.
+// Sets o.R.IDAppointmentAppointment to related.
+// Adds o to related.R.IDAppointmentReview.
+func (o *Review) SetIDAppointmentAppointment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Appointment) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"reviews\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_appointment"}),
+		strmangle.WhereClause("\"", "\"", 2, reviewPrimaryKeyColumns),
+>>>>>>> origin/master
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+<<<<<<< HEAD
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDUserUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.IDUserReviews = append(foreign.R.IDUserReviews, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.IDUser == foreign.ID {
+				local.R.IDUserUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.IDUserReviews = append(foreign.R.IDUserReviews, local)
+				break
+			}
+		}
+=======
+	o.IDAppointment = related.ID
+	if o.R == nil {
+		o.R = &reviewR{
+			IDAppointmentAppointment: related,
+		}
+	} else {
+		o.R.IDAppointmentAppointment = related
+	}
+
+	if related.R == nil {
+		related.R = &appointmentR{
+			IDAppointmentReview: o,
+		}
+	} else {
+		related.R.IDAppointmentReview = o
+>>>>>>> origin/master
 	}
 
 	return nil

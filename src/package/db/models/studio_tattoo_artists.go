@@ -90,6 +90,7 @@ func (*studioTattooArtistR) NewStruct() *studioTattooArtistR {
 	return &studioTattooArtistR{}
 }
 
+<<<<<<< HEAD
 func (o *StudioTattooArtist) GetIDStudioStudio() *Studio {
 	if o == nil {
 		return nil
@@ -98,6 +99,8 @@ func (o *StudioTattooArtist) GetIDStudioStudio() *Studio {
 	return o.R.GetIDStudioStudio()
 }
 
+=======
+>>>>>>> origin/master
 func (r *studioTattooArtistR) GetIDStudioStudio() *Studio {
 	if r == nil {
 		return nil
@@ -106,6 +109,7 @@ func (r *studioTattooArtistR) GetIDStudioStudio() *Studio {
 	return r.IDStudioStudio
 }
 
+<<<<<<< HEAD
 func (o *StudioTattooArtist) GetIDTattooArtistUser() *User {
 	if o == nil {
 		return nil
@@ -114,11 +118,16 @@ func (o *StudioTattooArtist) GetIDTattooArtistUser() *User {
 	return o.R.GetIDTattooArtistUser()
 }
 
+=======
+>>>>>>> origin/master
 func (r *studioTattooArtistR) GetIDTattooArtistUser() *User {
 	if r == nil {
 		return nil
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 	return r.IDTattooArtistUser
 }
 

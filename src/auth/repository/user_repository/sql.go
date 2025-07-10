@@ -33,6 +33,7 @@ func (sqlUserRepository) sqlUserToUser(
 			return model.Role(role)
 		}),
 		Username: sqlUser.Username,
+		Location: sqlUser.Location.String,
 	}
 }
 

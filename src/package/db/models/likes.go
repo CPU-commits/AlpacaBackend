@@ -100,20 +100,33 @@ func (*likeR) NewStruct() *likeR {
 	return &likeR{}
 }
 
+<<<<<<< HEAD
 func (o *Like) GetIDPostPost() *Post {
 	if o == nil {
 		return nil
 	}
-
-	return o.R.GetIDPostPost()
-}
-
+=======
 func (r *likeR) GetIDPostPost() *Post {
 	if r == nil {
 		return nil
 	}
+	return r.IDPostPost
+}
+>>>>>>> origin/master
+
+	return o.R.GetIDPostPost()
+}
+
+func (r *likeR) GetIDUserUser() *User {
+	if r == nil {
+		return nil
+	}
+<<<<<<< HEAD
 
 	return r.IDPostPost
+=======
+	return r.IDUserUser
+>>>>>>> origin/master
 }
 
 func (o *Like) GetIDProfileProfile() *Profile {

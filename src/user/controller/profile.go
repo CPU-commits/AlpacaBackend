@@ -135,7 +135,7 @@ func NewHTTProfileController() HttpProfileController {
 			),
 			cloudinary_store.NewCloudinaryImageStore(),
 			*fileService,
-			&followRepository,
+			followRepository,
 			publicationRDRepository,
 		),
 	}

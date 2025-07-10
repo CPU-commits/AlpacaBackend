@@ -90,6 +90,7 @@ func (*followR) NewStruct() *followR {
 	return &followR{}
 }
 
+<<<<<<< HEAD
 func (o *Follow) GetIDProfileProfile() *Profile {
 	if o == nil {
 		return nil
@@ -98,6 +99,8 @@ func (o *Follow) GetIDProfileProfile() *Profile {
 	return o.R.GetIDProfileProfile()
 }
 
+=======
+>>>>>>> origin/master
 func (r *followR) GetIDProfileProfile() *Profile {
 	if r == nil {
 		return nil
@@ -106,6 +109,7 @@ func (r *followR) GetIDProfileProfile() *Profile {
 	return r.IDProfileProfile
 }
 
+<<<<<<< HEAD
 func (o *Follow) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -114,11 +118,16 @@ func (o *Follow) GetIDUserUser() *User {
 	return o.R.GetIDUserUser()
 }
 
+=======
+>>>>>>> origin/master
 func (r *followR) GetIDUserUser() *User {
 	if r == nil {
 		return nil
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 	return r.IDUserUser
 }
 

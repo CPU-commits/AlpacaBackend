@@ -31,6 +31,7 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 		ID:             sqlAppointment.ID,
 		IDTattooArtist: sqlAppointment.IDTattooArtist,
 		IDUser:         sqlAppointment.IDUser,
+		IDCalendar:     sqlAppointment.IDCalendar.String,
 		Status:         model.AppointmentStatus(sqlAppointment.Status),
 		Description:    sqlAppointment.Description,
 		Phone:          sqlAppointment.Phone.String,
@@ -128,10 +129,26 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 		where = append(where, models.AppointmentWhere.Status.EQ(string(criteria.Status)))
 	}
 	if !criteria.ScheduledAtGTE.IsZero() {
+		where = append(where, models.AppointmentWhere.ScheduledAt.IsNotNull())
 		where = append(where, models.AppointmentWhere.ScheduledAt.GTE(null.TimeFrom(criteria.ScheduledAtGTE)))
 	}
-	if !criteria.FinishedAtLTE.IsZero() {
-		where = append(where, models.AppointmentWhere.FinishedAt.LTE(null.TimeFrom(criteria.FinishedAtLTE)))
+	if criteria.FinishedAt != nil {
+		where = append(where, models.AppointmentWhere.FinishedAt.IsNotNull())
+		if !criteria.FinishedAt.LTE.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.LTE(null.TimeFrom(criteria.FinishedAt.LTE)))
+		}
+		if !criteria.FinishedAt.LT.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.LT(null.TimeFrom(criteria.FinishedAt.LT)))
+		}
+		if !criteria.FinishedAt.GTE.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.GTE(null.TimeFrom(criteria.FinishedAt.GTE)))
+		}
+		if !criteria.FinishedAt.GT.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.GT(null.TimeFrom(criteria.FinishedAt.GT)))
+		}
+		if !criteria.FinishedAt.EQ.IsZero() {
+			where = append(where, models.AppointmentWhere.FinishedAt.EQ(null.TimeFrom(criteria.FinishedAt.EQ)))
+		}
 	}
 
 	var orMods []QueryMod
@@ -239,6 +256,49 @@ func (sqlAR appointmentRepositorySql) Find(
 	}), nil
 }
 
+func (appointmentRepositorySql) selectToMod(selectOpts *SelectOpts) []QueryMod {
+	mod := []QueryMod{}
+	if selectOpts == nil {
+		return mod
+	}
+	if selectOpts.IDUser != nil && *selectOpts.IDUser {
+		mod = append(mod, Select(models.AppointmentColumns.IDUser))
+	}
+	if selectOpts.IDCalendar != nil && *selectOpts.IDCalendar {
+		mod = append(mod, Select(models.AppointmentColumns.IDCalendar))
+	}
+	if selectOpts.IDTattooArtist != nil && *selectOpts.IDTattooArtist {
+		mod = append(mod, Select(models.AppointmentColumns.IDTattooArtist))
+	}
+
+	return mod
+}
+
+func (sqlAR appointmentRepositorySql) findOneOptionsToMod(opts *findOneOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlAR.selectToMod(opts.selectOpts)...)
+
+	return mod
+}
+
+func (sqlAR appointmentRepositorySql) FindOne(
+	criteria *Criteria,
+	opts *findOneOptions,
+) (*model.Appointment, error) {
+	where := sqlAR.criteriaToWhere(criteria)
+	mod := sqlAR.findOneOptionsToMod(opts)
+
+	sqlAppointment, err := models.Appointments(append(where, mod...)...).One(context.Background(), sqlAR.db)
+	if err != nil {
+		return nil, utils.ErrRepositoryFailed
+	}
+
+	return sqlAR.sqlAppointmentToModel(sqlAppointment), nil
+}
+
 func (sqlAR appointmentRepositorySql) Count(criteria *Criteria) (int64, error) {
 	where := sqlAR.criteriaToWhere(criteria)
 
@@ -280,6 +340,9 @@ func (sqlAR appointmentRepositorySql) Update(criteria *Criteria, data *UpdateDat
 		cols[models.AppointmentColumns.FinishedAt] = null.TimeFromPtr(nil)
 	} else if !data.FinishedAt.IsZero() {
 		cols[models.AppointmentColumns.FinishedAt] = data.FinishedAt
+	}
+	if data.IDCalendar != "" {
+		cols[models.AppointmentColumns.IDCalendar] = data.IDCalendar
 	}
 
 	if _, err := models.Appointments(where...).UpdateAll(context.Background(), sqlAR.db, cols); err != nil {

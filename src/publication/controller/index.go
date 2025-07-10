@@ -21,7 +21,7 @@ var (
 	userRepository          = user_repository.NewSQLUserRepository(db.DB)
 	tattooRepository        = tattoo_repository.NewSqlTattooRepository(db.DB)
 	likeRepository          = like_repository.NewSqlLikeRepository(db.DB)
-	publicationRepository   = publication_repository.NewSqlPublicationRepository(db.DB)
+	publicationRepository   = publication_repository.NewSqlPublicationRepository()
 	publicationTSRepository = publication_repository.NewTsPublicationRepository()
 	roleRepository          = role_repository.NewSQLRoleRepository()
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()

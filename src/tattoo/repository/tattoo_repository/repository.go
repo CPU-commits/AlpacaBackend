@@ -3,6 +3,7 @@ package tattoo_repository
 import "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 
 type Criteria struct {
+	ID        int64
 	IDs       []int64
 	IDProfile int64
 }
@@ -57,11 +58,60 @@ type UpdateData struct {
 	UnsetIDPublication bool
 }
 
+type SimilarityParams struct {
+	Embedding []float64
+	IDTattoo  int64
+}
+
+type SimilarityOptions struct {
+	skip    *int
+	limit   *int
+	include *Include
+}
+
+func (opts *SimilarityOptions) Limit(limit int) *SimilarityOptions {
+	opts.limit = &limit
+
+	return opts
+}
+
+func (opts *SimilarityOptions) Skip(skip int) *SimilarityOptions {
+	opts.skip = &skip
+
+	return opts
+}
+
+func (opts *SimilarityOptions) Include(include Include) *SimilarityOptions {
+	opts.include = &include
+
+	return opts
+}
+
+func NewSimilarityOptions() *SimilarityOptions {
+	return &SimilarityOptions{}
+}
+
+type FindOneOpts struct {
+	include *Include
+}
+
+func NewFindOneOptions() *FindOneOpts {
+	return &FindOneOpts{}
+}
+
+func (opts *FindOneOpts) Include(include Include) *FindOneOpts {
+	opts.include = &include
+
+	return opts
+}
+
 type TattooRepository interface {
 	Insert(tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error)
 	Find(criteria *Criteria, opts *FindOpts) ([]model.Tattoo, error)
+	FindOne(criteria *Criteria, opts *FindOneOpts) (*model.Tattoo, error)
 	Count(criteria *Criteria) (int64, error)
 	ConvertImageInTattoo(idImages []int64, tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error)
 	UpdateViews(ids []int64) error
 	Update(criteria *Criteria, data UpdateData) error
+	TattooSimilarity(params SimilarityParams, opts *SimilarityOptions) ([]model.Tattoo, int64, error)
 }

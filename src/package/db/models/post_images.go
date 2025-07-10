@@ -90,6 +90,7 @@ func (*postImageR) NewStruct() *postImageR {
 	return &postImageR{}
 }
 
+<<<<<<< HEAD
 func (o *PostImage) GetIDImageImage() *Image {
 	if o == nil {
 		return nil
@@ -98,6 +99,8 @@ func (o *PostImage) GetIDImageImage() *Image {
 	return o.R.GetIDImageImage()
 }
 
+=======
+>>>>>>> origin/master
 func (r *postImageR) GetIDImageImage() *Image {
 	if r == nil {
 		return nil
@@ -106,6 +109,7 @@ func (r *postImageR) GetIDImageImage() *Image {
 	return r.IDImageImage
 }
 
+<<<<<<< HEAD
 func (o *PostImage) GetIDPostPost() *Post {
 	if o == nil {
 		return nil
@@ -114,11 +118,16 @@ func (o *PostImage) GetIDPostPost() *Post {
 	return o.R.GetIDPostPost()
 }
 
+=======
+>>>>>>> origin/master
 func (r *postImageR) GetIDPostPost() *Post {
 	if r == nil {
 		return nil
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 	return r.IDPostPost
 }
 
