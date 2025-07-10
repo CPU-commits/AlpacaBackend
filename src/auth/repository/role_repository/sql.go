@@ -7,7 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
-	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+	. "github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 type sqlRoleRepository struct {
@@ -19,6 +19,7 @@ func (sqlRR sqlRoleRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria == nil {
 		return where
 	}
+
 	if criteria.Role != "" {
 		where = append(where, models.RolesUserWhere.Role.EQ(string(criteria.Role)))
 	}

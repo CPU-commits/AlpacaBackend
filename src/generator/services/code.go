@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/repository/code_repository"
+	notificationsM "github.com/CPU-commits/Template_Go-EventDriven/src/notifications/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
@@ -57,7 +58,8 @@ func (codeService *CodeService) CreateCode(newCode dto.NewCodeDTO) (*model.Code,
 		return nil, ErrCodeTypeNotValid
 	}
 
-	if _, err := codeService.userService.GetUserById(codeModel.IDUser); err != nil {
+	user, err := codeService.userService.GetUserById(codeModel.IDUser)
+	if err != nil {
 		return nil, err
 	}
 	randomString, err := utils.GenerateRandomString(6)
@@ -74,7 +76,24 @@ func (codeService *CodeService) CreateCode(newCode dto.NewCodeDTO) (*model.Code,
 		return nil, err
 	}
 
-	//Publish de mandar al correo
+	dataSendEmail := notificationsM.TemplateData{
+		Name:  user.Username,
+		Code:  code.Code,
+		Email: user.Email,
+	}
+
+	switch codeModel.Type {
+	case model.CodeTypeList[0]:
+		go codeService.bus.Publish(bus.Event{
+			Name:    SEND_EMAIL_RESET,
+			Payload: utils.ToPayload(dataSendEmail),
+		})
+	case model.CodeTypeList[1]:
+		go codeService.bus.Publish(bus.Event{
+			Name:    SEND_EMAIL_PASSWORD_RESET,
+			Payload: utils.ToPayload(dataSendEmail),
+		})
+	}
 
 	return code, nil
 }
@@ -86,13 +105,14 @@ func (codeService *CodeService) IsCodeValid(codeParams dto.CodeParams, idUser in
 	var nameEvent bus.EventName
 	var codeType string
 
-	if codeParams.Type == model.TokenType[0] {
+	switch codeParams.Type {
+	case model.TokenType[0]:
 		codeType = model.CodeTypeList[0]
 		nameEvent = NEW_TOKEN_EMAIL_UPDATE
-	} else if codeParams.Type == model.TokenType[1] {
+	case model.TokenType[1]:
 		codeType = model.CodeTypeList[1]
 		nameEvent = NEW_TOKEN_PASSWORD_UPDATE
-	} else {
+	default:
 		return ErrCodeTypeNotValid
 	}
 	resultCode, err := codeService.codeRepository.VerifyCode(codeModel, codeType)

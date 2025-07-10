@@ -1,7 +1,7 @@
 output="src/package/db/models"
 add-enum-types=false
 
-[crdb]
+[psql]
 user="root"
 pass="root"
 host="localhost"

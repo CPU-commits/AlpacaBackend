@@ -9,8 +9,8 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	. "github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 type sqlCodeRepository struct {
@@ -20,6 +20,7 @@ type sqlCodeRepository struct {
 func (sqlCodeRepository) sqlCodeToCode(code models.Code) *model.Code {
 	return &model.Code{
 		ID:        code.ID,
+		Code:      code.Code,
 		IDUser:    code.IDUser,
 		IsActive:  code.IsActive,
 		Type:      code.Type,

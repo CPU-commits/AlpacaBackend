@@ -14,10 +14,10 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	. "github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/typesense/typesense-go/v3/typesense"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type sqlTattooRepository struct {
