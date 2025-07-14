@@ -34,9 +34,9 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Sessions", testSessionsUpsert)
 
-	t.Run("StudioAdmins", testStudioAdminsUpsert)
+	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsUpsert)
 
-	t.Run("StudioTattooArtists", testStudioTattooArtistsUpsert)
+	t.Run("StudioUsers", testStudioUsersUpsert)
 
 	t.Run("Studios", testStudiosUpsert)
 

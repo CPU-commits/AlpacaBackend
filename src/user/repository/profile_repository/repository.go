@@ -9,6 +9,7 @@ import (
 type Criteria struct {
 	ID     int64
 	IDUser int64
+	OR     []Criteria
 }
 
 type SelectOpts struct {
@@ -28,6 +29,27 @@ type LoadOpts struct {
 type FindOneOptions struct {
 	SelectOpts *SelectOpts
 	load       *LoadOpts
+}
+
+type FindOptions struct {
+	SelectOpts *SelectOpts
+	load       *LoadOpts
+}
+
+func NewFindOptions() *FindOptions {
+	return &FindOptions{}
+}
+
+func (findOptions *FindOptions) Select(selectOpts SelectOpts) *FindOptions {
+	findOptions.SelectOpts = &selectOpts
+
+	return findOptions
+}
+
+func (opts *FindOptions) Load(load LoadOpts) *FindOptions {
+	opts.load = &load
+
+	return opts
 }
 
 func NewFindOneOptions() *FindOneOptions {
@@ -54,5 +76,5 @@ type UpdateData struct {
 type ProfileRepository interface {
 	FindOne(criteria *Criteria, opts *FindOneOptions) (*model.Profile, error)
 	UpdateOne(criteria *Criteria, data UpdateData) error
-	Find(opts *FindOneOptions) (*[]model.Profile, error)
+	Find(criteria *Criteria, opts *FindOptions) ([]model.Profile, error)
 }

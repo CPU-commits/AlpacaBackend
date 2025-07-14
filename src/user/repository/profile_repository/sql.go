@@ -138,6 +138,14 @@ func (sqlPR sqlProfileRepository) criteriaToWhere(criteria *Criteria) []QueryMod
 	if criteria.IDUser != 0 {
 		mod = append(mod, Where("id_user = ?", criteria.IDUser))
 	}
+	var orMods []QueryMod
+	for _, clause := range criteria.OR {
+		orWhere := sqlPR.criteriaToWhere(&clause)
+		orMods = append(orMods, Or2(Expr(orWhere...)))
+	}
+	if orMods != nil {
+		mod = append(mod, Expr(orMods...))
+	}
 
 	return mod
 }
@@ -210,7 +218,7 @@ func (sqlPR sqlProfileRepository) UpdateOne(criteria *Criteria, data UpdateData)
 	return nil
 }
 
-func (sqlPR sqlProfileRepository) Find(opts *FindOneOptions) (*[]model.Profile, error) {
+func (sqlPR sqlProfileRepository) Search(criteria *Criteria, opts *FindOptions) (*[]model.Profile, error) {
 
 	queryStr := `
 		SELECT p.*
@@ -250,6 +258,30 @@ func (sqlPR sqlProfileRepository) Find(opts *FindOneOptions) (*[]model.Profile, 
 		return sqlPR.SqlProfileToProfile(profile)
 	})
 	return &profiles, nil
+}
+
+func (sqlPR sqlProfileRepository) findOptionsToMod(opts *FindOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlPR.SelectOpts(opts.SelectOpts)...)
+	mod = append(mod, sqlPR.loadOpts(opts.load)...)
+
+	return mod
+}
+
+func (sqlPR sqlProfileRepository) Find(criteria *Criteria, opts *FindOptions) ([]model.Profile, error) {
+	where := sqlPR.criteriaToWhere(criteria)
+	mod := sqlPR.findOptionsToMod(opts)
+
+	profilesSQl, err := models.Profiles(append(mod, where...)...).All(context.Background(), sqlPR.db)
+	if err != nil {
+		return nil, err
+	}
+	return utils.MapNoError(profilesSQl, func(profile *models.Profile) model.Profile {
+		return sqlPR.SqlProfileToProfile(profile)
+	}), nil
 
 }
 

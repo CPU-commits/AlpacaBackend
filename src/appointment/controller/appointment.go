@@ -61,18 +61,20 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	statuses := domainUtils.FilterNoError(strings.Split(c.Query("statuses"), ","), func(x string) bool {
 		return x != ""
 	})
+	allAppointments := c.DefaultQuery("allAppointments", "true")
 
 	params := service.AppointmentParams{
-		Page:      page,
-		Paginated: paginated == "true",
-		FromDate:  fromDate,
-		ToDate:    toDate,
-		Statuses:  statuses,
+		Page:            page,
+		Paginated:       paginated == "true",
+		FromDate:        fromDate,
+		ToDate:          toDate,
+		Statuses:        statuses,
+		AllAppointments: allAppointments == "true",
 	}
 
 	appointments, count, err := appointmentController.appointmentService.GetAppointments(
 		claims.ID,
-		domainUtils.Includes(claims.Roles, string(model.TATTOO_ARTIST_ROLE)),
+		domainUtils.Includes(claims.Roles, model.TATTOO_ARTIST_ROLE),
 		params,
 	)
 	if err != nil {

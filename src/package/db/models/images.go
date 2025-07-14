@@ -82,11 +82,15 @@ var ImageRels = struct {
 	IDImageAppointmentImage string
 	IDImagePostImage        string
 	IDAvatarProfile         string
+	IDAvatarStudio          string
+	IDBannerStudio          string
 	IDImageTattoo           string
 }{
 	IDImageAppointmentImage: "IDImageAppointmentImage",
 	IDImagePostImage:        "IDImagePostImage",
 	IDAvatarProfile:         "IDAvatarProfile",
+	IDAvatarStudio:          "IDAvatarStudio",
+	IDBannerStudio:          "IDBannerStudio",
 	IDImageTattoo:           "IDImageTattoo",
 }
 
@@ -95,6 +99,8 @@ type imageR struct {
 	IDImageAppointmentImage *AppointmentImage `boil:"IDImageAppointmentImage" json:"IDImageAppointmentImage" toml:"IDImageAppointmentImage" yaml:"IDImageAppointmentImage"`
 	IDImagePostImage        *PostImage        `boil:"IDImagePostImage" json:"IDImagePostImage" toml:"IDImagePostImage" yaml:"IDImagePostImage"`
 	IDAvatarProfile         *Profile          `boil:"IDAvatarProfile" json:"IDAvatarProfile" toml:"IDAvatarProfile" yaml:"IDAvatarProfile"`
+	IDAvatarStudio          *Studio           `boil:"IDAvatarStudio" json:"IDAvatarStudio" toml:"IDAvatarStudio" yaml:"IDAvatarStudio"`
+	IDBannerStudio          *Studio           `boil:"IDBannerStudio" json:"IDBannerStudio" toml:"IDBannerStudio" yaml:"IDBannerStudio"`
 	IDImageTattoo           *Tattoo           `boil:"IDImageTattoo" json:"IDImageTattoo" toml:"IDImageTattoo" yaml:"IDImageTattoo"`
 }
 
@@ -122,6 +128,20 @@ func (r *imageR) GetIDAvatarProfile() *Profile {
 		return nil
 	}
 	return r.IDAvatarProfile
+}
+
+func (r *imageR) GetIDAvatarStudio() *Studio {
+	if r == nil {
+		return nil
+	}
+	return r.IDAvatarStudio
+}
+
+func (r *imageR) GetIDBannerStudio() *Studio {
+	if r == nil {
+		return nil
+	}
+	return r.IDBannerStudio
 }
 
 func (r *imageR) GetIDImageTattoo() *Tattoo {
@@ -478,6 +498,28 @@ func (o *Image) IDAvatarProfile(mods ...qm.QueryMod) profileQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Profiles(queryMods...)
+}
+
+// IDAvatarStudio pointed to by the foreign key.
+func (o *Image) IDAvatarStudio(mods ...qm.QueryMod) studioQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id_avatar\" = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Studios(queryMods...)
+}
+
+// IDBannerStudio pointed to by the foreign key.
+func (o *Image) IDBannerStudio(mods ...qm.QueryMod) studioQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id_banner\" = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Studios(queryMods...)
 }
 
 // IDImageTattoo pointed to by the foreign key.
@@ -842,6 +884,240 @@ func (imageL) LoadIDAvatarProfile(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
+// LoadIDAvatarStudio allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (imageL) LoadIDAvatarStudio(ctx context.Context, e boil.ContextExecutor, singular bool, maybeImage interface{}, mods queries.Applicator) error {
+	var slice []*Image
+	var object *Image
+
+	if singular {
+		var ok bool
+		object, ok = maybeImage.(*Image)
+		if !ok {
+			object = new(Image)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeImage))
+			}
+		}
+	} else {
+		s, ok := maybeImage.(*[]*Image)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeImage))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &imageR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &imageR{}
+			}
+
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`studios`),
+		qm.WhereIn(`studios.id_avatar in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Studio")
+	}
+
+	var resultSlice []*Studio
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Studio")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for studios")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studios")
+	}
+
+	if len(studioAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDAvatarStudio = foreign
+		if foreign.R == nil {
+			foreign.R = &studioR{}
+		}
+		foreign.R.IDAvatarImage = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.ID, foreign.IDAvatar) {
+				local.R.IDAvatarStudio = foreign
+				if foreign.R == nil {
+					foreign.R = &studioR{}
+				}
+				foreign.R.IDAvatarImage = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDBannerStudio allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (imageL) LoadIDBannerStudio(ctx context.Context, e boil.ContextExecutor, singular bool, maybeImage interface{}, mods queries.Applicator) error {
+	var slice []*Image
+	var object *Image
+
+	if singular {
+		var ok bool
+		object, ok = maybeImage.(*Image)
+		if !ok {
+			object = new(Image)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeImage))
+			}
+		}
+	} else {
+		s, ok := maybeImage.(*[]*Image)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeImage))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &imageR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &imageR{}
+			}
+
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`studios`),
+		qm.WhereIn(`studios.id_banner in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Studio")
+	}
+
+	var resultSlice []*Studio
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Studio")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for studios")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studios")
+	}
+
+	if len(studioAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDBannerStudio = foreign
+		if foreign.R == nil {
+			foreign.R = &studioR{}
+		}
+		foreign.R.IDBannerImage = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.ID, foreign.IDBanner) {
+				local.R.IDBannerStudio = foreign
+				if foreign.R == nil {
+					foreign.R = &studioR{}
+				}
+				foreign.R.IDBannerImage = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDImageTattoo allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
 func (imageL) LoadIDImageTattoo(ctx context.Context, e boil.ContextExecutor, singular bool, maybeImage interface{}, mods queries.Applicator) error {
@@ -1129,6 +1405,154 @@ func (o *Image) RemoveIDAvatarProfile(ctx context.Context, exec boil.ContextExec
 	}
 
 	related.R.IDAvatarImage = nil
+
+	return nil
+}
+
+// SetIDAvatarStudio of the image to the related item.
+// Sets o.R.IDAvatarStudio to related.
+// Adds o to related.R.IDAvatarImage.
+func (o *Image) SetIDAvatarStudio(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Studio) error {
+	var err error
+
+	if insert {
+		queries.Assign(&related.IDAvatar, o.ID)
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE \"studios\" SET %s WHERE %s",
+			strmangle.SetParamNames("\"", "\"", 1, []string{"id_avatar"}),
+			strmangle.WhereClause("\"", "\"", 2, studioPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		queries.Assign(&related.IDAvatar, o.ID)
+	}
+
+	if o.R == nil {
+		o.R = &imageR{
+			IDAvatarStudio: related,
+		}
+	} else {
+		o.R.IDAvatarStudio = related
+	}
+
+	if related.R == nil {
+		related.R = &studioR{
+			IDAvatarImage: o,
+		}
+	} else {
+		related.R.IDAvatarImage = o
+	}
+	return nil
+}
+
+// RemoveIDAvatarStudio relationship.
+// Sets o.R.IDAvatarStudio to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Image) RemoveIDAvatarStudio(ctx context.Context, exec boil.ContextExecutor, related *Studio) error {
+	var err error
+
+	queries.SetScanner(&related.IDAvatar, nil)
+	if _, err = related.Update(ctx, exec, boil.Whitelist("id_avatar")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDAvatarStudio = nil
+	}
+
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	related.R.IDAvatarImage = nil
+
+	return nil
+}
+
+// SetIDBannerStudio of the image to the related item.
+// Sets o.R.IDBannerStudio to related.
+// Adds o to related.R.IDBannerImage.
+func (o *Image) SetIDBannerStudio(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Studio) error {
+	var err error
+
+	if insert {
+		queries.Assign(&related.IDBanner, o.ID)
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE \"studios\" SET %s WHERE %s",
+			strmangle.SetParamNames("\"", "\"", 1, []string{"id_banner"}),
+			strmangle.WhereClause("\"", "\"", 2, studioPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		queries.Assign(&related.IDBanner, o.ID)
+	}
+
+	if o.R == nil {
+		o.R = &imageR{
+			IDBannerStudio: related,
+		}
+	} else {
+		o.R.IDBannerStudio = related
+	}
+
+	if related.R == nil {
+		related.R = &studioR{
+			IDBannerImage: o,
+		}
+	} else {
+		related.R.IDBannerImage = o
+	}
+	return nil
+}
+
+// RemoveIDBannerStudio relationship.
+// Sets o.R.IDBannerStudio to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Image) RemoveIDBannerStudio(ctx context.Context, exec boil.ContextExecutor, related *Studio) error {
+	var err error
+
+	queries.SetScanner(&related.IDBanner, nil)
+	if _, err = related.Update(ctx, exec, boil.Whitelist("id_banner")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDBannerStudio = nil
+	}
+
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	related.R.IDBannerImage = nil
 
 	return nil
 }

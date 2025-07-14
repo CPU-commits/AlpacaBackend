@@ -29,7 +29,7 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 ) *model.Appointment {
 	appointment := &model.Appointment{
 		ID:             sqlAppointment.ID,
-		IDTattooArtist: sqlAppointment.IDTattooArtist,
+		IDTattooArtist: sqlAppointment.IDTattooArtist.Int64,
 		IDUser:         sqlAppointment.IDUser,
 		IDCalendar:     sqlAppointment.IDCalendar.String,
 		Status:         model.AppointmentStatus(sqlAppointment.Status),
@@ -136,7 +136,7 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 		where = append(where, models.AppointmentWhere.IDUser.EQ(criteria.IDUser))
 	}
 	if criteria.IDTattooArtist != 0 {
-		where = append(where, models.AppointmentWhere.IDTattooArtist.EQ(criteria.IDTattooArtist))
+		where = append(where, models.AppointmentWhere.IDTattooArtist.EQ(null.Int64From(criteria.IDTattooArtist)))
 	}
 	if criteria.Status != "" {
 		where = append(where, models.AppointmentWhere.Status.EQ(string(criteria.Status)))
@@ -379,7 +379,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 
 	sqlAppointment := models.Appointment{
 		IDUser:         appointment.IDUser,
-		IDTattooArtist: appointment.IDTattooArtist,
+		IDTattooArtist: null.NewInt64(appointment.IDTattooArtist, appointment.IDTattooArtist != 0),
 		Status:         string(appointment.Status),
 		Area:           null.NewString(string(appointment.Area), appointment.Area != ""),
 		Color:          null.NewString(string(appointment.Color), appointment.Color != ""),

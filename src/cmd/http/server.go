@@ -19,6 +19,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
+	studioController "github.com/CPU-commits/Template_Go-EventDriven/src/studio/controller"
 	tattooController "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/controller"
 	userController "github.com/CPU-commits/Template_Go-EventDriven/src/user/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -101,6 +102,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	bus := queue.New(logger)
 	// tes
 	auth := router.Group("api/auth")
+	user := router.Group("api/users")
 	{
 		// Controllers
 		authControlle := authController.NewAuthHttpController(bus)
@@ -114,6 +116,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		auth.PATCH("/user", middleware.JWTMiddleware(), userController.UpdateUser)
 		auth.PATCH("/email", middleware.JWTMiddleware(), userController.UpdateEmail)
 		auth.GET("", middleware.JWTMiddleware(), userController.IsOwner)
+		user.GET("/search", userController.SearchUsers)
 	}
 
 	tattoo := router.Group("api/tattoos")
@@ -134,6 +137,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Define routes
 		profile.GET("/:username", profileController.GetProfile)
 		profile.GET("/views/:identifier", profileController.GetAllUserViews) // Se debe cambiar username por Identificador IP o algo asi
+		profile.GET("/user/:idUser/avatar", profileController.GetAvatar)
 		profile.PATCH("/avatar", middleware.JWTMiddleware(), profileController.ChangeAvatar)
 		profile.PATCH("", middleware.JWTMiddleware(), profileController.UpdateProfile)
 	}
@@ -142,7 +146,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Controllers
 		publicationController := publicationController.NewPublicationHttpController(bus)
 		// Define routes
-		publication.GET("/username/:username", publicationController.GetPublications)
+		publication.GET("/username/:username", publicationController.GetUserPublications)
+		publication.GET("/studio/:idStudio", publicationController.GetStudioPublications)
 		publication.GET("/:idPost", publicationController.GetPublication)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
 		publication.GET("/search", publicationController.Search)
@@ -159,7 +164,6 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		appointment.GET("", appointmentController.GetAppointments)
 		appointment.GET(
 			"/pendingCount",
-			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
 			appointmentController.GetAppointmentsPending,
 		)
 		appointment.POST("", appointmentController.RequestAppointment)
@@ -175,8 +179,24 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	{
 		codeController := generatorCon.NewCodeHttpController(bus)
 
-		generator.POST("code", middleware.JWTMiddleware(), codeController.CreateCode)
-		generator.GET("code/verify/:code", middleware.JWTMiddleware(), codeController.VerifyCode)
+		generator.POST("code", codeController.CreateCode)
+		generator.GET("code/verify/:code", codeController.VerifyCode)
+	}
+	studio := router.Group("api/studios")
+	{
+		adminStudioController := studioController.NewHttpAdminStudioController(bus)
+		studioController := studioController.NewHttpStudioController(bus)
+
+		studio.GET("/:idStudio", studioController.GetStudio)
+		studio.GET("/permissions", studioController.GetPermissions)
+		studio.GET("/:idStudio/my_permissions", middleware.JWTMiddleware(), adminStudioController.GetPermissionsInStudio)
+		studio.GET("/:idStudio/people", middleware.JWTMiddleware(), adminStudioController.GetStudioPeople)
+		studio.GET("/my", middleware.JWTMiddleware(), middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}), studioController.GetStudios)
+		studio.POST("", middleware.JWTMiddleware(), middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}), studioController.CreateStudio)
+		studio.PATCH("/:idStudio/user/:idUser/roles", middleware.JWTMiddleware(), adminStudioController.ChangeRole)
+		studio.POST("/:idStudio/join/:idUser", middleware.JWTMiddleware(), adminStudioController.JoinPeople)
+		studio.PATCH("/:idStudio/user/:idUser/permissions", middleware.JWTMiddleware(), adminStudioController.SetPermission)
+		studio.DELETE("/:idStudio/user/:idUser", middleware.JWTMiddleware(), adminStudioController.RemovePerson)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

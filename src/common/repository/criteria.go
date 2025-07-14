@@ -9,3 +9,12 @@ type CriteriaTime struct {
 	LT  time.Time
 	GT  time.Time
 }
+
+type CriteriaNull[T any] struct {
+	EQ T
+}
+
+type CriteriaString struct {
+	EQ        *string
+	IContains *string
+}

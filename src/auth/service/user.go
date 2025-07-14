@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	generatorModel "github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -50,7 +51,9 @@ func (userService *UserService) GetUserIDFromUsername(username string) (int64, e
 
 	user, err := userService.userRepository.FindOne(
 		&user_repository.Criteria{
-			Username: username,
+			Username: repository.CriteriaString{
+				EQ: utils.String(username),
+			},
 		},
 		opts,
 	)
@@ -74,6 +77,20 @@ func (userService *UserService) GetUserById(idUser int64) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (userService *UserService) ThrowIfUserNotExists(idUser int64) error {
+	exists, err := userService.userRepository.Exists(&user_repository.Criteria{
+		ID: idUser,
+	})
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return ErrUserNotFound
+	}
+
+	return nil
 }
 
 func (userService *UserService) GetEmailUserById(idUser int64) (string, error) {
@@ -115,6 +132,39 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 	return userService.userRepository.UpdateOne(idUser, dataUpdate)
 }
 
+func (userService *UserService) SearchUsers(q string, filterUsers []int64) ([]model.User, error) {
+	return userService.userRepository.Find(
+		&user_repository.Criteria{
+			ID_NIN: filterUsers,
+			Or: []user_repository.Criteria{
+				{
+					Email: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+				{
+					Username: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+				{
+					Name: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+			},
+		},
+		user_repository.NewFindOptions().
+			Select(user_repository.SelectOpts{
+				ID:       utils.Bool(true),
+				Username: utils.Bool(true),
+				Name:     utils.Bool(true),
+				Email:    utils.Bool(true),
+			}).
+			Limit(5),
+	)
+}
+
 func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser int64) error {
 
 	var token generatorModel.RedisToken
@@ -136,7 +186,9 @@ func (userService *UserService) UpdateEmail(data dto.UpdateAuthEmailDTO, idUser 
 	}
 
 	emailExist, err := userService.userRepository.Exists(&user_repository.Criteria{
-		Email: data.NewEmail,
+		Email: repository.CriteriaString{
+			EQ: utils.String(data.NewEmail),
+		},
 	})
 	if err != nil {
 		return err
@@ -169,7 +221,9 @@ func (userService *UserService) IsOwner(userId int64, params dto.QueryIsOwner) e
 	user, err := userService.userRepository.FindOne(&user_repository.Criteria{
 		Or: []user_repository.Criteria{
 			{
-				Username: params.UserName,
+				Username: repository.CriteriaString{
+					EQ: utils.String(params.UserName),
+				},
 			},
 			{
 				ID: params.ID,

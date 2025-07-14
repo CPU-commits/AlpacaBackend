@@ -17,6 +17,7 @@ import (
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/typesense/typesense-go/v3/typesense"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -124,6 +125,13 @@ func (sqlPublicationRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IDProfile != 0 {
 		mod = append(mod, Where("id_profile = ?", criteria.IDProfile))
 	}
+	if criteria.IDStudio != nil {
+		if criteria.IDStudio.EQ == nil {
+			mod = append(mod, models.PostWhere.IDStudio.IsNull())
+		} else {
+			mod = append(mod, models.PostWhere.IDStudio.EQ(null.Int64FromPtr(criteria.IDStudio.EQ)))
+		}
+	}
 
 	return mod
 }
@@ -147,6 +155,7 @@ func (sqlPR sqlPublicationRepository) Insert(
 		Content:    publication.Content,
 		Categories: publication.Categories,
 		Mentions:   publication.Mentions,
+		IDStudio:   null.NewInt64(publication.IDStudio, publication.IDStudio != 0),
 	}
 
 	tx, err := sqlPR.db.BeginTx(context.Background(), nil)

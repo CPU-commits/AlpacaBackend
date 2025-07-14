@@ -1,13 +1,15 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -75,6 +77,33 @@ func (httpUser *HttpUserController) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+func (httpUser *HttpUserController) SearchUsers(c *gin.Context) {
+	q := c.Query("q")
+	filterUsersStr := domainUtils.FilterNoError(strings.Split(c.Query("filterUsers"), ","), func(user string) bool {
+		return user != ""
+	})
+	filterUsers, err := domainUtils.Map(filterUsersStr, func(user string) (int, error) {
+		return strconv.Atoi(user)
+	})
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	users, err := httpUser.userService.SearchUsers(
+		q,
+		domainUtils.MapNoError(filterUsers, func(idUser int) int64 {
+			return int64(idUser)
+		}),
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
 // IsOwner godoc
 //
 //	@Summary	Ver si el usuario es owner
@@ -92,7 +121,6 @@ func (httpUser *HttpUserController) IsOwner(c *gin.Context) {
 		return
 	}
 	claims, _ := utils.NewClaimsFromContext(c)
-	fmt.Printf("claims.ID: %v\n", claims.ID)
 	if err := httpUser.userService.IsOwner(claims.ID, *Query); err != nil {
 		utils.ResFromErr(c, err)
 		return

@@ -20,6 +20,7 @@ type Publication struct {
 	Mentions   []int64              `json:"mentions,omitempty"`
 	CreatedAt  time.Time            `json:"createdAt"`
 	Profile    *userModel.Profile   `json:"profile,omitempty"`
+	IDStudio   int64                `json:"idStudio,omitempty"`
 }
 
 type TemporalViewPublication struct {

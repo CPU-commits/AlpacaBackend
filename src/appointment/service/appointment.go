@@ -71,7 +71,19 @@ func (appointmentService *AppointmentService) GetAppointments(
 		ProfileAvatar: true,
 		Review:        true,
 	}
-	if isArtist {
+	if params.AllAppointments && isArtist {
+		load.User = &user_repository.SelectOpts{
+			Name:     utils.Bool(true),
+			Username: utils.Bool(true),
+			ID:       utils.Bool(true),
+			Email:    utils.Bool(true),
+		}
+		load.TattooArtist = &user_repository.SelectOpts{
+			Name:     utils.Bool(true),
+			Username: utils.Bool(true),
+			ID:       utils.Bool(true),
+		}
+	} else if isArtist {
 		criteria.IDTattooArtist = idUser
 		load.User = &user_repository.SelectOpts{
 			Name:     utils.Bool(true),
@@ -99,10 +111,31 @@ func (appointmentService *AppointmentService) GetAppointments(
 		or := []appointment_repository.Criteria{}
 
 		for _, status := range params.Statuses {
-			or = append(or, appointment_repository.Criteria{
-				Status: model.AppointmentStatus(status),
-			})
+			if params.AllAppointments && isArtist {
+				or = append(or, appointment_repository.Criteria{
+					Status: model.AppointmentStatus(status),
+					IDUser: idUser,
+				})
+				or = append(or, appointment_repository.Criteria{
+					Status:         model.AppointmentStatus(status),
+					IDTattooArtist: idUser,
+				})
+			} else {
+				or = append(or, appointment_repository.Criteria{
+					Status: model.AppointmentStatus(status),
+				})
+			}
 		}
+		criteria.Or = or
+	} else if params.AllAppointments && isArtist {
+		or := []appointment_repository.Criteria{}
+
+		or = append(or, appointment_repository.Criteria{
+			IDUser: idUser,
+		})
+		or = append(or, appointment_repository.Criteria{
+			IDTattooArtist: idUser,
+		})
 		criteria.Or = or
 	}
 

@@ -2,6 +2,7 @@ package publication_repository
 
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 )
@@ -10,6 +11,7 @@ type Criteria struct {
 	ID         int64
 	IDProfile  int64
 	Categories []string
+	IDStudio   *repository.CriteriaNull[*int64]
 }
 
 type SelectOpts struct {

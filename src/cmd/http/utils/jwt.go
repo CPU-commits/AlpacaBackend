@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v4"
@@ -14,7 +15,7 @@ var jwtKey = settings.GetSettings().JWT_SECRET_KEY
 
 type Claims struct {
 	ID    int64
-	Roles []string
+	Roles []model.Role
 	Name  string
 }
 
@@ -52,11 +53,11 @@ func VerifyToken(bearerToken string) (*jwt.Token, error) {
 
 func ExtractTokenMetadata(token *jwt.Token) (*Claims, error) {
 	claim := token.Claims.(jwt.MapClaims)
-	var rolesIn []string
+	var rolesIn []model.Role
 	if roles, ok := claim["roles"].([]interface{}); ok {
 		for _, role := range roles {
 			if roleStr, ok := role.(string); ok {
-				rolesIn = append(rolesIn, roleStr)
+				rolesIn = append(rolesIn, model.Role(roleStr))
 			}
 		}
 	}

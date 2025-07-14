@@ -9,6 +9,7 @@ import (
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	generatorService "github.com/CPU-commits/Template_Go-EventDriven/src/generator/services"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -83,6 +84,10 @@ func init() {
 		StatusCode: http.StatusUnauthorized,
 		MessageId:  "publication.not_have_access",
 	}
+	errorsService[publicationService.ErrUnauthorizedPublishPublication] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "publication.not_have_access_publish",
+	}
 	errorsService[publicationService.ErrTooManyImages] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "publication.too_images",
@@ -150,5 +155,37 @@ func init() {
 	errorsService[authService.ErrExistsEmail] = errRes{
 		StatusCode: http.StatusConflict,
 		MessageId:  "auth.exist_email",
+	}
+	errorsService[studioService.ErrMaxStudios] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "studio.max_studios",
+	}
+	errorsService[studioService.ErrExistsEmailOrUsername] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "studio.exists_email_or_username",
+	}
+	errorsService[studioService.ErrUserIsNotAdmin] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "studio.not_admin",
+	}
+	errorsService[studioService.ErrTheUserIsNotAdmin] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "studio.user_not_admin",
+	}
+	errorsService[studioService.ErrNoHasPermission] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "studio.no_permission",
+	}
+	errorsService[studioService.ErrNoExistStudio] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "studio.not_found",
+	}
+	errorsService[studioService.ErrCantCreateOwner] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "studio.cant_create_owner",
+	}
+	errorsService[studioService.ErrUserNotInStudio] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "studio.user_not_in_studio",
 	}
 }

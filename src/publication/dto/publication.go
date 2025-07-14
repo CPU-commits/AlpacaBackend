@@ -14,8 +14,9 @@ type PublicationImageDto struct {
 }
 
 type PublicationDto struct {
-	Content string                `form:"content" binding:"required,max=500"`
-	Images  []PublicationImageDto `form:"images" binding:"dive"`
+	Content  string                `form:"content" binding:"required,max=500"`
+	Images   []PublicationImageDto `form:"images" binding:"dive"`
+	IDStudio int64                 `form:"idStudio"`
 }
 
 func (publicationDto *PublicationDto) ToTattoos(idPublication int64) []dto.TattooDto {
@@ -39,6 +40,7 @@ func (publicationDto *PublicationDto) ToModel() (*model.Publication, []store.Ima
 	})
 
 	return &model.Publication{
-		Content: publicationDto.Content,
+		Content:  publicationDto.Content,
+		IDStudio: publicationDto.IDStudio,
 	}, images
 }

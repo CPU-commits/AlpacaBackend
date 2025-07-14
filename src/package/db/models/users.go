@@ -94,50 +94,50 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	IDUserAuth                        string
-	IDUserProfile                     string
-	IDUserTokenPassword               string
-	IDTattooArtistAppointments        string
-	IDUserAppointments                string
-	IDUserCodes                       string
-	IDUserFollows                     string
-	IDUserLikes                       string
-	IDUserReviews                     string
-	IDUserRolesUsers                  string
-	IDOwnerStudioAdmins               string
-	IDTattooArtistStudioTattooArtists string
-	IDUserTokens                      string
+	IDUserAuth                 string
+	IDUserProfile              string
+	IDUserTokenPassword        string
+	IDTattooArtistAppointments string
+	IDUserAppointments         string
+	IDUserCodes                string
+	IDUserFollows              string
+	IDUserLikes                string
+	IDUserReviews              string
+	IDUserRolesUsers           string
+	IDUserStudioUsers          string
+	IDOwnerStudios             string
+	IDUserTokens               string
 }{
-	IDUserAuth:                        "IDUserAuth",
-	IDUserProfile:                     "IDUserProfile",
-	IDUserTokenPassword:               "IDUserTokenPassword",
-	IDTattooArtistAppointments:        "IDTattooArtistAppointments",
-	IDUserAppointments:                "IDUserAppointments",
-	IDUserCodes:                       "IDUserCodes",
-	IDUserFollows:                     "IDUserFollows",
-	IDUserLikes:                       "IDUserLikes",
-	IDUserReviews:                     "IDUserReviews",
-	IDUserRolesUsers:                  "IDUserRolesUsers",
-	IDOwnerStudioAdmins:               "IDOwnerStudioAdmins",
-	IDTattooArtistStudioTattooArtists: "IDTattooArtistStudioTattooArtists",
-	IDUserTokens:                      "IDUserTokens",
+	IDUserAuth:                 "IDUserAuth",
+	IDUserProfile:              "IDUserProfile",
+	IDUserTokenPassword:        "IDUserTokenPassword",
+	IDTattooArtistAppointments: "IDTattooArtistAppointments",
+	IDUserAppointments:         "IDUserAppointments",
+	IDUserCodes:                "IDUserCodes",
+	IDUserFollows:              "IDUserFollows",
+	IDUserLikes:                "IDUserLikes",
+	IDUserReviews:              "IDUserReviews",
+	IDUserRolesUsers:           "IDUserRolesUsers",
+	IDUserStudioUsers:          "IDUserStudioUsers",
+	IDOwnerStudios:             "IDOwnerStudios",
+	IDUserTokens:               "IDUserTokens",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	IDUserAuth                        *Auth                   `boil:"IDUserAuth" json:"IDUserAuth" toml:"IDUserAuth" yaml:"IDUserAuth"`
-	IDUserProfile                     *Profile                `boil:"IDUserProfile" json:"IDUserProfile" toml:"IDUserProfile" yaml:"IDUserProfile"`
-	IDUserTokenPassword               *TokenPassword          `boil:"IDUserTokenPassword" json:"IDUserTokenPassword" toml:"IDUserTokenPassword" yaml:"IDUserTokenPassword"`
-	IDTattooArtistAppointments        AppointmentSlice        `boil:"IDTattooArtistAppointments" json:"IDTattooArtistAppointments" toml:"IDTattooArtistAppointments" yaml:"IDTattooArtistAppointments"`
-	IDUserAppointments                AppointmentSlice        `boil:"IDUserAppointments" json:"IDUserAppointments" toml:"IDUserAppointments" yaml:"IDUserAppointments"`
-	IDUserCodes                       CodeSlice               `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
-	IDUserFollows                     FollowSlice             `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
-	IDUserLikes                       LikeSlice               `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
-	IDUserReviews                     ReviewSlice             `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
-	IDUserRolesUsers                  RolesUserSlice          `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
-	IDOwnerStudioAdmins               StudioAdminSlice        `boil:"IDOwnerStudioAdmins" json:"IDOwnerStudioAdmins" toml:"IDOwnerStudioAdmins" yaml:"IDOwnerStudioAdmins"`
-	IDTattooArtistStudioTattooArtists StudioTattooArtistSlice `boil:"IDTattooArtistStudioTattooArtists" json:"IDTattooArtistStudioTattooArtists" toml:"IDTattooArtistStudioTattooArtists" yaml:"IDTattooArtistStudioTattooArtists"`
-	IDUserTokens                      TokenSlice              `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
+	IDUserAuth                 *Auth            `boil:"IDUserAuth" json:"IDUserAuth" toml:"IDUserAuth" yaml:"IDUserAuth"`
+	IDUserProfile              *Profile         `boil:"IDUserProfile" json:"IDUserProfile" toml:"IDUserProfile" yaml:"IDUserProfile"`
+	IDUserTokenPassword        *TokenPassword   `boil:"IDUserTokenPassword" json:"IDUserTokenPassword" toml:"IDUserTokenPassword" yaml:"IDUserTokenPassword"`
+	IDTattooArtistAppointments AppointmentSlice `boil:"IDTattooArtistAppointments" json:"IDTattooArtistAppointments" toml:"IDTattooArtistAppointments" yaml:"IDTattooArtistAppointments"`
+	IDUserAppointments         AppointmentSlice `boil:"IDUserAppointments" json:"IDUserAppointments" toml:"IDUserAppointments" yaml:"IDUserAppointments"`
+	IDUserCodes                CodeSlice        `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
+	IDUserFollows              FollowSlice      `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
+	IDUserLikes                LikeSlice        `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
+	IDUserReviews              ReviewSlice      `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
+	IDUserRolesUsers           RolesUserSlice   `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
+	IDUserStudioUsers          StudioUserSlice  `boil:"IDUserStudioUsers" json:"IDUserStudioUsers" toml:"IDUserStudioUsers" yaml:"IDUserStudioUsers"`
+	IDOwnerStudios             StudioSlice      `boil:"IDOwnerStudios" json:"IDOwnerStudios" toml:"IDOwnerStudios" yaml:"IDOwnerStudios"`
+	IDUserTokens               TokenSlice       `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
 }
 
 // NewStruct creates a new relationship struct
@@ -215,18 +215,18 @@ func (r *userR) GetIDUserRolesUsers() RolesUserSlice {
 	return r.IDUserRolesUsers
 }
 
-func (r *userR) GetIDOwnerStudioAdmins() StudioAdminSlice {
+func (r *userR) GetIDUserStudioUsers() StudioUserSlice {
 	if r == nil {
 		return nil
 	}
-	return r.IDOwnerStudioAdmins
+	return r.IDUserStudioUsers
 }
 
-func (r *userR) GetIDTattooArtistStudioTattooArtists() StudioTattooArtistSlice {
+func (r *userR) GetIDOwnerStudios() StudioSlice {
 	if r == nil {
 		return nil
 	}
-	return r.IDTattooArtistStudioTattooArtists
+	return r.IDOwnerStudios
 }
 
 func (r *userR) GetIDUserTokens() TokenSlice {
@@ -683,32 +683,32 @@ func (o *User) IDUserRolesUsers(mods ...qm.QueryMod) rolesUserQuery {
 	return RolesUsers(queryMods...)
 }
 
-// IDOwnerStudioAdmins retrieves all the studio_admin's StudioAdmins with an executor via id_owner column.
-func (o *User) IDOwnerStudioAdmins(mods ...qm.QueryMod) studioAdminQuery {
+// IDUserStudioUsers retrieves all the studio_user's StudioUsers with an executor via id_user column.
+func (o *User) IDUserStudioUsers(mods ...qm.QueryMod) studioUserQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"studio_admins\".\"id_owner\"=?", o.ID),
+		qm.Where("\"studio_users\".\"id_user\"=?", o.ID),
 	)
 
-	return StudioAdmins(queryMods...)
+	return StudioUsers(queryMods...)
 }
 
-// IDTattooArtistStudioTattooArtists retrieves all the studio_tattoo_artist's StudioTattooArtists with an executor via id_tattoo_artist column.
-func (o *User) IDTattooArtistStudioTattooArtists(mods ...qm.QueryMod) studioTattooArtistQuery {
+// IDOwnerStudios retrieves all the studio's Studios with an executor via id_owner column.
+func (o *User) IDOwnerStudios(mods ...qm.QueryMod) studioQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"studio_tattoo_artists\".\"id_tattoo_artist\"=?", o.ID),
+		qm.Where("\"studios\".\"id_owner\"=?", o.ID),
 	)
 
-	return StudioTattooArtists(queryMods...)
+	return Studios(queryMods...)
 }
 
 // IDUserTokens retrieves all the token's Tokens with an executor via id_user column.
@@ -1175,7 +1175,7 @@ func (userL) LoadIDTattooArtistAppointments(ctx context.Context, e boil.ContextE
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if local.ID == foreign.IDTattooArtist {
+			if queries.Equal(local.ID, foreign.IDTattooArtist) {
 				local.R.IDTattooArtistAppointments = append(local.R.IDTattooArtistAppointments, foreign)
 				if foreign.R == nil {
 					foreign.R = &appointmentR{}
@@ -1867,9 +1867,9 @@ func (userL) LoadIDUserRolesUsers(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadIDOwnerStudioAdmins allows an eager lookup of values, cached into the
+// LoadIDUserStudioUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadIDOwnerStudioAdmins(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadIDUserStudioUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1922,8 +1922,8 @@ func (userL) LoadIDOwnerStudioAdmins(ctx context.Context, e boil.ContextExecutor
 	}
 
 	query := NewQuery(
-		qm.From(`studio_admins`),
-		qm.WhereIn(`studio_admins.id_owner in ?`, argsSlice...),
+		qm.From(`studio_users`),
+		qm.WhereIn(`studio_users.id_user in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1931,22 +1931,22 @@ func (userL) LoadIDOwnerStudioAdmins(ctx context.Context, e boil.ContextExecutor
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load studio_admins")
+		return errors.Wrap(err, "failed to eager load studio_users")
 	}
 
-	var resultSlice []*StudioAdmin
+	var resultSlice []*StudioUser
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice studio_admins")
+		return errors.Wrap(err, "failed to bind eager loaded slice studio_users")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on studio_admins")
+		return errors.Wrap(err, "failed to close results in eager load on studio_users")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studio_admins")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studio_users")
 	}
 
-	if len(studioAdminAfterSelectHooks) != 0 {
+	if len(studioUserAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -1954,10 +1954,123 @@ func (userL) LoadIDOwnerStudioAdmins(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.IDOwnerStudioAdmins = resultSlice
+		object.R.IDUserStudioUsers = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &studioAdminR{}
+				foreign.R = &studioUserR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDUser {
+				local.R.IDUserStudioUsers = append(local.R.IDUserStudioUsers, foreign)
+				if foreign.R == nil {
+					foreign.R = &studioUserR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDOwnerStudios allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDOwnerStudios(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`studios`),
+		qm.WhereIn(`studios.id_owner in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load studios")
+	}
+
+	var resultSlice []*Studio
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice studios")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on studios")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studios")
+	}
+
+	if len(studioAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDOwnerStudios = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &studioR{}
 			}
 			foreign.R.IDOwnerUser = object
 		}
@@ -1967,124 +2080,11 @@ func (userL) LoadIDOwnerStudioAdmins(ctx context.Context, e boil.ContextExecutor
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.IDOwner {
-				local.R.IDOwnerStudioAdmins = append(local.R.IDOwnerStudioAdmins, foreign)
+				local.R.IDOwnerStudios = append(local.R.IDOwnerStudios, foreign)
 				if foreign.R == nil {
-					foreign.R = &studioAdminR{}
+					foreign.R = &studioR{}
 				}
 				foreign.R.IDOwnerUser = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadIDTattooArtistStudioTattooArtists allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadIDTattooArtistStudioTattooArtists(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
-	var slice []*User
-	var object *User
-
-	if singular {
-		var ok bool
-		object, ok = maybeUser.(*User)
-		if !ok {
-			object = new(User)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
-			}
-		}
-	} else {
-		s, ok := maybeUser.(*[]*User)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &userR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &userR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`studio_tattoo_artists`),
-		qm.WhereIn(`studio_tattoo_artists.id_tattoo_artist in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load studio_tattoo_artists")
-	}
-
-	var resultSlice []*StudioTattooArtist
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice studio_tattoo_artists")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on studio_tattoo_artists")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studio_tattoo_artists")
-	}
-
-	if len(studioTattooArtistAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.IDTattooArtistStudioTattooArtists = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &studioTattooArtistR{}
-			}
-			foreign.R.IDTattooArtistUser = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.IDTattooArtist {
-				local.R.IDTattooArtistStudioTattooArtists = append(local.R.IDTattooArtistStudioTattooArtists, foreign)
-				if foreign.R == nil {
-					foreign.R = &studioTattooArtistR{}
-				}
-				foreign.R.IDTattooArtistUser = local
 				break
 			}
 		}
@@ -2364,7 +2364,7 @@ func (o *User) AddIDTattooArtistAppointments(ctx context.Context, exec boil.Cont
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.IDTattooArtist = o.ID
+			queries.Assign(&rel.IDTattooArtist, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2385,7 +2385,7 @@ func (o *User) AddIDTattooArtistAppointments(ctx context.Context, exec boil.Cont
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.IDTattooArtist = o.ID
+			queries.Assign(&rel.IDTattooArtist, o.ID)
 		}
 	}
 
@@ -2406,6 +2406,80 @@ func (o *User) AddIDTattooArtistAppointments(ctx context.Context, exec boil.Cont
 			rel.R.IDTattooArtistUser = o
 		}
 	}
+	return nil
+}
+
+// SetIDTattooArtistAppointments removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDTattooArtistUser's IDTattooArtistAppointments accordingly.
+// Replaces o.R.IDTattooArtistAppointments with related.
+// Sets related.R.IDTattooArtistUser's IDTattooArtistAppointments accordingly.
+func (o *User) SetIDTattooArtistAppointments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Appointment) error {
+	query := "update \"appointments\" set \"id_tattoo_artist\" = null where \"id_tattoo_artist\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDTattooArtistAppointments {
+			queries.SetScanner(&rel.IDTattooArtist, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDTattooArtistUser = nil
+		}
+		o.R.IDTattooArtistAppointments = nil
+	}
+
+	return o.AddIDTattooArtistAppointments(ctx, exec, insert, related...)
+}
+
+// RemoveIDTattooArtistAppointments relationships from objects passed in.
+// Removes related items from R.IDTattooArtistAppointments (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDTattooArtistUser.
+func (o *User) RemoveIDTattooArtistAppointments(ctx context.Context, exec boil.ContextExecutor, related ...*Appointment) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDTattooArtist, nil)
+		if rel.R != nil {
+			rel.R.IDTattooArtistUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_tattoo_artist")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDTattooArtistAppointments {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDTattooArtistAppointments)
+			if ln > 1 && i < ln-1 {
+				o.R.IDTattooArtistAppointments[i] = o.R.IDTattooArtistAppointments[ln-1]
+			}
+			o.R.IDTattooArtistAppointments = o.R.IDTattooArtistAppointments[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 
@@ -2727,23 +2801,23 @@ func (o *User) AddIDUserRolesUsers(ctx context.Context, exec boil.ContextExecuto
 	return nil
 }
 
-// AddIDOwnerStudioAdmins adds the given related objects to the existing relationships
+// AddIDUserStudioUsers adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.IDOwnerStudioAdmins.
-// Sets related.R.IDOwnerUser appropriately.
-func (o *User) AddIDOwnerStudioAdmins(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StudioAdmin) error {
+// Appends related to o.R.IDUserStudioUsers.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserStudioUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StudioUser) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.IDOwner = o.ID
+			rel.IDUser = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"studio_admins\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"id_owner"}),
-				strmangle.WhereClause("\"", "\"", 2, studioAdminPrimaryKeyColumns),
+				"UPDATE \"studio_users\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, studioUserPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -2756,47 +2830,47 @@ func (o *User) AddIDOwnerStudioAdmins(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.IDOwner = o.ID
+			rel.IDUser = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			IDOwnerStudioAdmins: related,
+			IDUserStudioUsers: related,
 		}
 	} else {
-		o.R.IDOwnerStudioAdmins = append(o.R.IDOwnerStudioAdmins, related...)
+		o.R.IDUserStudioUsers = append(o.R.IDUserStudioUsers, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &studioAdminR{
-				IDOwnerUser: o,
+			rel.R = &studioUserR{
+				IDUserUser: o,
 			}
 		} else {
-			rel.R.IDOwnerUser = o
+			rel.R.IDUserUser = o
 		}
 	}
 	return nil
 }
 
-// AddIDTattooArtistStudioTattooArtists adds the given related objects to the existing relationships
+// AddIDOwnerStudios adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.IDTattooArtistStudioTattooArtists.
-// Sets related.R.IDTattooArtistUser appropriately.
-func (o *User) AddIDTattooArtistStudioTattooArtists(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StudioTattooArtist) error {
+// Appends related to o.R.IDOwnerStudios.
+// Sets related.R.IDOwnerUser appropriately.
+func (o *User) AddIDOwnerStudios(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Studio) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.IDTattooArtist = o.ID
+			rel.IDOwner = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"studio_tattoo_artists\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo_artist"}),
-				strmangle.WhereClause("\"", "\"", 2, studioTattooArtistPrimaryKeyColumns),
+				"UPDATE \"studios\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_owner"}),
+				strmangle.WhereClause("\"", "\"", 2, studioPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -2809,25 +2883,25 @@ func (o *User) AddIDTattooArtistStudioTattooArtists(ctx context.Context, exec bo
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.IDTattooArtist = o.ID
+			rel.IDOwner = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			IDTattooArtistStudioTattooArtists: related,
+			IDOwnerStudios: related,
 		}
 	} else {
-		o.R.IDTattooArtistStudioTattooArtists = append(o.R.IDTattooArtistStudioTattooArtists, related...)
+		o.R.IDOwnerStudios = append(o.R.IDOwnerStudios, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &studioTattooArtistR{
-				IDTattooArtistUser: o,
+			rel.R = &studioR{
+				IDOwnerUser: o,
 			}
 		} else {
-			rel.R.IDTattooArtistUser = o
+			rel.R.IDOwnerUser = o
 		}
 	}
 	return nil

@@ -8,6 +8,8 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
@@ -26,6 +28,10 @@ var (
 	roleRepository          = role_repository.NewSQLRoleRepository()
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
+	adminStudioRepository   = people_studio_repository.NewSqlPeopleStudioRepository(
+		user_repository.SqlExplicitUserRepository(db.DB),
+	)
+	studioRepository = studio_repository.NewSqlStudioRepository()
 )
 
 // Services
