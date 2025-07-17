@@ -250,9 +250,9 @@ func (sqlASR sqlPeopleStudioRepository) Delete(criteria *Criteria) error {
 	return nil
 }
 
-func NewSqlPeopleStudioRepository(sqlUserRepository user_repository.SqlUserRepository) PeopleStudioRepository {
+func NewSqlPeopleStudioRepository() PeopleStudioRepository {
 	return sqlPeopleStudioRepository{
 		db:                db.DB,
-		sqlUserRepository: sqlUserRepository,
+		sqlUserRepository: user_repository.SqlExplicitUserRepository(db.DB),
 	}
 }

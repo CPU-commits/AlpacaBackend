@@ -40,6 +40,29 @@ func (httpAdminStudioController httpAdminStudioController) GetStudioPeople(c *gi
 	c.JSON(http.StatusOK, people)
 }
 
+func (httpAdminStudioController httpAdminStudioController) GetStudioTattooArtists(c *gin.Context) {
+	idStudioStr := c.Param("idStudio")
+	idStudio, err := strconv.Atoi(idStudioStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	people, err := httpAdminStudioController.studioService.GetStudioPeople(
+		claims.ID,
+		int64(idStudio),
+		model.TATTOO_ARTIST_ROLE,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, people)
+}
+
 func (httpAdminStudioController httpAdminStudioController) GetPermissionsInStudio(c *gin.Context) {
 	idStudioStr := c.Param("idStudio")
 	idStudio, err := strconv.Atoi(idStudioStr)

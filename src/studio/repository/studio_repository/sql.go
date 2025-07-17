@@ -20,7 +20,9 @@ type sqlStudioRepository struct {
 	db *sql.DB
 }
 
-func (sqlSR sqlStudioRepository) sqlStudioToModel(sqlStudio *models.Studio) *model.Studio {
+type SqlStudioRepository = sqlStudioRepository
+
+func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *model.Studio {
 	var avatar *fileModel.Image
 	if sqlStudio.R != nil && sqlStudio.R.IDAvatarImage != nil {
 		sqlImage := sqlStudio.R.IDAvatarImage
@@ -141,7 +143,7 @@ func (sqlStudioRepository) includeToMod(include *Include, hasSelect bool) []Quer
 	return mod
 }
 
-func (sqlSR sqlStudioRepository) selectToMod(selectOpts *SelectOpts) []QueryMod {
+func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod {
 	if selectOpts == nil {
 		return nil
 	}
@@ -171,7 +173,7 @@ func (sqlSR sqlStudioRepository) findOptionsToMod(opts *findOptions) []QueryMod 
 	}
 	mod := []QueryMod{}
 	mod = append(mod, sqlSR.includeToMod(opts.include, opts.selectOpts != nil)...)
-	mod = append(mod, sqlSR.selectToMod(opts.selectOpts)...)
+	mod = append(mod, sqlSR.SelectToMod(opts.selectOpts)...)
 
 	return mod
 }
@@ -186,7 +188,7 @@ func (sqlSR sqlStudioRepository) Find(criteria *Criteria, opts *findOptions) ([]
 	}
 
 	return utils.MapNoError(sqlStudios, func(sqlStudio *models.Studio) model.Studio {
-		return *sqlSR.sqlStudioToModel(sqlStudio)
+		return *sqlSR.SqlStudioToModel(sqlStudio)
 	}), nil
 }
 
@@ -196,7 +198,7 @@ func (sqlSR sqlStudioRepository) findOneOptionsToMod(opts *findOneOptions) []Que
 	}
 	mod := []QueryMod{}
 	mod = append(mod, sqlSR.includeToMod(opts.include, false)...)
-	mod = append(mod, sqlSR.selectToMod(opts.selectOpts)...)
+	mod = append(mod, sqlSR.SelectToMod(opts.selectOpts)...)
 
 	return mod
 }
@@ -214,7 +216,7 @@ func (sqlSR sqlStudioRepository) FindOne(criteria *Criteria, opts *findOneOption
 		return nil, utils.ErrRepositoryFailed
 	}
 
-	return sqlSR.sqlStudioToModel(sqlStudio), nil
+	return sqlSR.SqlStudioToModel(sqlStudio), nil
 }
 
 func (sqlSR sqlStudioRepository) InsertOne(studio model.Studio) error {
@@ -277,6 +279,12 @@ func (sqlSR sqlStudioRepository) InsertOne(studio model.Studio) error {
 }
 
 func NewSqlStudioRepository() StudioRepository {
+	return sqlStudioRepository{
+		db: db.DB,
+	}
+}
+
+func SqlExplicitStudioRepository() sqlStudioRepository {
 	return sqlStudioRepository{
 		db: db.DB,
 	}

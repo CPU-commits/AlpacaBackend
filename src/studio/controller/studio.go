@@ -23,17 +23,18 @@ type httpStudioController struct {
 func (httpStudioController httpStudioController) GetPermissions(c *gin.Context) {
 	permissions := httpStudioController.studioService.GetPermissions()
 	localizer := utils.GetI18nLocalizer(c)
-	tPermissions, err := domainUtils.Map(permissions, func(permission model.StudioPermission) (gin.H, error) {
+	tPermissions, err := domainUtils.Map(permissions, func(permission model.Permission) (gin.H, error) {
 		t, err := localizer.Localize(&i18n.LocalizeConfig{
-			MessageID: fmt.Sprintf("studio.permissions.%s", permission),
+			MessageID: fmt.Sprintf("studio.permissions.%s", permission.Permission),
 		})
 		if err != nil {
 			return gin.H{}, err
 		}
 
 		return gin.H{
-			"permission": permission,
+			"permission": permission.Permission,
 			"t":          t,
+			"dependsOn":  permission.DependsOn,
 		}, nil
 	})
 	if err != nil {

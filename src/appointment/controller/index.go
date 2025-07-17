@@ -10,6 +10,9 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 )
@@ -23,6 +26,8 @@ var (
 	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
 	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
+	peopleStudioRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
+	studioRepository        = studio_repository.NewSqlStudioRepository()
 )
 
 // calendar

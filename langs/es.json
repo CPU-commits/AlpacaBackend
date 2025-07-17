@@ -53,7 +53,12 @@
 		"finished": "La cita ya finalizó",
 		"scheduled": "Cita agendada con {{.TattooArtist}} - AlpacaTattoo",
 		"review_exists": "La cita ya fue reseñada",
-		"not_finished": "La cita todavía no finaliza"
+		"not_finished": "La cita todavía no finaliza",
+		"tattoo_artist_or_studio_missing": "Falta seleccionar a un tatuador o estudio",
+		"appointment_to_me": "No puedes agendarte una cita a ti mismo",
+		"not_found": "No existe la cita",
+		"no_studio": "Esta cita no está vinculada a ningún estudio",
+		"already_tattoo_artist": "La cita ya tiene un tatuador asignado"
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"
@@ -81,7 +86,10 @@
 			"s.join_people": "Añadir personas",
 			"s.give_roles": "Añadir/quitar roles (Los mismos roles que el administrador posee)",
 			"s.give_permissions": "Editar los roles",
-			"s.delete_people": "Eliminar personas"
+			"s.delete_people": "Eliminar personas",
+			"s.assign_to_appointment": "Asignar tatuador a citas",
+			"s.schedule_appointment": "Agendar citas",
+			"s.cancel_appointment": "Cancelar citas"
 		}
 	}
 }

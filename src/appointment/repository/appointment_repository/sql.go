@@ -11,6 +11,7 @@ import (
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/volatiletech/null/v8"
@@ -22,6 +23,7 @@ type appointmentRepositorySql struct {
 	db                   *sql.DB
 	sqlUserRepository    user_repository.SqlUserRepository
 	sqlProfileRepository profile_repository.SqlProfileRepository
+	sqlStudioRepository  studio_repository.SqlStudioRepository
 }
 
 func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
@@ -44,6 +46,7 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 		FinishedAt:     sqlAppointment.FinishedAt.Ptr(),
 		Duration:       float32(sqlAppointment.Duration.Float64),
 		ScheduledAt:    sqlAppointment.ScheduledAt.Ptr(),
+		IDStudio:       sqlAppointment.IDStudio.Int64,
 	}
 	if sqlAppointment.R != nil && sqlAppointment.R.IDAppointmentAppointmentImages != nil {
 		var images []fileModel.Image
@@ -117,6 +120,13 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 
 		appointment.Review = review
 	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDStudioStudio != nil {
+		sqlStudio := sqlAppointment.R.IDStudioStudio
+
+		studio := sqlAR.sqlStudioRepository.SqlStudioToModel(sqlStudio)
+
+		appointment.Studio = studio
+	}
 
 	return appointment
 }
@@ -144,6 +154,9 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 	if !criteria.ScheduledAtGTE.IsZero() {
 		where = append(where, models.AppointmentWhere.ScheduledAt.IsNotNull())
 		where = append(where, models.AppointmentWhere.ScheduledAt.GTE(null.TimeFrom(criteria.ScheduledAtGTE)))
+	}
+	if criteria.IDStudio != 0 {
+		where = append(where, models.AppointmentWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
 	if criteria.FinishedAt != nil {
 		where = append(where, models.AppointmentWhere.FinishedAt.IsNotNull())
@@ -231,6 +244,12 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 			}
 		}
 	}
+	if load.Studio != nil {
+		mod = append(mod, Load(
+			models.AppointmentRels.IDStudioStudio,
+			sqlAR.sqlStudioRepository.SelectToMod(load.Studio)...),
+		)
+	}
 
 	return mod
 }
@@ -286,6 +305,9 @@ func (appointmentRepositorySql) selectToMod(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.IDTattooArtist != nil && *selectOpts.IDTattooArtist {
 		mod = append(mod, Select(models.AppointmentColumns.IDTattooArtist))
+	}
+	if selectOpts.IDStudio != nil && *selectOpts.IDStudio {
+		mod = append(mod, Select(models.AppointmentColumns.IDStudio))
 	}
 
 	return mod
@@ -361,6 +383,9 @@ func (sqlAR appointmentRepositorySql) Update(criteria *Criteria, data *UpdateDat
 	if data.IDCalendar != "" {
 		cols[models.AppointmentColumns.IDCalendar] = data.IDCalendar
 	}
+	if data.IDTattooArtist != 0 {
+		cols[models.AppointmentColumns.IDTattooArtist] = data.IDTattooArtist
+	}
 
 	if _, err := models.Appointments(where...).UpdateAll(context.Background(), sqlAR.db, cols); err != nil {
 		return utils.ErrRepositoryFailed
@@ -388,6 +413,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 		Height:         null.Float64From(float64(appointment.Height)),
 		Width:          null.Float64From(float64(appointment.Width)),
 		Phone:          null.StringFrom(appointment.Phone),
+		IDStudio:       null.NewInt64(appointment.IDStudio, appointment.IDStudio != 0),
 	}
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
@@ -436,5 +462,6 @@ func NewSqlAppointmentRepository() AppointmentRepository {
 		sqlProfileRepository: profile_repository.SqlExplicitProfileRepository(
 			db.DB,
 		),
+		sqlStudioRepository: studio_repository.SqlExplicitStudioRepository(),
 	}
 }

@@ -9,4 +9,5 @@ type AppointmentParams struct {
 	Paginated       bool
 	Statuses        []string
 	AllAppointments bool
+	IDStudio        int64
 }

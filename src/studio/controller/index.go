@@ -19,10 +19,8 @@ var (
 	studioRepository      = studio_repository.NewSqlStudioRepository()
 	authRepository        = auth_repository.NewSQLAuthRepository(db.DB)
 	userRepository        = user_repository.NewSQLUserRepository(db.DB)
-	studioAdminRepository = people_studio_repository.NewSqlPeopleStudioRepository(
-		user_repository.SqlExplicitUserRepository(db.DB),
-	)
-	roleRepository = role_repository.NewSQLRoleRepository()
+	studioAdminRepository = people_studio_repository.NewSqlPeopleStudioRepository()
+	roleRepository        = role_repository.NewSQLRoleRepository()
 )
 
 // Services

@@ -28,10 +28,8 @@ var (
 	roleRepository          = role_repository.NewSQLRoleRepository()
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
-	adminStudioRepository   = people_studio_repository.NewSqlPeopleStudioRepository(
-		user_repository.SqlExplicitUserRepository(db.DB),
-	)
-	studioRepository = studio_repository.NewSqlStudioRepository()
+	adminStudioRepository   = people_studio_repository.NewSqlPeopleStudioRepository()
+	studioRepository        = studio_repository.NewSqlStudioRepository()
 )
 
 // Services

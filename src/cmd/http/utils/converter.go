@@ -3,6 +3,7 @@ package utils
 import (
 	"net/http"
 
+	appointmentDto "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/dto"
 	appointmentService "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
@@ -132,6 +133,22 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "appointment.not_finished",
 	}
+	errorsService[appointmentService.ErrNotFoundAppointment] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "appointment.not_found",
+	}
+	errorsService[appointmentService.ErrCantRequestAppointmentToMe] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "appointment.appointment_to_me",
+	}
+	errorsService[appointmentService.ErrAlreadyTattooArtist] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.already_tattoo_artist",
+	}
+	errorsService[appointmentService.ErrNoStudioAppointment] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.no_studio",
+	}
 	errorsService[generatorService.ErrCodeNotValid] = errRes{
 		StatusCode: http.StatusUnprocessableEntity,
 		MessageId:  "code.not_valid",
@@ -187,5 +204,9 @@ func init() {
 	errorsService[studioService.ErrUserNotInStudio] = errRes{
 		StatusCode: http.StatusConflict,
 		MessageId:  "studio.user_not_in_studio",
+	}
+	errorsService[appointmentDto.ErrIDTattooArtistOrStudioMissing] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "appointment.tattoo_artist_or_studio_missing",
 	}
 }

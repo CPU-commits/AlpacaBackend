@@ -18,8 +18,8 @@ type StudioService struct {
 
 var studioService *StudioService
 
-func (studioService *StudioService) GetPermissions() []model.StudioPermission {
-	return model.ALL_PERMISSIONS
+func (studioService *StudioService) GetPermissions() []model.Permission {
+	return model.AllPermissionsTree
 }
 
 func (studioService *StudioService) GetStudio(

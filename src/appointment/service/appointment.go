@@ -13,6 +13,9 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/calendar"
+	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+	adminStudioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -26,6 +29,7 @@ type AppointmentService struct {
 	calendar              calendar.ICalendar
 	reviewRepository      review_repository.ReviewRepository
 	profileService        userService.ProfileService
+	adminStudioService    adminStudioService.AdminStudioService
 }
 
 var appointmentService *AppointmentService
@@ -34,6 +38,7 @@ func (appointmentService *AppointmentService) hasAccessToAppointment(
 	idAppointment,
 	idUser int64,
 	isTattooArtist bool,
+	permissions ...studioModel.StudioPermission,
 ) error {
 	criteria := appointment_repository.Criteria{
 		ID: idAppointment,
@@ -48,7 +53,30 @@ func (appointmentService *AppointmentService) hasAccessToAppointment(
 	if err != nil {
 		return err
 	}
-	if !hasAccess {
+	if !hasAccess && isTattooArtist {
+		appointment, err := appointmentService.appointmentRepository.FindOne(
+			&appointment_repository.Criteria{
+				ID: idAppointment,
+			},
+			appointment_repository.NewFindOneOptions().
+				Select(appointment_repository.SelectOpts{
+					IDStudio: utils.Bool(true),
+				}),
+		)
+		if err != nil {
+			return err
+		}
+		if appointment == nil || appointment.IDStudio == 0 {
+			return ErrUserHasNoAccessToAppointment
+		}
+		if err := appointmentService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			appointment.IDStudio,
+			permissions...,
+		); err != nil {
+			return ErrUserHasNoAccessToAppointment
+		}
+	} else if !hasAccess {
 		return ErrUserHasNoAccessToAppointment
 	}
 
@@ -60,7 +88,9 @@ func (appointmentService *AppointmentService) GetAppointments(
 	isArtist bool,
 	params AppointmentParams,
 ) ([]model.Appointment, int64, error) {
-	criteria := &appointment_repository.Criteria{}
+	criteria := &appointment_repository.Criteria{
+		IDStudio: params.IDStudio,
+	}
 	load := appointment_repository.LoadOpts{
 		Images: true,
 		Profile: &profile_repository.SelectOpts{
@@ -70,6 +100,11 @@ func (appointmentService *AppointmentService) GetAppointments(
 		},
 		ProfileAvatar: true,
 		Review:        true,
+		Studio: &studio_repository.SelectOpts{
+			ID:       true,
+			Name:     true,
+			Username: true,
+		},
 	}
 	if params.AllAppointments && isArtist {
 		load.User = &user_repository.SelectOpts{
@@ -167,11 +202,28 @@ func (appointmentService *AppointmentService) GetAppointments(
 }
 
 func (appointmentService *AppointmentService) GetPendingAppointments(
-	idTattooArtist int64,
+	idUser,
+	idStudio int64,
 ) (int64, error) {
+	idUserFilter := idUser
+
+	if idStudio != 0 {
+		roles, err := appointmentService.adminStudioService.GetRolesInStudio(
+			idUser,
+			idStudio,
+		)
+		if err != nil {
+			return 0, err
+		}
+		if utils.Includes(roles, studioModel.ADMIN_ROLE) || utils.Includes(roles, studioModel.OWNER_ROLE) {
+			idUserFilter = 0
+		}
+	}
+
 	return appointmentService.appointmentRepository.Count(&appointment_repository.Criteria{
-		IDTattooArtist: idTattooArtist,
+		IDTattooArtist: idUserFilter,
 		Status:         model.STATUS_CREATED,
+		IDStudio:       idStudio,
 	})
 }
 
@@ -183,6 +235,7 @@ func (appointmentService *AppointmentService) CancelAppointment(
 		idAppointment,
 		idTattooArtist,
 		true,
+		studioModel.CANCEL_APPOINTMENT_PERMISSION,
 	); err != nil {
 		return err
 	}
@@ -261,6 +314,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 		idAppointment,
 		idTattooArtist,
 		true,
+		studioModel.SCHEDULE_APPOINTMENT_PERMISSION,
 	); err != nil {
 		return err
 	}
@@ -457,18 +511,91 @@ func (appointmentService *AppointmentService) ReviewAppointment(
 	)
 }
 
-func (appointmentService *AppointmentService) RequestAppointment(
-	appointmentDto *dto.AppointmentDto,
-	idUser int64,
+func (appointmentService *AppointmentService) AssignTattooArtist(
+	idUser,
+	idTattooArtist,
+	idAppointment int64,
 ) error {
-	isTattooArtist, err := appointmentService.userService.UserIsTattooArtist(
-		appointmentDto.IDTattooArtist,
+	appointment, err := appointmentService.appointmentRepository.FindOne(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		appointment_repository.NewFindOneOptions().
+			Select(appointment_repository.SelectOpts{
+				IDTattooArtist: utils.Bool(true),
+				IDStudio:       utils.Bool(true),
+			}),
 	)
 	if err != nil {
 		return err
 	}
-	if !isTattooArtist {
+	if appointment == nil {
+		return ErrNotFoundAppointment
+	}
+	if appointment.IDStudio == 0 {
+		return ErrNoStudioAppointment
+	}
+	if appointment.IDTattooArtist != 0 {
+		return ErrAlreadyTattooArtist
+	}
+	if err := appointmentService.adminStudioService.ThrowAccessInStudio(
+		idUser,
+		appointment.IDStudio,
+		studioModel.ASSIGN_TATTOO_ARTIST_PERMISSION,
+	); err != nil {
+		return err
+	}
+
+	roles, err := appointmentService.adminStudioService.GetRolesInStudio(
+		idTattooArtist,
+		appointment.IDStudio,
+	)
+	if err != nil {
+		return err
+	}
+	if !utils.Includes(roles, studioModel.TATTOO_ARTIST_ROLE) {
 		return ErrUserIsNotTattooArtists
+	}
+
+	return appointmentService.appointmentRepository.Update(
+		&appointment_repository.Criteria{
+			ID: idAppointment,
+		},
+		&appointment_repository.UpdateData{
+			IDTattooArtist: idTattooArtist,
+		},
+	)
+}
+
+func (appointmentService *AppointmentService) RequestAppointment(
+	appointmentDto *dto.AppointmentDto,
+	idUser int64,
+) error {
+	if idUser == appointmentDto.IDTattooArtist {
+		return ErrCantRequestAppointmentToMe
+	}
+
+	if appointmentDto.IDTattooArtist != 0 && appointmentDto.IDStudio == 0 {
+		isTattooArtist, err := appointmentService.userService.UserIsTattooArtist(
+			appointmentDto.IDTattooArtist,
+		)
+		if err != nil {
+			return err
+		}
+		if !isTattooArtist {
+			return ErrUserIsNotTattooArtists
+		}
+	} else if appointmentDto.IDTattooArtist != 0 && appointmentDto.IDStudio != 0 {
+		roles, err := appointmentService.adminStudioService.GetRolesInStudio(
+			appointmentDto.IDTattooArtist,
+			appointmentDto.IDStudio,
+		)
+		if err != nil {
+			return err
+		}
+		if !utils.Includes(roles, studioModel.TATTOO_ARTIST_ROLE) {
+			return ErrUserIsNotTattooArtists
+		}
 	}
 
 	images, err := appointmentService.fileService.UploadImages(
@@ -478,10 +605,12 @@ func (appointmentService *AppointmentService) RequestAppointment(
 	if err != nil {
 		return err
 	}
-	appointment := appointmentDto.ToModel(idUser)
+	appointment, err := appointmentDto.ToModel(idUser)
+	if err != nil {
+		return err
+	}
 	appointment.Images = images
 	appointment.IDUser = idUser
-	fmt.Printf("appointment.IDUser: %v\n", appointment.IDUser)
 
 	_, err = appointmentService.appointmentRepository.Insert(
 		appointment,
@@ -497,6 +626,7 @@ func NewAppointmentService(
 	iCalendar calendar.ICalendar,
 	reviewRepository review_repository.ReviewRepository,
 	profileService userService.ProfileService,
+	adminStudioService adminStudioService.AdminStudioService,
 ) *AppointmentService {
 	if appointmentService == nil {
 		appointmentService = &AppointmentService{
@@ -506,6 +636,7 @@ func NewAppointmentService(
 			calendar:              iCalendar,
 			reviewRepository:      reviewRepository,
 			profileService:        profileService,
+			adminStudioService:    adminStudioService,
 		}
 	}
 

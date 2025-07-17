@@ -174,6 +174,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 			appointmentController.ScheduleAppointment,
 		)
 		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)
+		appointment.PATCH("/:idAppointment/assignTattooArtist/:idUser", appointmentController.AssignTattooArtist)
 	}
 	generator := router.Group("api/generators", middleware.JWTMiddleware())
 	{
@@ -191,6 +192,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		studio.GET("/permissions", studioController.GetPermissions)
 		studio.GET("/:idStudio/my_permissions", middleware.JWTMiddleware(), adminStudioController.GetPermissionsInStudio)
 		studio.GET("/:idStudio/people", middleware.JWTMiddleware(), adminStudioController.GetStudioPeople)
+		studio.GET("/:idStudio/tattooArtists", adminStudioController.GetStudioTattooArtists)
 		studio.GET("/my", middleware.JWTMiddleware(), middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}), studioController.GetStudios)
 		studio.POST("", middleware.JWTMiddleware(), middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}), studioController.CreateStudio)
 		studio.PATCH("/:idStudio/user/:idUser/roles", middleware.JWTMiddleware(), adminStudioController.ChangeRole)

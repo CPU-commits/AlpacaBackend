@@ -34,6 +34,37 @@ func (adminStudioService *AdminStudioService) userIsAdminInStudio(
 	return isAdmin, nil
 }
 
+func (adminStudioService *AdminStudioService) GetRolesInStudio(
+	idUser,
+	idStudio int64,
+) ([]model.StudioRole, error) {
+	isOwner, err := adminStudioService.studioRepository.Exists(&studio_repository.Criteria{
+		IDOwner: idUser,
+		ID:      idStudio,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if isOwner {
+		return []model.StudioRole{model.OWNER_ROLE}, nil
+	}
+
+	person, err := adminStudioService.peopleStudioRepository.FindOne(
+		&people_studio_repository.Criteria{
+			IDUser:   idUser,
+			IDStudio: idStudio,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if person == nil {
+		return nil, ErrUserNotInStudio
+	}
+
+	return person.Roles, nil
+}
+
 func (adminStudioService *AdminStudioService) ThrowAccessInStudio(
 	idUser,
 	idStudio int64,
@@ -114,6 +145,7 @@ func (adminStudioService *AdminStudioService) getStudioOwnerToPeople(
 func (adminStudioService *AdminStudioService) GetStudioPeople(
 	idUser,
 	idStudio int64,
+	roles ...model.StudioRole,
 ) ([]model.StudioPerson, error) {
 	if err := adminStudioService.ThrowAccessInStudio(
 		idUser,
@@ -135,15 +167,24 @@ func (adminStudioService *AdminStudioService) GetStudioPeople(
 	people, err := adminStudioService.peopleStudioRepository.Find(
 		&people_studio_repository.Criteria{
 			IDStudio: idStudio,
+			Roles:    roles,
 		},
 		opts,
 	)
-	owner, err := adminStudioService.getStudioOwnerToPeople(idStudio)
 	if err != nil {
 		return nil, err
 	}
 
-	return append([]model.StudioPerson{*owner}, people...), err
+	if utils.Includes(roles, model.OWNER_ROLE) || roles == nil {
+		owner, err := adminStudioService.getStudioOwnerToPeople(idStudio)
+		if err != nil {
+			return nil, err
+		}
+
+		return append([]model.StudioPerson{*owner}, people...), nil
+	}
+
+	return people, nil
 }
 
 func (adminStudioService *AdminStudioService) GetPermissionsInStudio(
@@ -286,18 +327,41 @@ func (adminStudioService *AdminStudioService) SetPermission(
 	if !userIsAdmin {
 		return ErrTheUserIsNotAdmin
 	}
+	allPermissionsToSet := []model.StudioPermission{permission}
 
-	return adminStudioService.peopleStudioRepository.Update(
-		&people_studio_repository.Criteria{
-			IDStudio: idStudio,
-			IDUser:   idUser,
+	if permissionDto.Enabled {
+		p, _ := utils.Find(model.AllPermissionsTree, func(p model.Permission) (bool, error) {
+			return p.Permission == permission, nil
+		})
+
+		allPermissionsToSet = append(allPermissionsToSet, p.DependsOn...)
+	} else {
+		ps := utils.FilterNoError(model.AllPermissionsTree, func(p model.Permission) bool {
+			return utils.Includes(p.DependsOn, permission)
+		})
+
+		allPermissionsToSet = append(allPermissionsToSet, utils.MapNoError(ps, func(p model.Permission) model.StudioPermission {
+			return p.Permission
+		})...)
+	}
+
+	return utils.ConcurrentForEach(
+		allPermissionsToSet,
+		func(p model.StudioPermission) error {
+			return adminStudioService.peopleStudioRepository.Update(
+				&people_studio_repository.Criteria{
+					IDStudio: idStudio,
+					IDUser:   idUser,
+				},
+				people_studio_repository.UpdateData{
+					Permission: &people_studio_repository.UpdatePermission{
+						Permission: p,
+						Enabled:    permissionDto.Enabled,
+					},
+				},
+			)
 		},
-		people_studio_repository.UpdateData{
-			Permission: &people_studio_repository.UpdatePermission{
-				Permission: permission,
-				Enabled:    permissionDto.Enabled,
-			},
-		},
+		nil,
 	)
 }
 
