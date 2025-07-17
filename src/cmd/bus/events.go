@@ -18,4 +18,7 @@ const (
 
 	GET_TOKEN_EMAIL_UPDATE    bus.EventName = "users.get_token_email_update"
 	GET_TOKEN_PASSWORD_UPDATE bus.EventName = "users.get_token_password_update"
+
+	SEND_EMAIL_PASSWORD_RESET bus.EventName = "code.send_email_password_reset"
+	SEND_EMAIL_RESET          bus.EventName = "code.send_email_reset"
 )

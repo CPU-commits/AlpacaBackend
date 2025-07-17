@@ -14,9 +14,9 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	. "github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 type appointmentRepositorySql struct {
