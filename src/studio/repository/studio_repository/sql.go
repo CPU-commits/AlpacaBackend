@@ -163,6 +163,9 @@ func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod 
 	if selectOpts.IDOwner {
 		mod = append(mod, Select(models.StudioColumns.IDOwner))
 	}
+	if selectOpts.Address != nil && *selectOpts.Address {
+		mod = append(mod, Select(models.StudioColumns.FullAddress))
+	}
 
 	return mod
 }

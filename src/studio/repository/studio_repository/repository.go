@@ -21,6 +21,7 @@ type SelectOpts struct {
 	Name        bool
 	Username    bool
 	Description bool
+	Address     *bool
 }
 
 type findOptions struct {

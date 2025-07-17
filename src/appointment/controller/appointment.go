@@ -294,6 +294,7 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 			reviewRepository,
 			*profileService,
 			*peopleStudioService,
+			studioRepository,
 		),
 	}
 }

@@ -30,6 +30,7 @@ type AppointmentService struct {
 	reviewRepository      review_repository.ReviewRepository
 	profileService        userService.ProfileService
 	adminStudioService    adminStudioService.AdminStudioService
+	studioRepository      studio_repository.StudioRepository
 }
 
 var appointmentService *AppointmentService
@@ -388,6 +389,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 		opts := appointment_repository.NewFindOneOptions().Select(appointment_repository.SelectOpts{
 			IDUser:     utils.Bool(true),
 			IDCalendar: utils.Bool(true),
+			IDStudio:   utils.Bool(true),
 		})
 
 		appointment, err := appointmentService.appointmentRepository.FindOne(
@@ -400,11 +402,30 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 			return
 		}
 		if !isScheduled {
+			var address string
 			// Get users
 			tattooArtist, err := appointmentService.userService.GetUserById(idTattooArtist)
 			if err != nil {
 				return
 			}
+			if appointment.IDStudio != 0 {
+				studio, err := appointmentService.studioRepository.FindOne(
+					&studio_repository.Criteria{
+						ID: appointment.IDStudio,
+					},
+					studio_repository.NewFindOneOptions().
+						Select(studio_repository.SelectOpts{
+							Address: utils.Bool(true),
+						}),
+				)
+				if err != nil {
+					return
+				}
+				address = studio.FullAddress
+			} else {
+				address = tattooArtist.Location
+			}
+
 			userEmail, err := appointmentService.userService.GetEmailUserById(appointment.IDUser)
 			if err != nil {
 				return
@@ -420,7 +441,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 						"TattooArtist": tattooArtist.Name,
 					},
 				}),
-				Location:           tattooArtist.Location,
+				Location:           address,
 				ParticipantsEmails: []string{tattooArtist.Email, userEmail},
 			})
 		} else {
@@ -627,6 +648,7 @@ func NewAppointmentService(
 	reviewRepository review_repository.ReviewRepository,
 	profileService userService.ProfileService,
 	adminStudioService adminStudioService.AdminStudioService,
+	studioRepository studio_repository.StudioRepository,
 ) *AppointmentService {
 	if appointmentService == nil {
 		appointmentService = &AppointmentService{
@@ -637,6 +659,7 @@ func NewAppointmentService(
 			reviewRepository:      reviewRepository,
 			profileService:        profileService,
 			adminStudioService:    adminStudioService,
+			studioRepository:      studioRepository,
 		}
 	}
 
