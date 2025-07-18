@@ -164,7 +164,6 @@ model studios {
 	description String?
 	full_address String
 	email String @unique
-	media Json?
 	phone String?
 	id_owner BigInt
 	created_at DateTime @default(now()) @db.Timestamp(6)
@@ -174,6 +173,17 @@ model studios {
 	users studio_users[]
 	posts posts[]
 	appointments appointments[]
+	media links[]
+}
+
+model links {
+	id BigInt @id @default(sequence())
+	type String
+	link String
+	short_code String @unique
+	id_studio BigInt?
+	studio studios? @relation(fields: [id_studio], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
 }
 
 model reviews {

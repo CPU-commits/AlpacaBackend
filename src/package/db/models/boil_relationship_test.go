@@ -21,6 +21,7 @@ func TestToOne(t *testing.T) {
 	t.Run("LikeToPostUsingIDPostPost", testLikeToOnePostUsingIDPostPost)
 	t.Run("LikeToProfileUsingIDProfileProfile", testLikeToOneProfileUsingIDProfileProfile)
 	t.Run("LikeToUserUsingIDUserUser", testLikeToOneUserUsingIDUserUser)
+	t.Run("LinkToStudioUsingIDStudioStudio", testLinkToOneStudioUsingIDStudioStudio)
 	t.Run("PostImageToImageUsingIDImageImage", testPostImageToOneImageUsingIDImageImage)
 	t.Run("PostImageToPostUsingIDPostPost", testPostImageToOnePostUsingIDPostPost)
 	t.Run("PostToProfileUsingIDProfileProfile", testPostToOneProfileUsingIDProfileProfile)
@@ -76,6 +77,7 @@ func TestToMany(t *testing.T) {
 	t.Run("SessionToIDSessionAccesses", testSessionToManyIDSessionAccesses)
 	t.Run("StudioUserToIDAdminStudioAdminsPermissions", testStudioUserToManyIDAdminStudioAdminsPermissions)
 	t.Run("StudioToIDStudioAppointments", testStudioToManyIDStudioAppointments)
+	t.Run("StudioToIDStudioLinks", testStudioToManyIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyIDStudioPosts)
 	t.Run("StudioToIDStudioStudioUsers", testStudioToManyIDStudioStudioUsers)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyIDTattooArtistAppointments)
@@ -106,6 +108,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("LikeToPostUsingIDPostLikes", testLikeToOneSetOpPostUsingIDPostPost)
 	t.Run("LikeToProfileUsingIDProfileLikes", testLikeToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("LikeToUserUsingIDUserLikes", testLikeToOneSetOpUserUsingIDUserUser)
+	t.Run("LinkToStudioUsingIDStudioLinks", testLinkToOneSetOpStudioUsingIDStudioStudio)
 	t.Run("PostImageToImageUsingIDImagePostImage", testPostImageToOneSetOpImageUsingIDImageImage)
 	t.Run("PostImageToPostUsingIDPostPostImages", testPostImageToOneSetOpPostUsingIDPostPost)
 	t.Run("PostToProfileUsingIDProfilePosts", testPostToOneSetOpProfileUsingIDProfileProfile)
@@ -135,6 +138,7 @@ func TestToOneSet(t *testing.T) {
 func TestToOneRemove(t *testing.T) {
 	t.Run("AppointmentToStudioUsingIDStudioAppointments", testAppointmentToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneRemoveOpUserUsingIDTattooArtistUser)
+	t.Run("LinkToStudioUsingIDStudioLinks", testLinkToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("PostToStudioUsingIDStudioPosts", testPostToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("ProfileToImageUsingIDAvatarProfile", testProfileToOneRemoveOpImageUsingIDAvatarImage)
 	t.Run("StudioToImageUsingIDAvatarStudio", testStudioToOneRemoveOpImageUsingIDAvatarImage)
@@ -181,6 +185,7 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("SessionToIDSessionAccesses", testSessionToManyAddOpIDSessionAccesses)
 	t.Run("StudioUserToIDAdminStudioAdminsPermissions", testStudioUserToManyAddOpIDAdminStudioAdminsPermissions)
 	t.Run("StudioToIDStudioAppointments", testStudioToManyAddOpIDStudioAppointments)
+	t.Run("StudioToIDStudioLinks", testStudioToManyAddOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyAddOpIDStudioPosts)
 	t.Run("StudioToIDStudioStudioUsers", testStudioToManyAddOpIDStudioStudioUsers)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyAddOpIDTattooArtistAppointments)
@@ -200,6 +205,7 @@ func TestToManyAdd(t *testing.T) {
 func TestToManySet(t *testing.T) {
 	t.Run("PostToIDPostTattoos", testPostToManySetOpIDPostTattoos)
 	t.Run("StudioToIDStudioAppointments", testStudioToManySetOpIDStudioAppointments)
+	t.Run("StudioToIDStudioLinks", testStudioToManySetOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManySetOpIDStudioPosts)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManySetOpIDTattooArtistAppointments)
 }
@@ -209,6 +215,7 @@ func TestToManySet(t *testing.T) {
 func TestToManyRemove(t *testing.T) {
 	t.Run("PostToIDPostTattoos", testPostToManyRemoveOpIDPostTattoos)
 	t.Run("StudioToIDStudioAppointments", testStudioToManyRemoveOpIDStudioAppointments)
+	t.Run("StudioToIDStudioLinks", testStudioToManyRemoveOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyRemoveOpIDStudioPosts)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyRemoveOpIDTattooArtistAppointments)
 }

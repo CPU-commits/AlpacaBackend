@@ -1,6 +1,9 @@
 package studio_repository
 
-import "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+import (
+	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+)
 
 type Criteria struct {
 	ID       int64
@@ -13,11 +16,14 @@ type Criteria struct {
 type Include struct {
 	AvatarImage bool
 	BannerImage bool
+	Media       bool
 }
 
 type SelectOpts struct {
 	ID          bool
 	IDOwner     bool
+	IDAvatar    *bool
+	IDBanner    *bool
 	Name        bool
 	Username    bool
 	Description bool
@@ -66,10 +72,23 @@ func (f *findOneOptions) Select(selectOpts SelectOpts) *findOneOptions {
 	return f
 }
 
+type UpdateData struct {
+	Name        string
+	Description *string
+	FullAddress string
+	Email       string
+	Phone       *string
+	Avatar      *fileModel.Image
+	Banner      *fileModel.Image
+	AddMedia    []model.Media
+	RemoveMedia []int64
+}
+
 type StudioRepository interface {
 	Count(criteria *Criteria) (int64, error)
 	Exists(criteria *Criteria) (bool, error)
 	Find(criteria *Criteria, opts *findOptions) ([]model.Studio, error)
 	FindOne(criteria *Criteria, opts *findOneOptions) (*model.Studio, error)
 	InsertOne(studio model.Studio) error
+	Update(criteria *Criteria, data UpdateData) error
 }

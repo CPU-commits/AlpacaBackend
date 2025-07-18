@@ -19,6 +19,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
+	shorterController "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/controller"
 	studioController "github.com/CPU-commits/Template_Go-EventDriven/src/studio/controller"
 	tattooController "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/controller"
 	userController "github.com/CPU-commits/Template_Go-EventDriven/src/user/controller"
@@ -92,6 +93,9 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		},
 	}
 	router.Use(secure.New(secureConfig))
+	// HTML
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/assets", "./assets")
 	// I18n
 	router.Use(func(ctx *gin.Context) {
 		lang := ctx.DefaultQuery("lang", "es")
@@ -189,6 +193,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		studioController := studioController.NewHttpStudioController(bus)
 
 		studio.GET("/:idStudio", studioController.GetStudio)
+		studio.GET("/:idStudio/username", studioController.GetStudioUsername)
 		studio.GET("/permissions", studioController.GetPermissions)
 		studio.GET("/:idStudio/my_permissions", middleware.JWTMiddleware(), adminStudioController.GetPermissionsInStudio)
 		studio.GET("/:idStudio/people", middleware.JWTMiddleware(), adminStudioController.GetStudioPeople)
@@ -198,7 +203,14 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		studio.PATCH("/:idStudio/user/:idUser/roles", middleware.JWTMiddleware(), adminStudioController.ChangeRole)
 		studio.POST("/:idStudio/join/:idUser", middleware.JWTMiddleware(), adminStudioController.JoinPeople)
 		studio.PATCH("/:idStudio/user/:idUser/permissions", middleware.JWTMiddleware(), adminStudioController.SetPermission)
+		studio.PATCH("/:idStudio", middleware.JWTMiddleware(), studioController.UpdateStudio)
 		studio.DELETE("/:idStudio/user/:idUser", middleware.JWTMiddleware(), adminStudioController.RemovePerson)
+	}
+	s := router.Group("s")
+	{
+		shorterController := shorterController.NewHttpAdminStudioController()
+
+		s.GET("/:shortCode", shorterController.Relink)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

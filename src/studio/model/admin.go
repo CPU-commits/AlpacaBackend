@@ -16,6 +16,7 @@ const (
 	ASSIGN_TATTOO_ARTIST_PERMISSION StudioPermission = "s.assign_to_appointment"
 	SCHEDULE_APPOINTMENT_PERMISSION StudioPermission = "s.schedule_appointment"
 	CANCEL_APPOINTMENT_PERMISSION   StudioPermission = "s.cancel_appointment"
+	UPDATE_STUDIO_PERMISSION        StudioPermission = "s.update"
 )
 
 var ALL_PERMISSIONS []StudioPermission = []StudioPermission{
@@ -29,6 +30,7 @@ var ALL_PERMISSIONS []StudioPermission = []StudioPermission{
 	ASSIGN_TATTOO_ARTIST_PERMISSION,
 	SCHEDULE_APPOINTMENT_PERMISSION,
 	CANCEL_APPOINTMENT_PERMISSION,
+	UPDATE_STUDIO_PERMISSION,
 }
 
 // Struct permissions
@@ -83,6 +85,9 @@ var (
 	CancelAppointmentPermission = Permission{
 		Permission: CANCEL_APPOINTMENT_PERMISSION,
 	}
+	UpdateStudioPermission = Permission{
+		Permission: UPDATE_STUDIO_PERMISSION,
+	}
 )
 
 var AllPermissionsTree = []Permission{
@@ -96,6 +101,7 @@ var AllPermissionsTree = []Permission{
 	AssignTattooArtistPermission,
 	CancelAppointmentPermission,
 	ScheduleAppointmentPermission,
+	UpdateStudioPermission,
 }
 
 func IsPermission(permission string) bool {

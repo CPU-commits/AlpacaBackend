@@ -7,12 +7,16 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 )
 
 // Store
 var imageStore = cloudinary_store.NewCloudinaryImageStore()
+
+// UID Generate
+var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Repositories
 var (

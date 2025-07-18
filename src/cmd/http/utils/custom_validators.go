@@ -15,5 +15,6 @@ func RegisterCustomValidators() {
 		v.RegisterValidation("username", authDto.IsUsername)
 		v.RegisterValidation("studioRole", studioDto.IsRole)
 		v.RegisterValidation("permission", studioDto.IsPermission)
+		v.RegisterValidation("mediaType", studioDto.IsMediaType)
 	}
 }

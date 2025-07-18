@@ -89,7 +89,8 @@
 			"s.delete_people": "Eliminar personas",
 			"s.assign_to_appointment": "Asignar tatuador a citas",
 			"s.schedule_appointment": "Agendar citas",
-			"s.cancel_appointment": "Cancelar citas"
+			"s.cancel_appointment": "Cancelar citas",
+			"s.update": "Actualizar configuración del estudio"
 		}
 	}
 }

@@ -19,6 +19,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.9
+	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/nats-io/nats.go v1.37.0
 	github.com/openai/openai-go v1.2.0
 	github.com/redis/go-redis/v9 v9.9.0

@@ -53,6 +53,19 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 			ID: sqlStudio.IDOwner,
 		}
 	}
+	var media []model.Media
+	if sqlStudio.R != nil && sqlStudio.R.IDStudioLinks != nil {
+		sqlMedias := sqlStudio.R.IDStudioLinks
+
+		for _, sqlMedia := range sqlMedias {
+			media = append(media, model.Media{
+				ID:        sqlMedia.ID,
+				Link:      sqlMedia.Link,
+				ShortCode: sqlMedia.ShortCode,
+				Type:      model.TypeMedia(sqlMedia.Type),
+			})
+		}
+	}
 
 	return &model.Studio{
 		ID:          sqlStudio.ID,
@@ -66,6 +79,9 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 		Phone:       sqlStudio.Phone.String,
 		CreatedAt:   sqlStudio.CreatedAt,
 		Owner:       owner,
+		IDAvatar:    sqlStudio.IDAvatar.Int64,
+		IDBanner:    sqlStudio.IDBanner.Int64,
+		Media:       media,
 	}
 }
 
@@ -139,6 +155,9 @@ func (sqlStudioRepository) includeToMod(include *Include, hasSelect bool) []Quer
 
 		mod = append(mod, Load(models.StudioRels.IDBannerImage))
 	}
+	if include.Media {
+		mod = append(mod, Load(models.StudioRels.IDStudioLinks))
+	}
 
 	return mod
 }
@@ -165,6 +184,12 @@ func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod 
 	}
 	if selectOpts.Address != nil && *selectOpts.Address {
 		mod = append(mod, Select(models.StudioColumns.FullAddress))
+	}
+	if selectOpts.IDAvatar != nil && *selectOpts.IDAvatar {
+		mod = append(mod, Select(models.StudioColumns.IDAvatar))
+	}
+	if selectOpts.IDBanner != nil && *selectOpts.IDBanner {
+		mod = append(mod, Select(models.StudioColumns.IDBanner))
 	}
 
 	return mod
@@ -270,6 +295,99 @@ func (sqlSR sqlStudioRepository) InsertOne(studio model.Studio) error {
 	}
 
 	if err := sqlStudio.Insert(context.Background(), tx, boil.Infer()); err != nil {
+		tx.Rollback()
+		return utils.ErrRepositoryFailed
+	}
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
+}
+
+func (sqlSR sqlStudioRepository) Update(criteria *Criteria, data UpdateData) error {
+	where := sqlSR.criteriaToWhere(criteria)
+	cols := models.M{}
+	if data.Description != nil && *data.Description != "" {
+		cols[models.StudioColumns.Description] = *data.Description
+	} else if data.Description != nil {
+		cols[models.StudioColumns.Description] = nil
+	}
+	if data.Name != "" {
+		cols[models.StudioColumns.Name] = data.Name
+	}
+	if data.FullAddress != "" {
+		cols[models.StudioColumns.FullAddress] = data.FullAddress
+	}
+	if data.Email != "" {
+		cols[models.StudioColumns.Email] = data.Email
+	}
+	if data.Phone != nil && *data.Phone != "" {
+		cols[models.StudioColumns.Phone] = *data.Phone
+	} else if data.Phone != nil {
+		cols[models.StudioColumns.Phone] = nil
+	}
+	tx, err := sqlSR.db.Begin()
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+
+	if data.AddMedia != nil {
+		for _, media := range data.AddMedia {
+			sqlMedia := models.Link{
+				Type:      string(media.Type),
+				Link:      media.Link,
+				ShortCode: media.ShortCode,
+				IDStudio:  null.Int64From(media.IDStudio),
+			}
+
+			if err := sqlMedia.Insert(context.Background(), tx, boil.Infer()); err != nil {
+				tx.Rollback()
+				return utils.ErrRepositoryFailed
+			}
+		}
+	}
+	if data.RemoveMedia != nil {
+		if _, err := models.Links(
+			models.LinkWhere.ID.IN(data.RemoveMedia),
+		).DeleteAll(context.Background(), tx); err != nil {
+			tx.Rollback()
+			return utils.ErrRepositoryFailed
+		}
+	}
+
+	if data.Avatar != nil {
+		sqlImage := models.Image{
+			Key:       data.Avatar.Key,
+			MimeType:  data.Avatar.MimeType,
+			Name:      data.Avatar.Name,
+			CreatedAt: data.Avatar.CreatedAt,
+		}
+		if err := sqlImage.Insert(context.Background(), tx, boil.Infer()); err != nil {
+			tx.Rollback()
+			return utils.ErrRepositoryFailed
+		}
+
+		cols[models.StudioColumns.IDAvatar] = sqlImage.ID
+	}
+	if data.Banner != nil {
+		sqlImage := models.Image{
+			Key:       data.Banner.Key,
+			MimeType:  data.Banner.MimeType,
+			Name:      data.Banner.Name,
+			CreatedAt: data.Banner.CreatedAt,
+		}
+		if err := sqlImage.Insert(context.Background(), tx, boil.Infer()); err != nil {
+			tx.Rollback()
+			return utils.ErrRepositoryFailed
+		}
+
+		cols[models.StudioColumns.IDBanner] = sqlImage.ID
+	}
+
+	_, err = models.Studios(where...).UpdateAll(context.Background(), tx, cols)
+	if err != nil {
 		tx.Rollback()
 		return utils.ErrRepositoryFailed
 	}

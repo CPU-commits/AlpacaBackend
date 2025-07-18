@@ -22,6 +22,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Likes", testLikesUpsert)
 
+	t.Run("Links", testLinksUpsert)
+
 	t.Run("PostImages", testPostImagesUpsert)
 
 	t.Run("Posts", testPostsUpsert)

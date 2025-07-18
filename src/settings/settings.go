@@ -31,6 +31,8 @@ type settings struct {
 	SMTPPASS         string
 	SMTPPORT         string
 	REPLICATE_KEY    string
+	BACKEND_URL      string
+	CLIENT_URL       string
 }
 
 func validateSettings(settings *settings) {
@@ -87,6 +89,12 @@ func validateSettings(settings *settings) {
 	if settings.SMTPPORT == "" {
 		missing = append(missing, "SMTPPORT")
 	}
+	if settings.BACKEND_URL == "" {
+		missing = append(missing, "BACKEND_URL")
+	}
+	if settings.CLIENT_URL == "" {
+		missing = append(missing, "CLIENT_URL")
+	}
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
 	}
@@ -111,6 +119,8 @@ func newSettings() *settings {
 		SMTPFROM:         os.Getenv("SMTPFROM"),
 		SMTPPASS:         os.Getenv("SMTPPASS"),
 		SMTPPORT:         os.Getenv("SMTPPORT"),
+		BACKEND_URL:      os.Getenv("BACKEND_URL"),
+		CLIENT_URL:       os.Getenv("CLIENT_URL"),
 	}
 	validateSettings(settings)
 

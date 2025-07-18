@@ -10,6 +10,8 @@ import (
 type Studio struct {
 	ID          int64            `json:"id"`
 	Name        string           `json:"name"`
+	IDAvatar    int64            `json:"-"`
+	IDBanner    int64            `json:"-"`
 	Username    string           `json:"username"`
 	Avatar      *model.Image     `json:"avatar,omitempty"`
 	Banner      *model.Image     `json:"banner,omitempty"`
@@ -20,4 +22,5 @@ type Studio struct {
 	Owner       *authModel.User  `json:"owner,omitempty"`
 	CreatedAt   time.Time        `json:"createdAt,omitempty"`
 	Admins      []authModel.User `json:"admins,omitempty"`
+	Media       []Media          `json:"media,omitempty"`
 }
