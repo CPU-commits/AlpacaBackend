@@ -23,7 +23,7 @@ type ProfileService struct {
 	userService             authService.UserService
 	imageStore              store.ImageStore
 	fileService             file_service.FileService
-	publicationRDRepository publication_repository.RdPublicationRepository
+	publicationRDRepository publication_repository.RedisPublicationRepository
 }
 
 func (profileService *ProfileService) GetProfile(username string) (*model.Profile, error) {
@@ -181,7 +181,7 @@ func NewProfileService(
 	imageStore store.ImageStore,
 	fileService file_service.FileService,
 	followRepository follow_repository.FollowRepository,
-	publicationRDRepository publication_repository.RdPublicationRepository,
+	publicationRDRepository publication_repository.RedisPublicationRepository,
 
 ) *ProfileService {
 	if profileService == nil {
