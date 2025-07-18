@@ -3,7 +3,9 @@ package service
 import (
 	"fmt"
 
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
@@ -14,6 +16,8 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
@@ -33,6 +37,7 @@ type PublicationService struct {
 	fileService           file_service.FileService
 	bus                   bus.Bus
 	userRepository        user_repository.UserRepository
+	adminStudioService    studioService.AdminStudioService
 }
 
 type PublicationsMetadata struct {
@@ -41,14 +46,26 @@ type PublicationsMetadata struct {
 }
 
 func (publicationService *PublicationService) GetPublications(
-	username string,
+	params PublicationsParams,
 	page int,
 ) ([]model.Publication, *PublicationsMetadata, error) {
-	idProfile, err := publicationService.profileService.GetProfileIdFromUsername(
-		username,
-	)
-	if err != nil {
-		return nil, nil, err
+	criteria := &publication_repository.Criteria{}
+
+	if params.Username != "" {
+		idProfile, err := publicationService.profileService.GetProfileIdFromUsername(
+			params.Username,
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+		criteria.IDProfile = idProfile
+		criteria.IDStudio = &repository.CriteriaNull[*int64]{
+			EQ: nil,
+		}
+	} else if params.IDStudio != 0 {
+		criteria.IDStudio = &repository.CriteriaNull[*int64]{
+			EQ: &params.IDStudio,
+		}
 	}
 
 	limit := 10
@@ -76,9 +93,7 @@ func (publicationService *PublicationService) GetPublications(
 		})
 
 	publications, err := publicationService.publicationRepository.Find(
-		&publication_repository.Criteria{
-			IDProfile: idProfile,
-		},
+		criteria,
 		opts,
 	)
 	if err != nil {
@@ -86,9 +101,7 @@ func (publicationService *PublicationService) GetPublications(
 	}
 	// Count
 	count, err := publicationService.publicationRepository.Count(
-		&publication_repository.Criteria{
-			IDProfile: idProfile,
-		},
+		criteria,
 	)
 
 	return publications, &PublicationsMetadata{
@@ -342,10 +355,35 @@ func (publicationService *PublicationService) predictIfPublicationImagesAreTatto
 
 }
 
+func (publicationService *PublicationService) throwAccessToPublish(
+	idUser,
+	idStudio int64,
+	userRoles []authModel.Role,
+) error {
+	if idStudio == 0 && utils.Includes(userRoles, authModel.TATTOO_ARTIST_ROLE) {
+		return ErrUnauthorizedPublishPublication
+	}
+
+	return publicationService.adminStudioService.ThrowAccessInStudio(
+		idUser,
+		idStudio,
+		studioModel.PUBLISH_PERMISSION,
+	)
+}
+
 func (publicationService *PublicationService) Publish(
 	publicationDto *dto.PublicationDto,
 	idUser int64,
+	userRoles []authModel.Role,
 ) (*model.Publication, error) {
+	if err := publicationService.throwAccessToPublish(
+		idUser,
+		publicationDto.IDStudio,
+		userRoles,
+	); err != nil {
+		return nil, err
+	}
+
 	idProfile, err := publicationService.profileService.GetProfileIDFromIDUser(
 		idUser,
 	)
@@ -370,7 +408,9 @@ func (publicationService *PublicationService) Publish(
 
 	mentions, err := utils.Map(dirtyMentions, func(mention string) (id int64, err error) {
 		userBool, err := publicationService.userRepository.Exists(&user_repository.Criteria{
-			Username: mention,
+			Username: repository.CriteriaString{
+				EQ: utils.String(mention),
+			},
 		})
 		if err != nil {
 			return 0, err
@@ -441,8 +481,23 @@ func (publicationService *PublicationService) DeletePublication(
 	if publication == nil {
 		return ErrPublicationNotExists
 	}
-	if publication.Profile.User.ID != idUser {
+	if publication.Profile.User.ID != idUser && publication.IDStudio == 0 {
 		return ErrPublicationNotAccess
+	} else if publication.IDStudio != 0 && publication.Profile.User.ID != idUser {
+		if err := publicationService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			publication.IDStudio,
+			studioModel.EDIT_PUBLICATIONS_PERMISSION,
+		); err != nil {
+			return ErrPublicationNotAccess
+		}
+	} else {
+		if err := publicationService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			publication.IDStudio,
+		); err != nil {
+			return ErrPublicationNotAccess
+		}
 	}
 	// Update
 	images, err := publicationService.publicationRepository.FindImages(
@@ -554,6 +609,7 @@ func NewPublicationService(
 	tattooRepository tattoo_repository.TattooRepository,
 	userRepository user_repository.UserRepository,
 	fileService file_service.FileService,
+	adminStudioService studioService.AdminStudioService,
 	bus bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
@@ -567,6 +623,7 @@ func NewPublicationService(
 			userRepository:        userRepository,
 			bus:                   bus,
 			fileService:           fileService,
+			adminStudioService:    adminStudioService,
 		}
 	}
 

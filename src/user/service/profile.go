@@ -26,6 +26,32 @@ type ProfileService struct {
 	publicationRDRepository publication_repository.RedisPublicationRepository
 }
 
+func (profileService *ProfileService) GetAvatarFromIDUser(idUser int64) (string, error) {
+	profile, err := profileService.profileRepository.FindOne(
+		&profile_repository.Criteria{
+			IDUser: idUser,
+		},
+		profile_repository.NewFindOneOptions().
+			Load(profile_repository.LoadOpts{
+				Avatar: true,
+			}).
+			Select(profile_repository.SelectOpts{
+				Avatar: utils.Bool(true),
+			}),
+	)
+	if err != nil {
+		return "", err
+	}
+	if profile == nil {
+		return "", ErrUserNoHasProfile
+	}
+	if profile.Avatar == nil {
+		return "", nil
+	}
+
+	return profile.Avatar.Key, nil
+}
+
 func (profileService *ProfileService) GetProfile(username string) (*model.Profile, error) {
 	idProfile, err := profileService.GetProfileIdFromUsername(username)
 	if err != nil {

@@ -5,7 +5,8 @@
 	"unauthorized": "No tienes acceso",
 	"server": {
 		"internal_error": "Error del servidor",
-		"db_error": "Error del servidor"
+		"db_error": "Error del servidor",
+		"no_t": "No existe traducción para el texto"
 	},
 	"form": {
 		"error": "Error en el formulario",
@@ -36,7 +37,8 @@
 	"publication": {
 		"not_exists": "No existe la publicación",
 		"not_have_access": "No tienes accesso a la publicación",
-		"too_images": "Cada publicación puede tener máximo 5 imágenes"
+		"too_images": "Cada publicación puede tener máximo 5 imágenes",
+		"not_have_access_publish": "No tienes permiso para publicar"
 	},
 	"file": {
 		"invalid_mime_type": "El tipo de archivo es incorrecto"
@@ -51,7 +53,12 @@
 		"finished": "La cita ya finalizó",
 		"scheduled": "Cita agendada con {{.TattooArtist}} - AlpacaTattoo",
 		"review_exists": "La cita ya fue reseñada",
-		"not_finished": "La cita todavía no finaliza"
+		"not_finished": "La cita todavía no finaliza",
+		"tattoo_artist_or_studio_missing": "Falta seleccionar a un tatuador o estudio",
+		"appointment_to_me": "No puedes agendarte una cita a ti mismo",
+		"not_found": "No existe la cita",
+		"no_studio": "Esta cita no está vinculada a ningún estudio",
+		"already_tattoo_artist": "La cita ya tiene un tatuador asignado"
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"
@@ -62,5 +69,28 @@
 	},
 	"token": {
 		"not_valid": "El token no es valido"
+	},
+	"studio": {
+		"max_studios": "Solo se pueden crear dos estudios",
+		"exists_email_or_username": "Ya existe el email o el nombre de usuario",
+		"not_admin": "No eres administrador del estudio",
+		"user_not_admin": "El usuario no es administrador del estudio",
+		"no_permission": "No tienes permiso para esta acción",
+		"not_found": "No existe el estudio",
+		"cant_create_owner": "No se puede crear un usuario dueño",
+		"user_not_in_studio": "El usuario no es parte del estudio",
+		"permissions": {
+			"s.publish": "Publicar",
+			"s.edit_publication": "Editar publicaciones",
+			"s.show_people": "Ver personas",
+			"s.join_people": "Añadir personas",
+			"s.give_roles": "Añadir/quitar roles (Los mismos roles que el administrador posee)",
+			"s.give_permissions": "Editar los roles",
+			"s.delete_people": "Eliminar personas",
+			"s.assign_to_appointment": "Asignar tatuador a citas",
+			"s.schedule_appointment": "Agendar citas",
+			"s.cancel_appointment": "Cancelar citas",
+			"s.update": "Actualizar configuración del estudio"
+		}
 	}
 }

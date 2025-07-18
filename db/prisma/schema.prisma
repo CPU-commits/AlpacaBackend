@@ -61,14 +61,14 @@ model users {
   token_passwords    token_passwords[]
   profile profiles?
   follows follows[]
-  studios studio_tattoo_artists[]
-  my_studios studio_admins[]
+  my_studios studio_users[]
   reviews reviews[]
   likes likes[]
 	userAppointments        appointments[] @relation("UserAppointments")
 	tattooArtistAppointments appointments[] @relation("TattooArtistAppointments")
 	codes codes[]
 	tokens tokens[]
+	ownStudios studios[]
 }
 
 model token_passwords {
@@ -89,6 +89,8 @@ model images {
 	tattoo tattoos?
 	post post_images?
 	appointment_images appointment_images?
+	avatar_studio studios? @relation("StudioAvatar")
+	banner_studio studios? @relation("StudioBanner")
 }
 
 
@@ -134,35 +136,54 @@ model tattoos {
 	profile profiles @relation(fields: [id_profile], references: [id])
 }
 
-model studio_tattoo_artists {
+model studio_users {
 	id BigInt @id @default(sequence())
 	id_studio BigInt
-	id_tattoo_artist BigInt
+	id_user BigInt
+	roles Json
 	studio studios @relation(fields: [id_studio], references: [id])
-	tattoo_artist users @relation(fields: [id_tattoo_artist], references: [id])
+	user users @relation(fields: [id_user], references: [id])
 	created_at DateTime @default(now()) @db.Timestamp(6)
-
+	permissions studio_admins_permissions[]
 }
 
-model studio_admins {
+model studio_admins_permissions {
 	id BigInt @id @default(sequence())
-	id_studio BigInt
-	id_owner BigInt
-	studio studios @relation(fields: [id_studio], references: [id])
-	owner users @relation(fields: [id_owner], references: [id])
+	id_admin BigInt
+	permission String
 	created_at DateTime @default(now()) @db.Timestamp(6)
-
+	admin studio_users @relation(fields: [id_admin], references: [id], onDelete: Cascade)
 }
 
 model studios {
 	id BigInt @id @default(sequence())
-	description String
-	direction Json
-	email String
+	name String
+	username String @unique
+	id_avatar BigInt? @unique
+	id_banner BigInt? @unique
+	description String?
+	full_address String
+	email String @unique
 	phone String?
+	id_owner BigInt
 	created_at DateTime @default(now()) @db.Timestamp(6)
-	tattoo_artists studio_tattoo_artists[]
-	admins studio_admins[]
+	avatar images? @relation(name: "StudioAvatar", fields: [id_avatar], references: [id], map: "studio_avatar_fkey")
+	banner images? @relation(name: "StudioBanner", fields: [id_banner], references: [id], map: "studio_banner_fkey")
+	owner users @relation(fields: [id_owner], references: [id])
+	users studio_users[]
+	posts posts[]
+	appointments appointments[]
+	media links[]
+}
+
+model links {
+	id BigInt @id @default(sequence())
+	type String
+	link String
+	short_code String @unique
+	id_studio BigInt?
+	studio studios? @relation(fields: [id_studio], references: [id])
+	created_at DateTime @default(now()) @db.Timestamp(6)
 }
 
 model reviews {
@@ -190,6 +211,8 @@ model post_images {
 model posts {
 	id BigInt @id @default(sequence())
 	id_profile BigInt
+	id_studio BigInt?
+	is_studio_post Boolean @default(false)
 	content String
 	likes Int
 	categories String[]
@@ -197,6 +220,7 @@ model posts {
 	views Int @default(0)
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	profile profiles @relation(fields: [id_profile], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
 	tattoos tattoos[]
 	images post_images[]
 	like likes[]
@@ -224,8 +248,9 @@ model appointment_images {
 model appointments {
   id                BigInt @id @default(sequence())
   id_user           BigInt
-  id_tattoo_artist  BigInt
+  id_tattoo_artist  BigInt?
   status            appointment_status
+  id_studio BigInt?
   id_calendar String?
   phone String?
   has_idea Boolean
@@ -243,7 +268,8 @@ model appointments {
   images appointment_images[]
   review reviews?
   user          users @relation("UserAppointments", fields: [id_user], references: [id])
-  tattoo_artist users @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
+  tattoo_artist users? @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
+  studio studios? @relation(fields: [id_studio], references: [id])
 }
 
 model codes{

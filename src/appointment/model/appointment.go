@@ -5,6 +5,7 @@ import (
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 )
 
@@ -52,25 +53,28 @@ func IsAppointmentColor(color string) bool {
 }
 
 type Appointment struct {
-	ID                  int64              `json:"id"`
-	IDTattooArtist      int64              `json:"idTattooArtist"`
-	TattooArtist        *authModel.User    `json:"tattooArtist,omitempty"`
-	TattooArtistProfile *userModel.Profile `json:"tattooArtistProfile,omitempty"`
-	IDUser              int64              `json:"idUser"`
-	IDCalendar          string             `json:"idCalendar,omitempty"`
-	UserProfile         *userModel.Profile `json:"userProfile,omitempty"`
-	User                *authModel.User    `json:"user,omitempty"`
-	Status              AppointmentStatus  `json:"status"`
-	Phone               string             `json:"phone,omitempty"`
-	HasIdea             *bool              `json:"hasIdea,omitempty"`
-	Area                AppointmentArea    `json:"area,omitempty"`
-	Height              float32            `json:"height,omitempty"`
-	Width               float32            `json:"width,omitempty"`
-	Color               AppointmentColor   `json:"color,omitempty"`
-	Description         string             `json:"description"`
-	Duration            float32            `json:"duration,omitempty"`
-	ScheduledAt         *time.Time         `json:"scheduledAt,omitempty"`
-	FinishedAt          *time.Time         `json:"finishedAt,omitempty"`
-	Images              []model.Image      `json:"images,omitempty"`
-	CreatedAt           time.Time          `json:"createdAt"`
+	ID                  int64               `json:"id"`
+	IDStudio            int64               `json:"idStudio,omitempty"`
+	IDTattooArtist      int64               `json:"idTattooArtist"`
+	TattooArtist        *authModel.User     `json:"tattooArtist,omitempty"`
+	TattooArtistProfile *userModel.Profile  `json:"tattooArtistProfile,omitempty"`
+	IDUser              int64               `json:"idUser"`
+	IDCalendar          string              `json:"idCalendar,omitempty"`
+	UserProfile         *userModel.Profile  `json:"userProfile,omitempty"`
+	User                *authModel.User     `json:"user,omitempty"`
+	Status              AppointmentStatus   `json:"status"`
+	Phone               string              `json:"phone,omitempty"`
+	HasIdea             *bool               `json:"hasIdea,omitempty"`
+	Review              *Review             `json:"review,omitempty"`
+	Area                AppointmentArea     `json:"area,omitempty"`
+	Height              float32             `json:"height,omitempty"`
+	Width               float32             `json:"width,omitempty"`
+	Color               AppointmentColor    `json:"color,omitempty"`
+	Description         string              `json:"description"`
+	Duration            float32             `json:"duration,omitempty"`
+	ScheduledAt         *time.Time          `json:"scheduledAt,omitempty"`
+	FinishedAt          *time.Time          `json:"finishedAt,omitempty"`
+	Images              []model.Image       `json:"images,omitempty"`
+	Studio              *studioModel.Studio `json:"studio,omitempty"`
+	CreatedAt           time.Time           `json:"createdAt"`
 }

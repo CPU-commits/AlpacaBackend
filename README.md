@@ -66,8 +66,8 @@ docker run -v ./migrations:/migrations --network host migrate/migrate -path=/mig
 Luego, para tener los modelos en código Go, instale y luego ejecute:
 
 ```bash
-go install github.com/volatiletech/sqlboiler/v4@latest
-go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
+go install github.com/aarondl/sqlboiler/v4@latest
+go install github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-psql@latest
 go install github.com/glerchundi/sqlboiler-crdb/v4@latest
 ```
 

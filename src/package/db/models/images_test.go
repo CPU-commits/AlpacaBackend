@@ -677,6 +677,128 @@ func testImageOneToOneProfileUsingIDAvatarProfile(t *testing.T) {
 	}
 }
 
+func testImageOneToOneStudioUsingIDAvatarStudio(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign Studio
+	var local Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, imageDBTypes, true, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&foreign.IDAvatar, local.ID)
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDAvatarStudio().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.IDAvatar, foreign.IDAvatar) {
+		t.Errorf("want: %v, got %v", foreign.IDAvatar, check.IDAvatar)
+	}
+
+	ranAfterSelectHook := false
+	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ImageSlice{&local}
+	if err = local.L.LoadIDAvatarStudio(ctx, tx, false, (*[]*Image)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAvatarStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDAvatarStudio = nil
+	if err = local.L.LoadIDAvatarStudio(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAvatarStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testImageOneToOneStudioUsingIDBannerStudio(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign Studio
+	var local Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, imageDBTypes, true, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&foreign.IDBanner, local.ID)
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDBannerStudio().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.IDBanner, foreign.IDBanner) {
+		t.Errorf("want: %v, got %v", foreign.IDBanner, check.IDBanner)
+	}
+
+	ranAfterSelectHook := false
+	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ImageSlice{&local}
+	if err = local.L.LoadIDBannerStudio(ctx, tx, false, (*[]*Image)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDBannerStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDBannerStudio = nil
+	if err = local.L.LoadIDBannerStudio(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDBannerStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testImageOneToOneTattooUsingIDImageTattoo(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -969,6 +1091,232 @@ func testImageOneToOneRemoveOpProfileUsingIDAvatarProfile(t *testing.T) {
 	}
 
 	if b.R.IDAvatarImage != nil {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
+func testImageOneToOneSetOpStudioUsingIDAvatarStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b, c Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Studio{&b, &c} {
+		err = a.SetIDAvatarStudio(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDAvatarStudio != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.IDAvatarImage != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if !queries.Equal(a.ID, x.IDAvatar) {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.IDAvatar))
+		reflect.Indirect(reflect.ValueOf(&x.IDAvatar)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.ID, x.IDAvatar) {
+			t.Error("foreign key was wrong value", a.ID, x.IDAvatar)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
+func testImageOneToOneRemoveOpStudioUsingIDAvatarStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDAvatarStudio(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDAvatarStudio(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDAvatarStudio().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDAvatarStudio != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(b.IDAvatar) {
+		t.Error("foreign key column should be nil")
+	}
+
+	if b.R.IDAvatarImage != nil {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
+func testImageOneToOneSetOpStudioUsingIDBannerStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b, c Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Studio{&b, &c} {
+		err = a.SetIDBannerStudio(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDBannerStudio != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.IDBannerImage != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if !queries.Equal(a.ID, x.IDBanner) {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.IDBanner))
+		reflect.Indirect(reflect.ValueOf(&x.IDBanner)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.ID, x.IDBanner) {
+			t.Error("foreign key was wrong value", a.ID, x.IDBanner)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
+func testImageOneToOneRemoveOpStudioUsingIDBannerStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDBannerStudio(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDBannerStudio(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDBannerStudio().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDBannerStudio != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(b.IDBanner) {
+		t.Error("foreign key column should be nil")
+	}
+
+	if b.R.IDBannerImage != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 }

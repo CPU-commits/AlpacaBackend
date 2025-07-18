@@ -14,6 +14,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -37,7 +38,7 @@ type HttpPublicationController struct {
 //	@Failure	409			{object}	utils.ProblemDetails	"La sesión no existe. Probablemente porque la eliminaron"
 //
 //	@Router		/api/publications/username/{username} [get]
-func (httpPC *HttpPublicationController) GetPublications(c *gin.Context) {
+func (httpPC *HttpPublicationController) GetUserPublications(c *gin.Context) {
 	username := c.Param("username")
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
@@ -47,7 +48,41 @@ func (httpPC *HttpPublicationController) GetPublications(c *gin.Context) {
 	}
 
 	publications, metadata, err := httpPC.publicationService.GetPublications(
-		username,
+		service.PublicationsParams{
+			Username: username,
+		},
+		page,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	// Headers
+	c.Header("X-Per-Page", strconv.Itoa(metadata.Limit))
+	c.Header("X-Total", strconv.Itoa(metadata.Total))
+
+	c.JSON(http.StatusOK, publications)
+}
+
+func (httpPC *HttpPublicationController) GetStudioPublications(c *gin.Context) {
+	idStudioStr := c.Param("idStudio")
+	idStudio, err := strconv.Atoi(idStudioStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	publications, metadata, err := httpPC.publicationService.GetPublications(
+		service.PublicationsParams{
+			IDStudio: int64(idStudio),
+		},
 		page,
 	)
 	if err != nil {
@@ -220,7 +255,7 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 	publicationDto.Images = imagesDto
 
 	claims, _ := utils.NewClaimsFromContext(c)
-	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID)
+	publication, err := httpPC.publicationService.Publish(publicationDto, claims.ID, claims.Roles)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -298,6 +333,17 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		followRepository,
 		publicationRDRepository,
 	)
+	userService := authService.NewUserService(
+		userRepository,
+		roleRepository,
+		bus,
+	)
+	adminStudioService := studioService.NewPeopleStudioService(
+		adminStudioRepository,
+		studioRepository,
+		*userService,
+	)
+
 	return &HttpPublicationController{
 		bus: bus,
 		publicationService: service.NewPublicationService(
@@ -315,6 +361,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 			tattooRepository,
 			userRepository,
 			*fileService,
+			*adminStudioService,
 			bus,
 		),
 	}

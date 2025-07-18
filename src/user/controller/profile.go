@@ -3,6 +3,7 @@ package controller
 import (
 	"mime"
 	"net/http"
+	"strconv"
 	"strings"
 
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
@@ -37,6 +38,23 @@ func (httpProfile *HttpProfileController) GetProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, profile)
+}
+
+func (httpProfile *HttpProfileController) GetAvatar(c *gin.Context) {
+	idUserStr := c.Param("idUser")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	avatar, err := httpProfile.profileService.GetAvatarFromIDUser(int64(idUser))
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, avatar)
 }
 
 // Patch godoc

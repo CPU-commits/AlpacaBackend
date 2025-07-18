@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alpaca Tattoo - Link roto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Karla', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 0.5em 0;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      max-width: 500px;
+      margin-bottom: 2em;
+      color: #555;
+    }
+
+    .alpaca-img {
+      width: 300px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      margin-bottom: 2em;
+    }
+
+    .btn {
+      background: #f44336;
+      color: white;
+      padding: 0.8em 1.5em;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <img class="alpaca-img" src="/assets/illustrations/empty.png" alt="Alpaca">
+  <h1>Ups...</h1>
+  <p class="message">El link parece que está roto</p>
+  <a href="{{ .link }}" class="btn">Volver al inicio</a>
+</body>
+</html>

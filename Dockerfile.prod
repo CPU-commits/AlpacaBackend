@@ -21,6 +21,9 @@ RUN apk update && rm -rf /var/cache/apk/*
 RUN mkdir -p /app
 WORKDIR /app
 
+COPY ./assets .
+COPY ./templates .
+
 COPY --from=builder /app/app .
 
 EXPOSE 8080

@@ -770,6 +770,67 @@ func testAppointmentToManyAddOpIDAppointmentAppointmentImages(t *testing.T) {
 		}
 	}
 }
+func testAppointmentToOneStudioUsingIDStudioStudio(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Appointment
+	var foreign Studio
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, studioDBTypes, false, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDStudio, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDStudioStudio().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := AppointmentSlice{&local}
+	if err = local.L.LoadIDStudioStudio(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDStudioStudio = nil
+	if err = local.L.LoadIDStudioStudio(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -779,7 +840,7 @@ func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Appointment struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
@@ -790,7 +851,7 @@ func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.IDTattooArtist = foreign.ID
+	queries.Assign(&local.IDTattooArtist, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -800,7 +861,7 @@ func testAppointmentToOneUserUsingIDTattooArtistUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if check.ID != foreign.ID {
+	if !queries.Equal(check.ID, foreign.ID) {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -892,6 +953,115 @@ func testAppointmentToOneUserUsingIDUserUser(t *testing.T) {
 	}
 }
 
+func testAppointmentToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b, c Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Studio{&b, &c} {
+		err = a.SetIDStudioStudio(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDStudioStudio != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDStudioAppointments[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.IDStudio, x.ID) {
+			t.Error("foreign key was wrong value", a.IDStudio)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDStudio))
+		reflect.Indirect(reflect.ValueOf(&a.IDStudio)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDStudio, x.ID) {
+			t.Error("foreign key was wrong value", a.IDStudio, x.ID)
+		}
+	}
+}
+
+func testAppointmentToOneRemoveOpStudioUsingIDStudioStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDStudioStudio(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDStudioStudio(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDStudioStudio().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDStudioStudio != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDStudio) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDStudioAppointments) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
 func testAppointmentToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 	var err error
 
@@ -933,7 +1103,7 @@ func testAppointmentToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 		if x.R.IDTattooArtistAppointments[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDTattooArtist != x.ID {
+		if !queries.Equal(a.IDTattooArtist, x.ID) {
 			t.Error("foreign key was wrong value", a.IDTattooArtist)
 		}
 
@@ -944,11 +1114,63 @@ func testAppointmentToOneSetOpUserUsingIDTattooArtistUser(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDTattooArtist != x.ID {
+		if !queries.Equal(a.IDTattooArtist, x.ID) {
 			t.Error("foreign key was wrong value", a.IDTattooArtist, x.ID)
 		}
 	}
 }
+
+func testAppointmentToOneRemoveOpUserUsingIDTattooArtistUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDTattooArtistUser(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDTattooArtistUser(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDTattooArtistUser().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDTattooArtistUser != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDTattooArtist) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDTattooArtistAppointments) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
 func testAppointmentToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
@@ -1081,7 +1303,7 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
-	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('scheduled','canceled','created','reviewed')`, `Phone`: `text`, `HasIdea`: `boolean`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Height`: `double precision`, `Width`: `double precision`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `ScheduledAt`: `timestamp without time zone`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `CreatedAt`: `timestamp without time zone`, `IDCalendar`: `text`, `IsPaid`: `boolean`}
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('created','scheduled','canceled','reviewed')`, `CreatedAt`: `timestamp without time zone`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `HasIdea`: `boolean`, `Height`: `double precision`, `Phone`: `text`, `Width`: `double precision`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `ScheduledAt`: `timestamp without time zone`, `IDCalendar`: `text`, `IsPaid`: `boolean`, `IDStudio`: `bigint`}
 	_                  = bytes.MinRead
 )
 

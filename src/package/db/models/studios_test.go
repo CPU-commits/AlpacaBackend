@@ -494,14 +494,14 @@ func testStudiosInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testStudioToManyIDStudioStudioAdmins(t *testing.T) {
+func testStudioToManyIDStudioAppointments(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a Studio
-	var b, c StudioAdmin
+	var b, c Appointment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
@@ -512,10 +512,241 @@ func testStudioToManyIDStudioStudioAdmins(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, studioAdminDBTypes, false, studioAdminColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, studioAdminDBTypes, false, studioAdminColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, appointmentDBTypes, false, appointmentColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDStudio, a.ID)
+	queries.Assign(&c.IDStudio, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDStudioAppointments().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDStudio, b.IDStudio) {
+			bFound = true
+		}
+		if queries.Equal(v.IDStudio, c.IDStudio) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := StudioSlice{&a}
+	if err = a.L.LoadIDStudioAppointments(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioAppointments); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDStudioAppointments = nil
+	if err = a.L.LoadIDStudioAppointments(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioAppointments); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testStudioToManyIDStudioLinks(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c Link
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, linkDBTypes, false, linkColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, linkDBTypes, false, linkColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDStudio, a.ID)
+	queries.Assign(&c.IDStudio, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDStudioLinks().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDStudio, b.IDStudio) {
+			bFound = true
+		}
+		if queries.Equal(v.IDStudio, c.IDStudio) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := StudioSlice{&a}
+	if err = a.L.LoadIDStudioLinks(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioLinks); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDStudioLinks = nil
+	if err = a.L.LoadIDStudioLinks(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioLinks); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testStudioToManyIDStudioPosts(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c Post
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, postDBTypes, false, postColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, postDBTypes, false, postColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDStudio, a.ID)
+	queries.Assign(&c.IDStudio, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDStudioPosts().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDStudio, b.IDStudio) {
+			bFound = true
+		}
+		if queries.Equal(v.IDStudio, c.IDStudio) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := StudioSlice{&a}
+	if err = a.L.LoadIDStudioPosts(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioPosts); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDStudioPosts = nil
+	if err = a.L.LoadIDStudioPosts(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioPosts); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testStudioToManyIDStudioStudioUsers(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c StudioUser
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, studioUserDBTypes, false, studioUserColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioUserDBTypes, false, studioUserColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -529,7 +760,7 @@ func testStudioToManyIDStudioStudioAdmins(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.IDStudioStudioAdmins().All(ctx, tx)
+	check, err := a.IDStudioStudioUsers().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -552,18 +783,18 @@ func testStudioToManyIDStudioStudioAdmins(t *testing.T) {
 	}
 
 	slice := StudioSlice{&a}
-	if err = a.L.LoadIDStudioStudioAdmins(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+	if err = a.L.LoadIDStudioStudioUsers(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.IDStudioStudioAdmins); got != 2 {
+	if got := len(a.R.IDStudioStudioUsers); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.IDStudioStudioAdmins = nil
-	if err = a.L.LoadIDStudioStudioAdmins(ctx, tx, true, &a, nil); err != nil {
+	a.R.IDStudioStudioUsers = nil
+	if err = a.L.LoadIDStudioStudioUsers(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.IDStudioStudioAdmins); got != 2 {
+	if got := len(a.R.IDStudioStudioUsers); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -572,34 +803,30 @@ func testStudioToManyIDStudioStudioAdmins(t *testing.T) {
 	}
 }
 
-func testStudioToManyIDStudioStudioTattooArtists(t *testing.T) {
+func testStudioToManyAddOpIDStudioAppointments(t *testing.T) {
 	var err error
+
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a Studio
-	var b, c StudioTattooArtist
+	var b, c, d, e Appointment
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Studio struct: %s", err)
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Appointment{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-
-	if err = randomize.Struct(seed, &b, studioTattooArtistDBTypes, false, studioTattooArtistColumnsWithDefault...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, studioTattooArtistDBTypes, false, studioTattooArtistColumnsWithDefault...); err != nil {
-		t.Fatal(err)
-	}
-
-	b.IDStudio = a.ID
-	c.IDStudio = a.ID
-
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -607,50 +834,143 @@ func testStudioToManyIDStudioStudioTattooArtists(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.IDStudioStudioTattooArtists().All(ctx, tx)
+	foreignersSplitByInsertion := [][]*Appointment{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDStudioAppointments(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
+		}
+		if !queries.Equal(a.ID, second.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		}
+
+		if first.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDStudioAppointments[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDStudioAppointments[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDStudioAppointments().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testStudioToManySetOpIDStudioAppointments(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Appointment
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Appointment{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDStudioAppointments(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	bFound, cFound := false, false
-	for _, v := range check {
-		if v.IDStudio == b.IDStudio {
-			bFound = true
-		}
-		if v.IDStudio == c.IDStudio {
-			cFound = true
-		}
-	}
-
-	if !bFound {
-		t.Error("expected to find b")
-	}
-	if !cFound {
-		t.Error("expected to find c")
-	}
-
-	slice := StudioSlice{&a}
-	if err = a.L.LoadIDStudioStudioTattooArtists(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+	count, err := a.IDStudioAppointments().Count(ctx, tx)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.IDStudioStudioTattooArtists); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
+	if count != 2 {
+		t.Error("count was wrong:", count)
 	}
 
-	a.R.IDStudioStudioTattooArtists = nil
-	if err = a.L.LoadIDStudioStudioTattooArtists(ctx, tx, true, &a, nil); err != nil {
+	err = a.SetIDStudioAppointments(ctx, tx, true, &d, &e)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.IDStudioStudioTattooArtists); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
+
+	count, err = a.IDStudioAppointments().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
 	}
 
-	if t.Failed() {
-		t.Logf("%#v", check)
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, d.IDStudio)
+	}
+	if !queries.Equal(a.ID, e.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, e.IDStudio)
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDStudioAppointments[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDStudioAppointments[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testStudioToManyAddOpIDStudioStudioAdmins(t *testing.T) {
+func testStudioToManyRemoveOpIDStudioAppointments(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -658,15 +978,99 @@ func testStudioToManyAddOpIDStudioStudioAdmins(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Studio
-	var b, c, d, e StudioAdmin
+	var b, c, d, e Appointment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*StudioAdmin{&b, &c, &d, &e}
+	foreigners := []*Appointment{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, studioAdminDBTypes, false, strmangle.SetComplement(studioAdminPrimaryKeyColumns, studioAdminColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDStudioAppointments(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioAppointments().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDStudioAppointments(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioAppointments().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDStudioAppointments) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDStudioAppointments[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDStudioAppointments[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
+func testStudioToManyAddOpIDStudioLinks(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Link
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Link{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, linkDBTypes, false, strmangle.SetComplement(linkPrimaryKeyColumns, linkColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -681,13 +1085,515 @@ func testStudioToManyAddOpIDStudioStudioAdmins(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*StudioAdmin{
+	foreignersSplitByInsertion := [][]*Link{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddIDStudioStudioAdmins(ctx, tx, i != 0, x...)
+		err = a.AddIDStudioLinks(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
+		}
+		if !queries.Equal(a.ID, second.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		}
+
+		if first.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDStudioLinks[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDStudioLinks[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDStudioLinks().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testStudioToManySetOpIDStudioLinks(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Link
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Link{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, linkDBTypes, false, strmangle.SetComplement(linkPrimaryKeyColumns, linkColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDStudioLinks(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioLinks().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDStudioLinks(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioLinks().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, d.IDStudio)
+	}
+	if !queries.Equal(a.ID, e.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, e.IDStudio)
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDStudioLinks[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDStudioLinks[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testStudioToManyRemoveOpIDStudioLinks(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Link
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Link{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, linkDBTypes, false, strmangle.SetComplement(linkPrimaryKeyColumns, linkColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDStudioLinks(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioLinks().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDStudioLinks(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioLinks().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDStudioLinks) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDStudioLinks[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDStudioLinks[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
+func testStudioToManyAddOpIDStudioPosts(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Post
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Post{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*Post{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDStudioPosts(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
+		}
+		if !queries.Equal(a.ID, second.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		}
+
+		if first.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDStudioPosts[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDStudioPosts[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDStudioPosts().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testStudioToManySetOpIDStudioPosts(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Post
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Post{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDStudioPosts(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioPosts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDStudioPosts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioPosts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, d.IDStudio)
+	}
+	if !queries.Equal(a.ID, e.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, e.IDStudio)
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDStudioPosts[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDStudioPosts[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testStudioToManyRemoveOpIDStudioPosts(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Post
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Post{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDStudioPosts(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioPosts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDStudioPosts(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioPosts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDStudioPosts) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDStudioPosts[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDStudioPosts[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
+func testStudioToManyAddOpIDStudioStudioUsers(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e StudioUser
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*StudioUser{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, studioUserDBTypes, false, strmangle.SetComplement(studioUserPrimaryKeyColumns, studioUserColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*StudioUser{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDStudioStudioUsers(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -709,14 +1615,14 @@ func testStudioToManyAddOpIDStudioStudioAdmins(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.IDStudioStudioAdmins[i*2] != first {
+		if a.R.IDStudioStudioUsers[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.IDStudioStudioAdmins[i*2+1] != second {
+		if a.R.IDStudioStudioUsers[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.IDStudioStudioAdmins().Count(ctx, tx)
+		count, err := a.IDStudioStudioUsers().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -725,7 +1631,190 @@ func testStudioToManyAddOpIDStudioStudioAdmins(t *testing.T) {
 		}
 	}
 }
-func testStudioToManyAddOpIDStudioStudioTattooArtists(t *testing.T) {
+func testStudioToOneImageUsingIDAvatarImage(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Studio
+	var foreign Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, imageDBTypes, false, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDAvatar, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDAvatarImage().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddImageHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Image) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := StudioSlice{&local}
+	if err = local.L.LoadIDAvatarImage(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAvatarImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDAvatarImage = nil
+	if err = local.L.LoadIDAvatarImage(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDAvatarImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testStudioToOneImageUsingIDBannerImage(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Studio
+	var foreign Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, imageDBTypes, false, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDBanner, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDBannerImage().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddImageHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Image) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := StudioSlice{&local}
+	if err = local.L.LoadIDBannerImage(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDBannerImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDBannerImage = nil
+	if err = local.L.LoadIDBannerImage(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDBannerImage == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testStudioToOneUserUsingIDOwnerUser(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Studio
+	var foreign User
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, studioDBTypes, false, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.IDOwner = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDOwnerUser().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := StudioSlice{&local}
+	if err = local.L.LoadIDOwnerUser(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDOwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDOwnerUser = nil
+	if err = local.L.LoadIDOwnerUser(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDOwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testStudioToOneSetOpImageUsingIDAvatarImage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -733,17 +1822,17 @@ func testStudioToManyAddOpIDStudioStudioTattooArtists(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Studio
-	var b, c, d, e StudioTattooArtist
+	var b, c Image
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*StudioTattooArtist{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, studioTattooArtistDBTypes, false, strmangle.SetComplement(studioTattooArtistPrimaryKeyColumns, studioTattooArtistColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
+	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
 	}
 
 	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -752,51 +1841,253 @@ func testStudioToManyAddOpIDStudioStudioTattooArtists(t *testing.T) {
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+
+	for i, x := range []*Image{&b, &c} {
+		err = a.SetIDAvatarImage(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDAvatarImage != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDAvatarStudio != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.IDAvatar, x.ID) {
+			t.Error("foreign key was wrong value", a.IDAvatar)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDAvatar))
+		reflect.Indirect(reflect.ValueOf(&a.IDAvatar)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDAvatar, x.ID) {
+			t.Error("foreign key was wrong value", a.IDAvatar, x.ID)
+		}
+	}
+}
+
+func testStudioToOneRemoveOpImageUsingIDAvatarImage(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b Image
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*StudioTattooArtist{
-		{&b, &c},
-		{&d, &e},
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
 	}
 
-	for i, x := range foreignersSplitByInsertion {
-		err = a.AddIDStudioStudioTattooArtists(ctx, tx, i != 0, x...)
+	if err = a.SetIDAvatarImage(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDAvatarImage(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDAvatarImage().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDAvatarImage != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDAvatar) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if b.R.IDAvatarStudio != nil {
+		t.Error("failed to remove a from b's relationships")
+	}
+
+}
+
+func testStudioToOneSetOpImageUsingIDBannerImage(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c Image
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Image{&b, &c} {
+		err = a.SetIDBannerImage(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		first := x[0]
-		second := x[1]
-
-		if a.ID != first.IDStudio {
-			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
-		}
-		if a.ID != second.IDStudio {
-			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		if a.R.IDBannerImage != x {
+			t.Error("relationship struct not set to correct value")
 		}
 
-		if first.R.IDStudioStudio != &a {
-			t.Error("relationship was not added properly to the foreign slice")
+		if x.R.IDBannerStudio != &a {
+			t.Error("failed to append to foreign relationship struct")
 		}
-		if second.R.IDStudioStudio != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-
-		if a.R.IDStudioStudioTattooArtists[i*2] != first {
-			t.Error("relationship struct slice not set to correct value")
-		}
-		if a.R.IDStudioStudioTattooArtists[i*2+1] != second {
-			t.Error("relationship struct slice not set to correct value")
+		if !queries.Equal(a.IDBanner, x.ID) {
+			t.Error("foreign key was wrong value", a.IDBanner)
 		}
 
-		count, err := a.IDStudioStudioTattooArtists().Count(ctx, tx)
+		zero := reflect.Zero(reflect.TypeOf(a.IDBanner))
+		reflect.Indirect(reflect.ValueOf(&a.IDBanner)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDBanner, x.ID) {
+			t.Error("foreign key was wrong value", a.IDBanner, x.ID)
+		}
+	}
+}
+
+func testStudioToOneRemoveOpImageUsingIDBannerImage(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b Image
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDBannerImage(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDBannerImage(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDBannerImage().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDBannerImage != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDBanner) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if b.R.IDBannerStudio != nil {
+		t.Error("failed to remove a from b's relationships")
+	}
+
+}
+
+func testStudioToOneSetOpUserUsingIDOwnerUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*User{&b, &c} {
+		err = a.SetIDOwnerUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if want := int64((i + 1) * 2); count != want {
-			t.Error("want", want, "got", count)
+
+		if a.R.IDOwnerUser != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDOwnerStudios[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.IDOwner != x.ID {
+			t.Error("foreign key was wrong value", a.IDOwner)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDOwner))
+		reflect.Indirect(reflect.ValueOf(&a.IDOwner)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.IDOwner != x.ID {
+			t.Error("foreign key was wrong value", a.IDOwner, x.ID)
 		}
 	}
 }
@@ -875,7 +2166,7 @@ func testStudiosSelect(t *testing.T) {
 }
 
 var (
-	studioDBTypes = map[string]string{`ID`: `bigint`, `Description`: `text`, `Direction`: `jsonb`, `Email`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`}
+	studioDBTypes = map[string]string{`ID`: `bigint`, `Description`: `text`, `Email`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `IDAvatar`: `bigint`, `Name`: `text`, `Username`: `text`, `FullAddress`: `text`, `IDOwner`: `bigint`, `IDBanner`: `bigint`}
 	_             = bytes.MinRead
 )
 

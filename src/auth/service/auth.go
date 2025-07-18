@@ -5,6 +5,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/auth_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	generatorModel "github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -19,6 +20,31 @@ type AuthService struct {
 	bus            bus.Bus
 }
 
+func (authService *AuthService) CheckIfEmailOrUsernameExists(email, username string) error {
+	existsEmailOrUsername, err := authService.userRepository.Exists(&user_repository.Criteria{
+		Or: []user_repository.Criteria{
+			{
+				Email: repository.CriteriaString{
+					EQ: utils.String(email),
+				},
+			},
+			{
+				Username: repository.CriteriaString{
+					EQ: utils.String(username),
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if existsEmailOrUsername {
+		return ErrExistsEmailOrUsername
+	}
+
+	return nil
+}
+
 func (authService *AuthService) Register(
 	registerDto *dto.RegisterDto,
 ) error {
@@ -26,19 +52,7 @@ func (authService *AuthService) Register(
 	if err != nil {
 		return err
 	}
-	existsEmailOrUsername, err := authService.userRepository.Exists(&user_repository.Criteria{
-		Or: []user_repository.Criteria{
-			{
-				Email: registerDto.Email,
-			},
-			{
-				Username: registerDto.Username,
-			},
-		},
-	})
-	if existsEmailOrUsername {
-		return ErrExistsEmailOrUsername
-	}
+	err = authService.CheckIfEmailOrUsernameExists(registerDto.Email, registerDto.Username)
 	if err != nil {
 		return err
 	}

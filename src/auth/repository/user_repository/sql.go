@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
@@ -20,7 +21,7 @@ type sqlUserRepository struct {
 
 type SqlUserRepository = sqlUserRepository
 
-func (sqlUserRepository) sqlUserToUser(
+func (sqlUserRepository) SqlUserToUser(
 	sqlUser *models.User,
 	roles []string,
 ) *model.User {
@@ -54,21 +55,33 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 		return nil
 	}
 	if criteria.ID != 0 {
-		mod = append(mod, Where("id = ?", criteria.ID))
+		mod = append(mod, models.UserWhere.ID.EQ(criteria.ID))
 	}
-	if criteria.Email != "" {
-		mod = append(mod, Where("email = ?", criteria.Email))
+	if criteria.Email.EQ != nil {
+		mod = append(mod, models.UserWhere.Email.EQ(*criteria.Email.EQ))
+	} else if criteria.Email.IContains != nil {
+		mod = append(mod, models.UserWhere.Email.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Email.IContains)))
 	}
-	if criteria.Username != "" {
-		mod = append(mod, Where("username = ?", criteria.Username))
+	if criteria.Username.EQ != nil {
+		mod = append(mod, models.UserWhere.Username.EQ(*criteria.Username.EQ))
+	} else if criteria.Username.IContains != nil {
+		mod = append(mod, models.UserWhere.Username.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Username.IContains)))
+	}
+	if criteria.Name.EQ != nil {
+		mod = append(mod, models.UserWhere.Name.EQ(*criteria.Name.EQ))
+	} else if criteria.Name.IContains != nil {
+		mod = append(mod, models.UserWhere.Name.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Name.IContains)))
+	}
+	if criteria.ID_NIN != nil {
+		mod = append(mod, models.UserWhere.ID.NIN(criteria.ID_NIN))
 	}
 	var orMods []QueryMod
 	for _, clause := range criteria.Or {
 		orWhere := sqlUR.criteriaToWhere(&clause)
-		orMods = append(orMods, orWhere...)
+		orMods = append(orMods, Or2(Expr(orWhere...)))
 	}
 	if orMods != nil {
-		mod = append(mod, Expr(Or2(Expr(orMods...))))
+		mod = append(mod, Expr(orMods...))
 	}
 
 	return mod
@@ -121,7 +134,39 @@ func (sqlUR sqlUserRepository) FindOne(criteria *Criteria, opts *FindOneOptions)
 		return nil, utils.ErrRepositoryFailed
 	}
 
-	return sqlUR.sqlUserToUser(sqlUser, nil), nil
+	return sqlUR.SqlUserToUser(sqlUser, nil), nil
+}
+
+func (sqlUR sqlUserRepository) findOptionsToMod(opts *FindOptions) []QueryMod {
+	mod := []QueryMod{}
+	if opts == nil {
+		return mod
+	}
+	mod = append(mod, sqlUR.SelectOpts(opts.selectOpts)...)
+	if opts.limit != nil {
+		mod = append(mod, Limit(int(*opts.limit)))
+	}
+	if opts.skip != nil {
+		mod = append(mod, Offset(int(*opts.skip)))
+	}
+
+	return mod
+}
+
+func (sqlUR sqlUserRepository) Find(criteria *Criteria, opts *FindOptions) ([]model.User, error) {
+	mod := sqlUR.findOptionsToMod(opts)
+	where := sqlUR.criteriaToWhere(criteria)
+	fmt.Printf("where: %v\n", where)
+
+	sqlUsers, err := models.Users(append(mod, where...)...).All(context.Background(), sqlUR.db)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return nil, utils.ErrRepositoryFailed
+	}
+
+	return utils.MapNoError(sqlUsers, func(sqlUser *models.User) model.User {
+		return *sqlUR.SqlUserToUser(sqlUser, nil)
+	}), nil
 }
 
 func (sqlUR sqlUserRepository) Exists(criteria *Criteria) (bool, error) {
@@ -151,7 +196,7 @@ func (sqlUR sqlUserRepository) FindOneByEmail(email string) (*model.User, error)
 		return nil, err
 	}
 
-	return sqlUR.sqlUserToUser(user, roles), nil
+	return sqlUR.SqlUserToUser(user, roles), nil
 }
 
 func (sqlUR sqlUserRepository) FindOneByID(id int64) (*model.User, error) {
@@ -170,7 +215,7 @@ func (sqlUR sqlUserRepository) FindOneByID(id int64) (*model.User, error) {
 		return nil, err
 	}
 
-	return sqlUR.sqlUserToUser(user, roles), nil
+	return sqlUR.SqlUserToUser(user, roles), nil
 }
 
 func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*model.User, error) {
@@ -229,7 +274,7 @@ func (sqlUR sqlUserRepository) InsertOne(user *model.User, password string) (*mo
 		return nil, utils.ErrRepositoryFailed
 	}
 
-	return sqlUR.sqlUserToUser(&sqlUser, utils.MapNoError(user.Roles, func(role model.Role) string {
+	return sqlUR.SqlUserToUser(&sqlUser, utils.MapNoError(user.Roles, func(role model.Role) string {
 		return string(role)
 	})), nil
 }

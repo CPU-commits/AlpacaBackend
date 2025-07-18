@@ -6,6 +6,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 )
 
@@ -18,6 +19,7 @@ type Criteria struct {
 	FinishedAt     *repository.CriteriaTime
 	ScheduledAtGTE time.Time
 	Or             []Criteria
+	IDStudio       int64
 }
 
 type Sort struct {
@@ -27,6 +29,7 @@ type Sort struct {
 type SelectOpts struct {
 	IDUser         *bool
 	IDTattooArtist *bool
+	IDStudio       *bool
 	IDCalendar     *bool
 }
 
@@ -41,8 +44,10 @@ type LoadOpts struct {
 	TattooArtist  *user_repository.SelectOpts
 	User          *user_repository.SelectOpts
 	Profile       *profile_repository.SelectOpts
+	Studio        *studio_repository.SelectOpts
 	ProfileAvatar bool
 	Images        bool
+	Review        bool
 }
 
 func (f *findOptions) Skip(skip int64) *findOptions {
@@ -95,6 +100,7 @@ type UpdateData struct {
 	UnsetDuration   bool
 	UnsetFinishedAt bool
 	IDCalendar      string
+	IDTattooArtist  int64
 }
 
 type AppointmentRepository interface {

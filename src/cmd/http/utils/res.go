@@ -43,12 +43,17 @@ func ValidatorErrorToErrorProblemDetails(
 	if errors.As(err, &ve) {
 		out := make([]ErrorProblemDetails, len(ve))
 		for i, fe := range ve {
+			title, err := localizer.Localize(&i18n.LocalizeConfig{
+				MessageID: msgForTag(fe.Tag()),
+			})
+			if err != nil {
+				title = "x"
+			}
+
 			out[i] = ErrorProblemDetails{
 				Pointer: fe.Field(),
-				Title: localizer.MustLocalize(&i18n.LocalizeConfig{
-					MessageID: msgForTag(fe.Tag()),
-				}),
-				Param: fe.Param(),
+				Title:   title,
+				Param:   fe.Param(),
 			}
 		}
 		return out

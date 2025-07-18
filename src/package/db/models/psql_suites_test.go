@@ -22,6 +22,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Likes", testLikesUpsert)
 
+	t.Run("Links", testLinksUpsert)
+
 	t.Run("PostImages", testPostImagesUpsert)
 
 	t.Run("Posts", testPostsUpsert)
@@ -34,9 +36,9 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Sessions", testSessionsUpsert)
 
-	t.Run("StudioAdmins", testStudioAdminsUpsert)
+	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsUpsert)
 
-	t.Run("StudioTattooArtists", testStudioTattooArtistsUpsert)
+	t.Run("StudioUsers", testStudioUsersUpsert)
 
 	t.Run("Studios", testStudiosUpsert)
 

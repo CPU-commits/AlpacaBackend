@@ -15,6 +15,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	studioServices "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,12 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	// Params
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	idStudioStr := c.DefaultQuery("idStudio", "0")
+	idStudio, err := strconv.Atoi(idStudioStr)
 	if err != nil {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
@@ -61,18 +68,21 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	statuses := domainUtils.FilterNoError(strings.Split(c.Query("statuses"), ","), func(x string) bool {
 		return x != ""
 	})
+	allAppointments := c.DefaultQuery("allAppointments", "true")
 
 	params := service.AppointmentParams{
-		Page:      page,
-		Paginated: paginated == "true",
-		FromDate:  fromDate,
-		ToDate:    toDate,
-		Statuses:  statuses,
+		Page:            page,
+		Paginated:       paginated == "true",
+		FromDate:        fromDate,
+		ToDate:          toDate,
+		Statuses:        statuses,
+		AllAppointments: allAppointments == "true",
+		IDStudio:        int64(idStudio),
 	}
 
 	appointments, count, err := appointmentController.appointmentService.GetAppointments(
 		claims.ID,
-		domainUtils.Includes(claims.Roles, string(model.TATTOO_ARTIST_ROLE)),
+		domainUtils.Includes(claims.Roles, model.TATTOO_ARTIST_ROLE),
 		params,
 	)
 	if err != nil {
@@ -85,11 +95,48 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	c.JSON(http.StatusOK, appointments)
 }
 
+func (appointmentController *HttpAppointmentController) AssignTattooArtist(c *gin.Context) {
+	idAppointmentStr := c.Param("idAppointment")
+	idAppointment, err := strconv.Atoi(idAppointmentStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	idUserStr := c.Param("idUser")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	err = appointmentController.appointmentService.AssignTattooArtist(
+		claims.ID,
+		int64(idUser),
+		int64(idAppointment),
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, nil)
+}
+
 func (appointmentController *HttpAppointmentController) GetAppointmentsPending(c *gin.Context) {
+	idStudioStr := c.DefaultQuery("idStudio", "0")
+	idStudio, err := strconv.Atoi(idStudioStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
 	claims, _ := utils.NewClaimsFromContext(c)
 
 	pendingAppointments, err := appointmentController.appointmentService.GetPendingAppointments(
 		claims.ID,
+		int64(idStudio),
 	)
 	if err != nil {
 		utils.ResFromErr(c, err)
@@ -232,6 +279,11 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 		followRepository,
 		publicationRDRepository,
 	)
+	peopleStudioService := studioServices.NewPeopleStudioService(
+		peopleStudioRepository,
+		studioRepository,
+		*userService,
+	)
 
 	return &HttpAppointmentController{
 		appointmentService: service.NewAppointmentService(
@@ -241,6 +293,8 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 			googleCalendar,
 			reviewRepository,
 			*profileService,
+			*peopleStudioService,
+			studioRepository,
 		),
 	}
 }

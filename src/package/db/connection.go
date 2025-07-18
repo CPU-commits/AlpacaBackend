@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var settingsData = settings.GetSettings()

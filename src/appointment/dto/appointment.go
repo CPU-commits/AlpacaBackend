@@ -7,7 +7,8 @@ import (
 )
 
 type AppointmentDto struct {
-	IDTattooArtist int64            `form:"idTattooArtist" binding:"required"`
+	IDTattooArtist int64            `form:"idTattooArtist"`
+	IDStudio       int64            `form:"idStudio"`
 	Phone          string           `form:"phone" binding:"max=20"`
 	HasIdea        *bool            `form:"hasIdea" binding:"required"`
 	Area           string           `form:"area" binding:"required_if=HasIdea true,omitempty,areavalidator"`
@@ -18,7 +19,11 @@ type AppointmentDto struct {
 	Images         []store.ImageDto `form:"-"`
 }
 
-func (appointment *AppointmentDto) ToModel(idUser int64) *model.Appointment {
+func (appointment *AppointmentDto) ToModel(idUser int64) (*model.Appointment, error) {
+	if appointment.IDTattooArtist == 0 && appointment.IDStudio == 0 {
+		return nil, ErrIDTattooArtistOrStudioMissing
+	}
+
 	return &model.Appointment{
 		Status:         model.STATUS_CREATED,
 		Phone:          appointment.Phone,
@@ -30,7 +35,8 @@ func (appointment *AppointmentDto) ToModel(idUser int64) *model.Appointment {
 		Color:          model.AppointmentColor(appointment.Color),
 		Description:    appointment.Description,
 		IDTattooArtist: appointment.IDTattooArtist,
-	}
+		IDStudio:       appointment.IDStudio,
+	}, nil
 }
 
 var IsAppointmentArea validator.Func = func(fl validator.FieldLevel) bool {
