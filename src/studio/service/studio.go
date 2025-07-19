@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
@@ -108,6 +109,46 @@ func (studioService *StudioService) GetMyStudios(
 	)
 }
 
+func (studioService *StudioService) SearchStudios(
+	q string,
+) ([]model.Studio, error) {
+	opts := studio_repository.NewFindOptions().
+		Include(studio_repository.Include{
+			AvatarImage: true,
+			BannerImage: true,
+		}).
+		Select(studio_repository.SelectOpts{
+			Name:        true,
+			Username:    true,
+			Description: true,
+			ID:          true,
+		}).
+		Limit(5)
+
+	return studioService.studioRepository.Find(
+		&studio_repository.Criteria{
+			OR: []studio_repository.Criteria{
+				{
+					Name: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+				{
+					Email: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+				{
+					Username: repository.CriteriaString{
+						IContains: utils.String(q),
+					},
+				},
+			},
+		},
+		opts,
+	)
+}
+
 func (studioService *StudioService) checkIfExistsEmailOrUsername(
 	email,
 	username string,
@@ -121,8 +162,12 @@ func (studioService *StudioService) checkIfExistsEmailOrUsername(
 
 	exists, err := studioService.studioRepository.Exists(&studio_repository.Criteria{
 		OR: []studio_repository.Criteria{
-			{Email: email},
-			{Username: username},
+			{Email: repository.CriteriaString{
+				EQ: utils.String(email),
+			}},
+			{Username: repository.CriteriaString{
+				EQ: utils.String(username),
+			}},
 		},
 	})
 	if err != nil {

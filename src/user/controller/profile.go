@@ -40,6 +40,18 @@ func (httpProfile *HttpProfileController) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, profile)
 }
 
+func (httpProfile *HttpProfileController) SearchProfiles(c *gin.Context) {
+	q := c.Query("q")
+
+	profile, err := httpProfile.profileService.SearchProfile(q)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, profile)
+}
+
 func (httpProfile *HttpProfileController) GetAvatar(c *gin.Context) {
 	idUserStr := c.Param("idUser")
 	idUser, err := strconv.Atoi(idUserStr)

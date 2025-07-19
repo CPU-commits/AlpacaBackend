@@ -132,10 +132,24 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 	return userService.userRepository.UpdateOne(idUser, dataUpdate)
 }
 
-func (userService *UserService) SearchUsers(q string, filterUsers []int64) ([]model.User, error) {
+func (userService *UserService) SearchUsers(
+	q string,
+	filterUsers []int64,
+	roles ...model.Role,
+) ([]model.User, error) {
+	opts := user_repository.NewFindOptions().
+		Select(user_repository.SelectOpts{
+			ID:       utils.Bool(true),
+			Username: utils.Bool(true),
+			Name:     utils.Bool(true),
+			Email:    utils.Bool(true),
+		}).
+		Limit(5)
+
 	return userService.userRepository.Find(
 		&user_repository.Criteria{
 			ID_NIN: filterUsers,
+			Roles:  roles,
 			Or: []user_repository.Criteria{
 				{
 					Email: repository.CriteriaString{
@@ -154,14 +168,7 @@ func (userService *UserService) SearchUsers(q string, filterUsers []int64) ([]mo
 				},
 			},
 		},
-		user_repository.NewFindOptions().
-			Select(user_repository.SelectOpts{
-				ID:       utils.Bool(true),
-				Username: utils.Bool(true),
-				Name:     utils.Bool(true),
-				Email:    utils.Bool(true),
-			}).
-			Limit(5),
+		opts,
 	)
 }
 

@@ -75,6 +75,16 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.ID_NIN != nil {
 		mod = append(mod, models.UserWhere.ID.NIN(criteria.ID_NIN))
 	}
+	if criteria.Roles != nil {
+		mod = append(mod,
+			Load(models.UserRels.IDUserRolesUsers, models.RolesUserWhere.Role.IN(
+				utils.MapNoError(criteria.Roles, func(role model.Role) string {
+					return string(role)
+				}),
+			)),
+		)
+	}
+
 	var orMods []QueryMod
 	for _, clause := range criteria.Or {
 		orWhere := sqlUR.criteriaToWhere(&clause)
@@ -156,11 +166,9 @@ func (sqlUR sqlUserRepository) findOptionsToMod(opts *FindOptions) []QueryMod {
 func (sqlUR sqlUserRepository) Find(criteria *Criteria, opts *FindOptions) ([]model.User, error) {
 	mod := sqlUR.findOptionsToMod(opts)
 	where := sqlUR.criteriaToWhere(criteria)
-	fmt.Printf("where: %v\n", where)
 
 	sqlUsers, err := models.Users(append(mod, where...)...).All(context.Background(), sqlUR.db)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 

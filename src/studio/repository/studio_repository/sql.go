@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
@@ -96,11 +97,20 @@ func (sqlSR sqlStudioRepository) criteriaToWhere(criteria *Criteria) []QueryMod 
 	if criteria.IDOwner != 0 {
 		where = append(where, models.StudioWhere.IDOwner.EQ(criteria.IDOwner))
 	}
-	if criteria.Email != "" {
-		where = append(where, models.StudioWhere.Email.EQ(criteria.Email))
+	if criteria.Email.EQ != nil {
+		where = append(where, models.StudioWhere.Email.EQ(*criteria.Email.EQ))
+	} else if criteria.Email.IContains != nil {
+		where = append(where, models.StudioWhere.Email.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Email.IContains)))
 	}
-	if criteria.Username != "" {
-		where = append(where, models.StudioWhere.Username.EQ(criteria.Username))
+	if criteria.Username.EQ != nil {
+		where = append(where, models.StudioWhere.Username.EQ(*criteria.Username.EQ))
+	} else if criteria.Username.IContains != nil {
+		where = append(where, models.StudioWhere.Username.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Username.IContains)))
+	}
+	if criteria.Name.EQ != nil {
+		where = append(where, models.StudioWhere.Name.EQ(*criteria.Name.EQ))
+	} else if criteria.Name.IContains != nil {
+		where = append(where, models.StudioWhere.Name.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Name.IContains)))
 	}
 	var orMods []QueryMod
 	for _, clause := range criteria.OR {
@@ -202,6 +212,9 @@ func (sqlSR sqlStudioRepository) findOptionsToMod(opts *findOptions) []QueryMod 
 	mod := []QueryMod{}
 	mod = append(mod, sqlSR.includeToMod(opts.include, opts.selectOpts != nil)...)
 	mod = append(mod, sqlSR.SelectToMod(opts.selectOpts)...)
+	if opts.limit != nil {
+		mod = append(mod, Limit(int(*opts.limit)))
+	}
 
 	return mod
 }

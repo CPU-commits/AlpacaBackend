@@ -2,14 +2,17 @@ package profile_repository
 
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 )
 
 type Criteria struct {
-	ID     int64
-	IDUser int64
-	OR     []Criteria
+	ID        int64
+	IDUser_IN []int64
+	IDUser    int64
+	OR        []Criteria
+	Username  *repository.CriteriaString
 }
 
 type SelectOpts struct {

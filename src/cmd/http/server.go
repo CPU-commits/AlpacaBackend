@@ -140,6 +140,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		profileController := userController.NewHTTProfileController()
 		// Define routes
 		profile.GET("/:username", profileController.GetProfile)
+		profile.GET("/search", profileController.SearchProfiles)
 		profile.GET("/views/:identifier", profileController.GetAllUserViews) // Se debe cambiar username por Identificador IP o algo asi
 		profile.GET("/user/:idUser/avatar", profileController.GetAvatar)
 		profile.PATCH("/avatar", middleware.JWTMiddleware(), profileController.ChangeAvatar)
@@ -194,6 +195,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 
 		studio.GET("/:idStudio", studioController.GetStudio)
 		studio.GET("/:idStudio/username", studioController.GetStudioUsername)
+		studio.GET("/search", studioController.SearchStudios)
 		studio.GET("/permissions", studioController.GetPermissions)
 		studio.GET("/:idStudio/my_permissions", middleware.JWTMiddleware(), adminStudioController.GetPermissionsInStudio)
 		studio.GET("/:idStudio/people", middleware.JWTMiddleware(), adminStudioController.GetStudioPeople)

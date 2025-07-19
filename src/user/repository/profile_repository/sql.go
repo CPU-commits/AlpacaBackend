@@ -91,6 +91,9 @@ func (sqlProfileRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	if selectOpts.Avatar != nil && *selectOpts.Avatar {
 		mod = append(mod, Select(models.ProfileColumns.IDAvatar))
 	}
+	if selectOpts.IDUser != nil && *selectOpts.IDUser {
+		mod = append(mod, Select(models.ProfileColumns.IDUser))
+	}
 
 	return mod
 }
@@ -138,6 +141,10 @@ func (sqlPR sqlProfileRepository) criteriaToWhere(criteria *Criteria) []QueryMod
 	if criteria.IDUser != 0 {
 		mod = append(mod, Where("id_user = ?", criteria.IDUser))
 	}
+	if criteria.IDUser_IN != nil {
+		mod = append(mod, models.ProfileWhere.IDUser.IN(criteria.IDUser_IN))
+	}
+
 	var orMods []QueryMod
 	for _, clause := range criteria.OR {
 		orWhere := sqlPR.criteriaToWhere(&clause)

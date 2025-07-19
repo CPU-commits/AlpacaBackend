@@ -99,6 +99,20 @@ func (httpStudioController httpStudioController) GetStudios(c *gin.Context) {
 	c.JSON(http.StatusOK, studios)
 }
 
+func (httpStudioController httpStudioController) SearchStudios(c *gin.Context) {
+	q := c.Query("q")
+
+	studios, err := httpStudioController.studioService.SearchStudios(
+		q,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, studios)
+}
+
 func (httpStudioController httpStudioController) CreateStudio(c *gin.Context) {
 	var studioDto *dto.StudioDTO
 	if err := c.Bind(&studioDto); err != nil {
