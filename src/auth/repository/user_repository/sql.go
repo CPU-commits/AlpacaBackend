@@ -88,7 +88,9 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	var orMods []QueryMod
 	for _, clause := range criteria.Or {
 		orWhere := sqlUR.criteriaToWhere(&clause)
-		orMods = append(orMods, Or2(Expr(orWhere...)))
+		if orWhere != nil {
+			orMods = append(orMods, Or2(Expr(orWhere...)))
+		}
 	}
 	if orMods != nil {
 		mod = append(mod, Expr(orMods...))
@@ -137,6 +139,7 @@ func (sqlUR sqlUserRepository) FindOne(criteria *Criteria, opts *FindOneOptions)
 
 	sqlUser, err := models.Users(append(mod, where...)...).One(context.Background(), sqlUR.db)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

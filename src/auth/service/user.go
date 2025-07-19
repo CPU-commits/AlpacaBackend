@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/role_repository"
@@ -240,7 +238,6 @@ func (userService *UserService) IsOwner(userId int64, params dto.QueryIsOwner) e
 	if err != nil {
 		return err
 	}
-	fmt.Printf("user: %v\n", user)
 	if user == nil {
 		return ErrUserNotFound
 	}
