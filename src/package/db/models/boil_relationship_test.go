@@ -42,6 +42,7 @@ func TestToOne(t *testing.T) {
 	t.Run("TattooToImageUsingIDImageImage", testTattooToOneImageUsingIDImageImage)
 	t.Run("TattooToPostUsingIDPostPost", testTattooToOnePostUsingIDPostPost)
 	t.Run("TattooToProfileUsingIDProfileProfile", testTattooToOneProfileUsingIDProfileProfile)
+	t.Run("TattooToStudioUsingIDStudioStudio", testTattooToOneStudioUsingIDStudioStudio)
 	t.Run("TokenPasswordToUserUsingIDUserUser", testTokenPasswordToOneUserUsingIDUserUser)
 	t.Run("TokenToUserUsingIDUserUser", testTokenToOneUserUsingIDUserUser)
 }
@@ -80,6 +81,7 @@ func TestToMany(t *testing.T) {
 	t.Run("StudioToIDStudioLinks", testStudioToManyIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyIDStudioPosts)
 	t.Run("StudioToIDStudioStudioUsers", testStudioToManyIDStudioStudioUsers)
+	t.Run("StudioToIDStudioTattoos", testStudioToManyIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyIDUserAppointments)
 	t.Run("UserToIDUserCodes", testUserToManyIDUserCodes)
@@ -129,6 +131,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("TattooToImageUsingIDImageTattoo", testTattooToOneSetOpImageUsingIDImageImage)
 	t.Run("TattooToPostUsingIDPostTattoos", testTattooToOneSetOpPostUsingIDPostPost)
 	t.Run("TattooToProfileUsingIDProfileTattoos", testTattooToOneSetOpProfileUsingIDProfileProfile)
+	t.Run("TattooToStudioUsingIDStudioTattoos", testTattooToOneSetOpStudioUsingIDStudioStudio)
 	t.Run("TokenPasswordToUserUsingIDUserTokenPassword", testTokenPasswordToOneSetOpUserUsingIDUserUser)
 	t.Run("TokenToUserUsingIDUserTokens", testTokenToOneSetOpUserUsingIDUserUser)
 }
@@ -144,6 +147,7 @@ func TestToOneRemove(t *testing.T) {
 	t.Run("StudioToImageUsingIDAvatarStudio", testStudioToOneRemoveOpImageUsingIDAvatarImage)
 	t.Run("StudioToImageUsingIDBannerStudio", testStudioToOneRemoveOpImageUsingIDBannerImage)
 	t.Run("TattooToPostUsingIDPostTattoos", testTattooToOneRemoveOpPostUsingIDPostPost)
+	t.Run("TattooToStudioUsingIDStudioTattoos", testTattooToOneRemoveOpStudioUsingIDStudioStudio)
 }
 
 // TestOneToOneSet tests cannot be run in parallel
@@ -188,6 +192,7 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("StudioToIDStudioLinks", testStudioToManyAddOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyAddOpIDStudioPosts)
 	t.Run("StudioToIDStudioStudioUsers", testStudioToManyAddOpIDStudioStudioUsers)
+	t.Run("StudioToIDStudioTattoos", testStudioToManyAddOpIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyAddOpIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyAddOpIDUserAppointments)
 	t.Run("UserToIDUserCodes", testUserToManyAddOpIDUserCodes)
@@ -207,6 +212,7 @@ func TestToManySet(t *testing.T) {
 	t.Run("StudioToIDStudioAppointments", testStudioToManySetOpIDStudioAppointments)
 	t.Run("StudioToIDStudioLinks", testStudioToManySetOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManySetOpIDStudioPosts)
+	t.Run("StudioToIDStudioTattoos", testStudioToManySetOpIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManySetOpIDTattooArtistAppointments)
 }
 
@@ -217,5 +223,6 @@ func TestToManyRemove(t *testing.T) {
 	t.Run("StudioToIDStudioAppointments", testStudioToManyRemoveOpIDStudioAppointments)
 	t.Run("StudioToIDStudioLinks", testStudioToManyRemoveOpIDStudioLinks)
 	t.Run("StudioToIDStudioPosts", testStudioToManyRemoveOpIDStudioPosts)
+	t.Run("StudioToIDStudioTattoos", testStudioToManyRemoveOpIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyRemoveOpIDTattooArtistAppointments)
 }

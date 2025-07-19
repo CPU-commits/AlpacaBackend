@@ -128,10 +128,10 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Controllers
 		tattooController := tattooController.NewTattooHttpController(bus)
 		// Define routes
-		tattoo.GET("/:username", tattooController.GetTattoos)
+		tattoo.GET("", tattooController.GetTattoos)
 		tattoo.GET("/urlKey/:idTattoo", tattooController.GetUrlImageTattoo)
 		tattoo.POST("/searchByImage", tattooController.SearchByImage)
-		tattoo.GET("/latest/:username", tattooController.GetLatestTattoos)
+		tattoo.GET("/latest", tattooController.GetLatestTattoos)
 		tattoo.POST("", middleware.JWTMiddleware(), tattooController.UploadTattoos)
 	}
 	profile := router.Group("api/profiles")

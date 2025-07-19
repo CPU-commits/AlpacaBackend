@@ -299,6 +299,7 @@ func (publicationService *PublicationService) HandleLike(
 
 func (publicationService *PublicationService) predictIfPublicationImagesAreTattoos(
 	publication *model.Publication,
+	idStudio int64,
 ) {
 	imageTattoos, err := utils.ConcurrentFilter(publication.Images, func(image fileModel.Image) (bool, error) {
 		imageUrl, err := publicationService.imageStore.GetURL(image.Key)
@@ -327,12 +328,18 @@ func (publicationService *PublicationService) predictIfPublicationImagesAreTatto
 	idImages := utils.MapNoError(imageTattoos, func(image fileModel.Image) int64 {
 		return image.ID
 	})
+	var idStudioPtr *int64
+	if idStudio != 0 {
+		idStudioPtr = &idStudio
+	}
+
 	tattoos := utils.MapNoError(imageTattoos, func(image fileModel.Image) tattooModel.Tattoo {
 		return tattooModel.Tattoo{
 			Image:         image,
 			Description:   publication.Content,
 			IDPublication: publication.ID,
 			Categories:    publication.Categories,
+			IDStudio:      idStudioPtr,
 		}
 	})
 
@@ -453,6 +460,7 @@ func (publicationService *PublicationService) Publish(
 	})
 	go publicationService.predictIfPublicationImagesAreTattoos(
 		publication,
+		publicationDto.IDStudio,
 	)
 
 	return publication, nil

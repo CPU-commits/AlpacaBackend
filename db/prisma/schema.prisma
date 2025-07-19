@@ -123,6 +123,7 @@ model tattoos {
 	id BigInt @id @default(sequence())
 	id_profile BigInt
 	id_image BigInt @unique
+	id_studio BigInt?
 	likes Int @default(0)
 	description String?
 	categories String[]
@@ -132,6 +133,7 @@ model tattoos {
 	views Int @default(0)
 	coordinate Unsupported("GEOMETRY")?
 	post posts? @relation(fields: [id_post], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
 }
@@ -174,6 +176,7 @@ model studios {
 	posts posts[]
 	appointments appointments[]
 	media links[]
+	tattoos tattoos[]
 }
 
 model links {

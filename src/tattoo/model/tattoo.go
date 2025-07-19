@@ -23,4 +23,5 @@ type Tattoo struct {
 	CreatedAt     time.Time          `json:"createdAt"`
 	Views         int                `json:"views"`
 	Profile       *userModel.Profile `json:"profile,omitempty"`
+	IDStudio      *int64             `json:"idStudio,omitempty"`
 }

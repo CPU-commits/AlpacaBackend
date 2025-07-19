@@ -803,6 +803,83 @@ func testStudioToManyIDStudioStudioUsers(t *testing.T) {
 	}
 }
 
+func testStudioToManyIDStudioTattoos(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDStudio, a.ID)
+	queries.Assign(&c.IDStudio, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDStudioTattoos().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDStudio, b.IDStudio) {
+			bFound = true
+		}
+		if queries.Equal(v.IDStudio, c.IDStudio) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := StudioSlice{&a}
+	if err = a.L.LoadIDStudioTattoos(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioTattoos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDStudioTattoos = nil
+	if err = a.L.LoadIDStudioTattoos(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioTattoos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testStudioToManyAddOpIDStudioAppointments(t *testing.T) {
 	var err error
 
@@ -1631,6 +1708,257 @@ func testStudioToManyAddOpIDStudioStudioUsers(t *testing.T) {
 		}
 	}
 }
+func testStudioToManyAddOpIDStudioTattoos(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Tattoo{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*Tattoo{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDStudioTattoos(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
+		}
+		if !queries.Equal(a.ID, second.IDStudio) {
+			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		}
+
+		if first.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDStudioTattoos[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDStudioTattoos[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDStudioTattoos().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testStudioToManySetOpIDStudioTattoos(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Tattoo{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDStudioTattoos(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioTattoos().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDStudioTattoos(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioTattoos().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, d.IDStudio)
+	}
+	if !queries.Equal(a.ID, e.IDStudio) {
+		t.Error("foreign key was wrong value", a.ID, e.IDStudio)
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDStudioTattoos[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDStudioTattoos[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testStudioToManyRemoveOpIDStudioTattoos(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Tattoo{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDStudioTattoos(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDStudioTattoos().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDStudioTattoos(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDStudioTattoos().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDStudio) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDStudio) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDStudioStudio != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDStudioStudio != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDStudioTattoos) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDStudioTattoos[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDStudioTattoos[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
 func testStudioToOneImageUsingIDAvatarImage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))

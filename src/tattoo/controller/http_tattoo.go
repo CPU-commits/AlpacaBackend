@@ -37,15 +37,27 @@ type HttpTattooController struct {
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/tattoos/{username} [Get]
 func (httpTattoo *HttpTattooController) GetTattoos(c *gin.Context) {
-	username := c.Param("username")
+	username := c.Query("username")
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	var idStudio int64
+	idStudioStr := c.Query("idStudio")
+	if idStudioStr != "" {
+		idStudio, err = strconv.ParseInt(idStudioStr, 10, 64)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
 
-	tattoos, metadata, err := httpTattoo.tattooService.GetTattoos(username, page)
+	tattoos, metadata, err := httpTattoo.tattooService.GetTattoos(service.GetTattoosParams{
+		Username: username,
+		IDStudio: idStudio,
+	}, page)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -134,9 +146,23 @@ func (httpTattoo *HttpTattooController) SearchByImage(c *gin.Context) {
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/tattoos/latest/{username} [Get]
 func (httpTattoo *HttpTattooController) GetLatestTattoos(c *gin.Context) {
-	username := c.Param("username")
+	username := c.Query("username")
+	var idStudio int64
+	idStudioStr := c.Query("idStudio")
+	if idStudioStr != "" {
+		var err error
 
-	tattoos, err := httpTattoo.tattooService.GetLatestTattoos(username)
+		idStudio, err = strconv.ParseInt(idStudioStr, 10, 64)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	tattoos, err := httpTattoo.tattooService.GetLatestTattoos(service.GetTattoosParams{
+		Username: username,
+		IDStudio: idStudio,
+	})
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return

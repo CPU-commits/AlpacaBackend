@@ -94,13 +94,22 @@ func (tattooService *TattooService) SearchByImage(
 	}, nil
 }
 
-func (tattooService *TattooService) GetTattoos(username string, page int) ([]model.Tattoo, *TattoosMetadata, error) {
-	idProfile, err := tattooService.profileService.GetProfileIdFromUsername(
-		username,
-	)
-	if err != nil {
-		return nil, nil, err
+func (tattooService *TattooService) GetTattoos(params GetTattoosParams, page int) ([]model.Tattoo, *TattoosMetadata, error) {
+	criteria := &tattoo_repository.Criteria{}
+
+	if params.Username != "" {
+		idProfile, err := tattooService.profileService.GetProfileIdFromUsername(
+			params.Username,
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+		criteria.IDProfile = idProfile
 	}
+	if params.IDStudio != 0 {
+		criteria.IDStudio = params.IDStudio
+	}
+
 	limit := 10
 
 	opts := tattoo_repository.NewFindOptions().
@@ -117,9 +126,7 @@ func (tattooService *TattooService) GetTattoos(username string, page int) ([]mod
 		})
 
 	tattoos, err := tattooService.tattooRepository.Find(
-		&tattoo_repository.Criteria{
-			IDProfile: idProfile,
-		},
+		criteria,
 		opts,
 	)
 	if err != nil {
@@ -140,12 +147,20 @@ func (tattooService *TattooService) GetTattoos(username string, page int) ([]mod
 	}, nil
 }
 
-func (tattooService *TattooService) GetLatestTattoos(username string) ([]model.Tattoo, error) {
-	idProfile, err := tattooService.profileService.GetProfileIdFromUsername(
-		username,
-	)
-	if err != nil {
-		return nil, err
+func (tattooService *TattooService) GetLatestTattoos(params GetTattoosParams) ([]model.Tattoo, error) {
+	criteria := &tattoo_repository.Criteria{}
+
+	if params.Username != "" {
+		idProfile, err := tattooService.profileService.GetProfileIdFromUsername(
+			params.Username,
+		)
+		if err != nil {
+			return nil, err
+		}
+		criteria.IDProfile = idProfile
+	}
+	if params.IDStudio != 0 {
+		criteria.IDStudio = params.IDStudio
 	}
 
 	opts := tattoo_repository.NewFindOptions().
@@ -157,9 +172,7 @@ func (tattooService *TattooService) GetLatestTattoos(username string) ([]model.T
 			CreatedAt: "DESC",
 		})
 	return tattooService.tattooRepository.Find(
-		&tattoo_repository.Criteria{
-			IDProfile: idProfile,
-		},
+		criteria,
 		opts,
 	)
 }
