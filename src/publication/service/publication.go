@@ -443,6 +443,7 @@ func (publicationService *PublicationService) Publish(
 	})
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	if _, err := publicationService.tattooService.PublishTattoos(

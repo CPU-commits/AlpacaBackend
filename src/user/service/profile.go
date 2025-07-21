@@ -24,7 +24,7 @@ type ProfileService struct {
 	userService             authService.UserService
 	imageStore              store.ImageStore
 	fileService             file_service.FileService
-	publicationRDRepository publication_repository.RdPublicationRepository
+	publicationRDRepository publication_repository.RedisPublicationRepository
 }
 
 func (profileService *ProfileService) GetAvatarFromIDUser(idUser int64) (string, error) {
@@ -190,6 +190,7 @@ func (profileService *ProfileService) ChangeAvatar(
 func (profileService *ProfileService) GetProfileIdFromUsername(username string) (int64, error) {
 	idUser, err := profileService.userService.GetUserIDFromUsername(username)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return 0, err
 	}
 
@@ -239,7 +240,7 @@ func NewProfileService(
 	imageStore store.ImageStore,
 	fileService file_service.FileService,
 	followRepository follow_repository.FollowRepository,
-	publicationRDRepository publication_repository.RdPublicationRepository,
+	publicationRDRepository publication_repository.RedisPublicationRepository,
 
 ) *ProfileService {
 	if profileService == nil {

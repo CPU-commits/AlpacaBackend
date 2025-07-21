@@ -113,32 +113,6 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpertypes_StringArray struct{ field string }
-
-func (w whereHelpertypes_StringArray) EQ(x types.StringArray) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpertypes_StringArray) NEQ(x types.StringArray) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpertypes_StringArray) LT(x types.StringArray) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertypes_StringArray) LTE(x types.StringArray) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertypes_StringArray) GT(x types.StringArray) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertypes_StringArray) GTE(x types.StringArray) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpertypes_StringArray) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
-	return qmhelper.WhereIsNotNull(w.field)
-}
-
 type whereHelpertypes_Int64Array struct{ field string }
 
 func (w whereHelpertypes_Int64Array) EQ(x types.Int64Array) qm.QueryMod {

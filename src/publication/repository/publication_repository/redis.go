@@ -16,19 +16,10 @@ type RdPublicationRepository struct {
 	rd *redis.Client
 }
 
-func NewRdPublicationRepository() RdPublicationRepository {
-	return RdPublicationRepository{
+func NewRdPublicationRepository() RedisPublicationRepository {
+	return &RdPublicationRepository{
 		rd: db.RClient,
 	}
-}
-
-type RedisPublication struct {
-	IDPublication int64     `json:"id_publication"`
-	IDProfile     int64     `json:"id_profile"`
-	Likes         int       `json:"likes"`
-	Views         int       `json:"views"`
-	Shares        int64     `json:"shares"`
-	CreatedAt     time.Time `json:"created_at"`
 }
 
 func (rdPublicationRepository *RdPublicationRepository) AddView(idPost int64, identifier string) error {
@@ -76,7 +67,7 @@ func (rdPublicationRepository *RdPublicationRepository) DeleteUserView(idUser in
 	return nil
 }
 
-func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(redisPublication *RedisPublication) error {
+func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(redisPublication *model.RedisPublication) error {
 
 	_, err := rdPublicationRepository.rd.JSONDel(context.Background(), fmt.Sprintf("publication:%d", redisPublication.IDPublication), "$").Result()
 	if err != nil {
@@ -86,7 +77,7 @@ func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(
 	return nil
 }
 
-func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]RedisPublication, error) {
+func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]model.RedisPublication, error) {
 	var cursor uint64
 	var keys []string
 
@@ -113,13 +104,13 @@ func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]
 		return nil, fmt.Errorf("error en JSONMGET: %w", err)
 	}
 
-	var publications []RedisPublication
+	var publications []model.RedisPublication
 	for _, val := range values {
 		if val == nil {
 			continue
 		}
 
-		var pub []RedisPublication
+		var pub []model.RedisPublication
 		if err := json.Unmarshal([]byte(val.(string)), &pub); err != nil {
 			fmt.Println("Error parseando JSON:", err)
 			continue
@@ -131,7 +122,7 @@ func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]
 }
 
 func (rdPublicationRepository *RdPublicationRepository) AddInteraction(publication *model.Publication) error {
-	post := RedisPublication{
+	post := model.RedisPublication{
 		IDPublication: publication.ID,
 		IDProfile:     publication.IDProfile,
 		Likes:         publication.Likes,

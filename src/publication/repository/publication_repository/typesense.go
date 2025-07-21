@@ -21,27 +21,10 @@ type tsPublicationRepository struct {
 	ts *typesense.Client
 }
 
-func NewTsPublicationRepository() tsPublicationRepository {
-	return tsPublicationRepository{
+func NewTsPublicationRepository() TypeSensePublicationRepository {
+	return &tsPublicationRepository{
 		ts: db.TSClient,
 	}
-}
-
-type TSPublication struct {
-	ID         string   `json:"id"`
-	IDProfile  int64    `json:"id_profile"`
-	Content    string   `json:"content"`
-	Likes      int32    `json:"likes"`
-	Views      int32    `json:"views"`
-	Categories []string `json:"categories"`
-	Mentions   []int64  `json:"mentions"`
-	CreatedAt  int64    `json:"created_at"`
-	Rating     float64  `json:"rating"`
-	Image1     string   `json:"image_1,omitempty"`
-	Image2     string   `json:"image_2,omitempty"`
-	Image3     string   `json:"image_3,omitempty"`
-	Image4     string   `json:"image_4,omitempty"`
-	Image5     string   `json:"image_5,omitempty"`
 }
 
 func (tsPublicationRepository) criteriaToFilterBy(criteria *Criteria) *string {
@@ -122,7 +105,7 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 
 	params := &api.DocumentIndexParameters{}
 	strID := strconv.FormatInt(publication.ID, 10)
-	tsPublication := TSPublication{
+	tsPublication := model.TSPublication{
 		ID:         strID,
 		IDProfile:  publication.IDProfile,
 		Content:    publication.Content,
@@ -177,7 +160,7 @@ func (tsPR *tsPublicationRepository) UpdatePublication(
 	strID := strconv.FormatInt(publication.ID, 10)
 
 	rating := utils.CalculateRanting(daysSincePublished, publication.Likes, publication.Views, 0, followers)
-	tsPublication := TSPublication{
+	tsPublication := model.TSPublication{
 		ID:         strID,
 		IDProfile:  publication.IDProfile,
 		Content:    publication.Content,

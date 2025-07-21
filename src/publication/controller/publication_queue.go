@@ -58,7 +58,7 @@ func (queueController *QueuePublicationController) UpdateRatings(c bus.Context) 
 		return err
 	}
 
-	err = utils.ConcurrentForEach(rPublication, func(rPublication publication_repository.RedisPublication) error {
+	err = utils.ConcurrentForEach(rPublication, func(rPublication model.RedisPublication) error {
 		publication, err := publicationRepository.FindOne(&publication_repository.Criteria{
 			ID: rPublication.IDPublication,
 		}, nil)

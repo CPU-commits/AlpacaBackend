@@ -148,3 +148,18 @@ type PublicationRepository interface {
 	FindImages(idPublication int64) ([]fileModel.Image, error)
 	Search(q string, criteria *Criteria, opts *SearchOptions) ([]model.Publication, int64, error)
 }
+type RedisPublicationRepository interface {
+	AddView(idPost int64, identifier string) error
+	GetAllUserView(identifier string) ([]int64, error)
+	DeleteUserView(idUser int64) error
+	DeleteRedisPublications(redisPublication *model.RedisPublication) error
+	GetAllPublications() ([]model.RedisPublication, error)
+	AddInteraction(publication *model.Publication) error
+}
+
+type TypeSensePublicationRepository interface {
+	DeletePublication(publication *model.Publication) error
+	IndexPublication(publication *model.Publication) error
+	UpdatePublication(publication *model.Publication, daysSincePublished int, followers int) error
+	Search(q string, criteria *Criteria, opts *SearchOptions) ([]int64, int, error)
+}

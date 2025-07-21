@@ -11,7 +11,7 @@ import (
 	"github.com/rwcarlsen/goexif/exif"
 )
 
-func GetCoordTattoo(file *multipart.FileHeader) (*dto.CoordDto, error) {
+func GetCoordFile(file *multipart.FileHeader) (*dto.CoordDto, error) {
 	// Get metadata
 	var coord *dto.CoordDto = &dto.CoordDto{}
 	openedForMetadata, err := file.Open()

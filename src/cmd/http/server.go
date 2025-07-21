@@ -135,6 +135,14 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		tattoo.GET("/latest", tattooController.GetLatestTattoos)
 		tattoo.POST("", middleware.JWTMiddleware(), tattooController.UploadTattoos)
 	}
+	design := router.Group("api/designs")
+	{
+		designController := tattooController.NewDesignHttpController(bus)
+
+		design.POST("", middleware.JWTMiddleware(), designController.UploadDesigns)
+		design.GET("/:username", middleware.JWTMiddleware(), designController.GetDesigns)
+		design.GET("/latest/:username", middleware.JWTMiddleware(), designController.GetLatestDesigns)
+	}
 	profile := router.Group("api/profiles")
 	{
 		// Controllers

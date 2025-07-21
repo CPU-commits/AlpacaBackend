@@ -89,6 +89,7 @@ var ProfileWhere = struct {
 var ProfileRels = struct {
 	IDAvatarImage    string
 	IDUserUser       string
+	IDProfileDesigns string
 	IDProfileFollows string
 	IDProfileLikes   string
 	IDProfilePosts   string
@@ -97,6 +98,7 @@ var ProfileRels = struct {
 }{
 	IDAvatarImage:    "IDAvatarImage",
 	IDUserUser:       "IDUserUser",
+	IDProfileDesigns: "IDProfileDesigns",
 	IDProfileFollows: "IDProfileFollows",
 	IDProfileLikes:   "IDProfileLikes",
 	IDProfilePosts:   "IDProfilePosts",
@@ -108,6 +110,7 @@ var ProfileRels = struct {
 type profileR struct {
 	IDAvatarImage    *Image      `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
 	IDUserUser       *User       `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+	IDProfileDesigns DesignSlice `boil:"IDProfileDesigns" json:"IDProfileDesigns" toml:"IDProfileDesigns" yaml:"IDProfileDesigns"`
 	IDProfileFollows FollowSlice `boil:"IDProfileFollows" json:"IDProfileFollows" toml:"IDProfileFollows" yaml:"IDProfileFollows"`
 	IDProfileLikes   LikeSlice   `boil:"IDProfileLikes" json:"IDProfileLikes" toml:"IDProfileLikes" yaml:"IDProfileLikes"`
 	IDProfilePosts   PostSlice   `boil:"IDProfilePosts" json:"IDProfilePosts" toml:"IDProfilePosts" yaml:"IDProfilePosts"`
@@ -150,6 +153,22 @@ func (r *profileR) GetIDUserUser() *User {
 	}
 
 	return r.IDUserUser
+}
+
+func (o *Profile) GetIDProfileDesigns() DesignSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDProfileDesigns()
+}
+
+func (r *profileR) GetIDProfileDesigns() DesignSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDProfileDesigns
 }
 
 func (o *Profile) GetIDProfileFollows() FollowSlice {
@@ -570,6 +589,20 @@ func (o *Profile) IDUserUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
+// IDProfileDesigns retrieves all the design's Designs with an executor via id_profile column.
+func (o *Profile) IDProfileDesigns(mods ...qm.QueryMod) designQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"designs\".\"id_profile\"=?", o.ID),
+	)
+
+	return Designs(queryMods...)
+}
+
 // IDProfileFollows retrieves all the follow's Follows with an executor via id_profile column.
 func (o *Profile) IDProfileFollows(mods ...qm.QueryMod) followQuery {
 	var queryMods []qm.QueryMod
@@ -876,6 +909,119 @@ func (profileL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, sing
 					foreign.R = &userR{}
 				}
 				foreign.R.IDUserProfile = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDProfileDesigns allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (profileL) LoadIDProfileDesigns(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProfile interface{}, mods queries.Applicator) error {
+	var slice []*Profile
+	var object *Profile
+
+	if singular {
+		var ok bool
+		object, ok = maybeProfile.(*Profile)
+		if !ok {
+			object = new(Profile)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProfile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProfile))
+			}
+		}
+	} else {
+		s, ok := maybeProfile.(*[]*Profile)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProfile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProfile))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &profileR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &profileR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`designs`),
+		qm.WhereIn(`designs.id_profile in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load designs")
+	}
+
+	var resultSlice []*Design
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice designs")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on designs")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for designs")
+	}
+
+	if len(designAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDProfileDesigns = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &designR{}
+			}
+			foreign.R.IDProfileProfile = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDProfile {
+				local.R.IDProfileDesigns = append(local.R.IDProfileDesigns, foreign)
+				if foreign.R == nil {
+					foreign.R = &designR{}
+				}
+				foreign.R.IDProfileProfile = local
 				break
 			}
 		}
@@ -1562,6 +1708,59 @@ func (o *Profile) SetIDUserUser(ctx context.Context, exec boil.ContextExecutor, 
 		related.R.IDUserProfile = o
 	}
 
+	return nil
+}
+
+// AddIDProfileDesigns adds the given related objects to the existing relationships
+// of the profile, optionally inserting them as new records.
+// Appends related to o.R.IDProfileDesigns.
+// Sets related.R.IDProfileProfile appropriately.
+func (o *Profile) AddIDProfileDesigns(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Design) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDProfile = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"designs\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_profile"}),
+				strmangle.WhereClause("\"", "\"", 2, designPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDProfile = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &profileR{
+			IDProfileDesigns: related,
+		}
+	} else {
+		o.R.IDProfileDesigns = append(o.R.IDProfileDesigns, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &designR{
+				IDProfileProfile: o,
+			}
+		} else {
+			rel.R.IDProfileProfile = o
+		}
+	}
 	return nil
 }
 

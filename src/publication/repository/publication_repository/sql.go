@@ -26,7 +26,7 @@ type sqlPublicationRepository struct {
 	db                      *sql.DB
 	ts                      *typesense.Client
 	sqlUserRepository       user_repository.SqlUserRepository
-	tsPublicationRepository tsPublicationRepository
+	tsPublicationRepository TypeSensePublicationRepository
 }
 
 func (sqlPublicationRepository) sqlPostToPublication(
