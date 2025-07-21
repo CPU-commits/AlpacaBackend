@@ -7,11 +7,11 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
@@ -218,11 +218,9 @@ func (profileService *ProfileService) GetProfileIDFromIDUser(idUser int64) (int6
 }
 
 func (profileService *ProfileService) GetFollows(idProfile int64) (int64, error) {
-
-	return profileService.followRepository.CountProfileFollowers(&follow_repository.FollowCriteria{
+	return profileService.followRepository.Count(&follow_repository.Criteria{
 		IDProfile: idProfile,
 	})
-
 }
 
 // GetAllUserView

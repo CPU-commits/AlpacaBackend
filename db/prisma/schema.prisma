@@ -113,10 +113,12 @@ model profiles {
 model follows {
 	id BigInt @id @default(sequence())
 	id_user BigInt
-	id_profile BigInt
+	id_profile BigInt?
+	id_studio BigInt?
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	user users @relation(fields: [id_user], references: [id])
-	profile profiles @relation(fields: [id_profile], references: [id])
+	profile profiles? @relation(fields: [id_profile], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
 }
 
 model tattoos {
@@ -177,6 +179,7 @@ model studios {
 	appointments appointments[]
 	media links[]
 	tattoos tattoos[]
+	follows follows[]
 }
 
 model links {

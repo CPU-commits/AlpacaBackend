@@ -15,6 +15,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/docs"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/middleware"
 	httpUtils "github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	followController "github.com/CPU-commits/Template_Go-EventDriven/src/follow/controller"
 	generatorCon "github.com/CPU-commits/Template_Go-EventDriven/src/generator/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
@@ -207,6 +208,16 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		studio.PATCH("/:idStudio/user/:idUser/permissions", middleware.JWTMiddleware(), adminStudioController.SetPermission)
 		studio.PATCH("/:idStudio", middleware.JWTMiddleware(), studioController.UpdateStudio)
 		studio.DELETE("/:idStudio/user/:idUser", middleware.JWTMiddleware(), adminStudioController.RemovePerson)
+	}
+	follow := router.Group("api/follows", middleware.JWTMiddleware())
+	{
+		followController := followController.NewFollowController(
+			bus,
+		)
+
+		follow.GET("/my", followController.GetMyFollow)
+		follow.POST("", followController.ToggleFollow(true))
+		follow.POST("/unfollow", followController.ToggleFollow(false))
 	}
 	s := router.Group("s")
 	{
