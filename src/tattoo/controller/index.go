@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/design_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
@@ -23,6 +24,7 @@ var (
 	followRepository        = follow_repository.NewSqlFollowRepository(db.DB)
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 	tattooTSRepository      = tattoo_repository.NewTsTattooRepository()
+	designRepository        = design_repository.NewSqlDesignRepository(db.DB)
 )
 
 // Services

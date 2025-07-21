@@ -156,6 +156,7 @@ func (profileService *ProfileService) ChangeAvatar(
 func (profileService *ProfileService) GetProfileIdFromUsername(username string) (int64, error) {
 	idUser, err := profileService.userService.GetUserIDFromUsername(username)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return 0, err
 	}
 

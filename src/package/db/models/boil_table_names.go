@@ -9,6 +9,7 @@ var TableNames = struct {
 	Appointments            string
 	Auths                   string
 	Codes                   string
+	Designs                 string
 	Follows                 string
 	Images                  string
 	Likes                   string
@@ -32,6 +33,7 @@ var TableNames = struct {
 	Appointments:            "appointments",
 	Auths:                   "auths",
 	Codes:                   "codes",
+	Designs:                 "designs",
 	Follows:                 "follows",
 	Images:                  "images",
 	Likes:                   "likes",

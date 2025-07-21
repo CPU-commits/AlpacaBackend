@@ -172,11 +172,11 @@ func (tattooService *TattooService) PublishTattoos(
 	if err != nil {
 		return nil, err
 	}
-	if err := utils.ForEach(tattoosDto, func(tattooDto dto.TattooDto) error {
-		return nil
-	}); err != nil {
-		return nil, err
-	}
+	// if err := utils.ForEach(tattoosDto, func(tattooDto dto.TattooDto) error {
+	// 	return nil
+	// }); err != nil {
+	// 	return nil, err
+	// }
 
 	tattoos, err := utils.ConcurrentMap(tattoosDto, func(tattooDto dto.TattooDto) (model.Tattoo, error) {
 		err := tattooService.fileService.CheckImageMimeType(tattooDto.Image)

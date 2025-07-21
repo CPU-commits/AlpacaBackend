@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testTattoos(t *testing.T) {
+func testDesigns(t *testing.T) {
 	t.Parallel()
 
-	query := Tattoos()
+	query := Designs()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testTattoosDelete(t *testing.T) {
+func testDesignsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testTattoosDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testTattoosDelete(t *testing.T) {
 	}
 }
 
-func testTattoosQueryDeleteAll(t *testing.T) {
+func testDesignsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testTattoosQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Tattoos().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := Designs().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testTattoosQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testTattoosSliceDeleteAll(t *testing.T) {
+func testDesignsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testTattoosSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := TattooSlice{o}
+	slice := DesignSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testTattoosSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testTattoosSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testTattoosExists(t *testing.T) {
+func testDesignsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testTattoosExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := TattooExists(ctx, tx, o.ID)
+	e, err := DesignExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Tattoo exists: %s", err)
+		t.Errorf("Unable to check if Design exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected TattooExists to return true, but got false.")
+		t.Errorf("Expected DesignExists to return true, but got false.")
 	}
 }
 
-func testTattoosFind(t *testing.T) {
+func testDesignsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testTattoosFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	tattooFound, err := FindTattoo(ctx, tx, o.ID)
+	designFound, err := FindDesign(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if tattooFound == nil {
+	if designFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testTattoosBind(t *testing.T) {
+func testDesignsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testTattoosBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Tattoos().Bind(ctx, tx, o); err != nil {
+	if err = Designs().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testTattoosOne(t *testing.T) {
+func testDesignsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testTattoosOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Tattoos().One(ctx, tx); err != nil {
+	if x, err := Designs().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testTattoosAll(t *testing.T) {
+func testDesignsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	tattooOne := &Tattoo{}
-	tattooTwo := &Tattoo{}
-	if err = randomize.Struct(seed, tattooOne, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	designOne := &Design{}
+	designTwo := &Design{}
+	if err = randomize.Struct(seed, designOne, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
-	if err = randomize.Struct(seed, tattooTwo, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err = randomize.Struct(seed, designTwo, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = tattooOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = designOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = tattooTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = designTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Tattoos().All(ctx, tx)
+	slice, err := Designs().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testTattoosAll(t *testing.T) {
 	}
 }
 
-func testTattoosCount(t *testing.T) {
+func testDesignsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	tattooOne := &Tattoo{}
-	tattooTwo := &Tattoo{}
-	if err = randomize.Struct(seed, tattooOne, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	designOne := &Design{}
+	designTwo := &Design{}
+	if err = randomize.Struct(seed, designOne, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
-	if err = randomize.Struct(seed, tattooTwo, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err = randomize.Struct(seed, designTwo, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = tattooOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = designOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = tattooTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = designTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,155 +299,155 @@ func testTattoosCount(t *testing.T) {
 	}
 }
 
-func tattooBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func tattooAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
-	*o = Tattoo{}
+func designAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+	*o = Design{}
 	return nil
 }
 
-func testTattoosHooks(t *testing.T) {
+func testDesignsHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Tattoo{}
-	o := &Tattoo{}
+	empty := &Design{}
+	o := &Design{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, tattooDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Tattoo object: %s", err)
+	if err = randomize.Struct(seed, o, designDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Design object: %s", err)
 	}
 
-	AddTattooHook(boil.BeforeInsertHook, tattooBeforeInsertHook)
+	AddDesignHook(boil.BeforeInsertHook, designBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	tattooBeforeInsertHooks = []TattooHook{}
+	designBeforeInsertHooks = []DesignHook{}
 
-	AddTattooHook(boil.AfterInsertHook, tattooAfterInsertHook)
+	AddDesignHook(boil.AfterInsertHook, designAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	tattooAfterInsertHooks = []TattooHook{}
+	designAfterInsertHooks = []DesignHook{}
 
-	AddTattooHook(boil.AfterSelectHook, tattooAfterSelectHook)
+	AddDesignHook(boil.AfterSelectHook, designAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	tattooAfterSelectHooks = []TattooHook{}
+	designAfterSelectHooks = []DesignHook{}
 
-	AddTattooHook(boil.BeforeUpdateHook, tattooBeforeUpdateHook)
+	AddDesignHook(boil.BeforeUpdateHook, designBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	tattooBeforeUpdateHooks = []TattooHook{}
+	designBeforeUpdateHooks = []DesignHook{}
 
-	AddTattooHook(boil.AfterUpdateHook, tattooAfterUpdateHook)
+	AddDesignHook(boil.AfterUpdateHook, designAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	tattooAfterUpdateHooks = []TattooHook{}
+	designAfterUpdateHooks = []DesignHook{}
 
-	AddTattooHook(boil.BeforeDeleteHook, tattooBeforeDeleteHook)
+	AddDesignHook(boil.BeforeDeleteHook, designBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	tattooBeforeDeleteHooks = []TattooHook{}
+	designBeforeDeleteHooks = []DesignHook{}
 
-	AddTattooHook(boil.AfterDeleteHook, tattooAfterDeleteHook)
+	AddDesignHook(boil.AfterDeleteHook, designAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	tattooAfterDeleteHooks = []TattooHook{}
+	designAfterDeleteHooks = []DesignHook{}
 
-	AddTattooHook(boil.BeforeUpsertHook, tattooBeforeUpsertHook)
+	AddDesignHook(boil.BeforeUpsertHook, designBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	tattooBeforeUpsertHooks = []TattooHook{}
+	designBeforeUpsertHooks = []DesignHook{}
 
-	AddTattooHook(boil.AfterUpsertHook, tattooAfterUpsertHook)
+	AddDesignHook(boil.AfterUpsertHook, designAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	tattooAfterUpsertHooks = []TattooHook{}
+	designAfterUpsertHooks = []DesignHook{}
 }
 
-func testTattoosInsert(t *testing.T) {
+func testDesignsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -457,7 +457,7 @@ func testTattoosInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -467,24 +467,24 @@ func testTattoosInsert(t *testing.T) {
 	}
 }
 
-func testTattoosInsertWhitelist(t *testing.T) {
+func testDesignsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(strmangle.SetMerge(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(strmangle.SetMerge(designPrimaryKeyColumns, designColumnsWithoutDefault)...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -494,17 +494,17 @@ func testTattoosInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testTattooToOneImageUsingIDImageImage(t *testing.T) {
+func testDesignToOneImageUsingIDImageImage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Tattoo
+	var local Design
 	var foreign Image
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err := randomize.Struct(seed, &local, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, imageDBTypes, false, imageColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Image struct: %s", err)
@@ -534,8 +534,8 @@ func testTattooToOneImageUsingIDImageImage(t *testing.T) {
 		return nil
 	})
 
-	slice := TattooSlice{&local}
-	if err = local.L.LoadIDImageImage(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
+	slice := DesignSlice{&local}
+	if err = local.L.LoadIDImageImage(ctx, tx, false, (*[]*Design)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.IDImageImage == nil {
@@ -555,78 +555,17 @@ func testTattooToOneImageUsingIDImageImage(t *testing.T) {
 	}
 }
 
-func testTattooToOnePostUsingIDPostPost(t *testing.T) {
+func testDesignToOneProfileUsingIDProfileProfile(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Tattoo
-	var foreign Post
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, postDBTypes, false, postColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Post struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	queries.Assign(&local.IDPost, foreign.ID)
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.IDPostPost().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !queries.Equal(check.ID, foreign.ID) {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	ranAfterSelectHook := false
-	AddPostHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Post) error {
-		ranAfterSelectHook = true
-		return nil
-	})
-
-	slice := TattooSlice{&local}
-	if err = local.L.LoadIDPostPost(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDPostPost == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.IDPostPost = nil
-	if err = local.L.LoadIDPostPost(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.IDPostPost == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	if !ranAfterSelectHook {
-		t.Error("failed to run AfterSelect hook for relationship")
-	}
-}
-
-func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Tattoo
+	var local Design
 	var foreign Profile
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err := randomize.Struct(seed, &local, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Profile struct: %s", err)
@@ -656,8 +595,8 @@ func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
 		return nil
 	})
 
-	slice := TattooSlice{&local}
-	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Tattoo)(&slice), nil); err != nil {
+	slice := DesignSlice{&local}
+	if err = local.L.LoadIDProfileProfile(ctx, tx, false, (*[]*Design)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.IDProfileProfile == nil {
@@ -677,18 +616,18 @@ func testTattooToOneProfileUsingIDProfileProfile(t *testing.T) {
 	}
 }
 
-func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
+func testDesignToOneSetOpImageUsingIDImageImage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Tattoo
+	var a Design
 	var b, c Image
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
@@ -715,7 +654,7 @@ func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDImageTattoo != &a {
+		if x.R.IDImageDesign != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 		if a.IDImage != x.ID {
@@ -734,127 +673,18 @@ func testTattooToOneSetOpImageUsingIDImageImage(t *testing.T) {
 		}
 	}
 }
-func testTattooToOneSetOpPostUsingIDPostPost(t *testing.T) {
+func testDesignToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Tattoo
-	var b, c Post
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*Post{&b, &c} {
-		err = a.SetIDPostPost(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.IDPostPost != x {
-			t.Error("relationship struct not set to correct value")
-		}
-
-		if x.R.IDPostTattoos[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if !queries.Equal(a.IDPost, x.ID) {
-			t.Error("foreign key was wrong value", a.IDPost)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(a.IDPost))
-		reflect.Indirect(reflect.ValueOf(&a.IDPost)).Set(zero)
-
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if !queries.Equal(a.IDPost, x.ID) {
-			t.Error("foreign key was wrong value", a.IDPost, x.ID)
-		}
-	}
-}
-
-func testTattooToOneRemoveOpPostUsingIDPostPost(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Tattoo
-	var b Post
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetIDPostPost(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveIDPostPost(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.IDPostPost().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.IDPostPost != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.IDPost) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.IDPostTattoos) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
-func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Tattoo
+	var a Design
 	var b, c Profile
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
@@ -881,7 +711,7 @@ func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.IDProfileTattoos[0] != &a {
+		if x.R.IDProfileDesigns[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 		if a.IDProfile != x.ID {
@@ -901,14 +731,14 @@ func testTattooToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 	}
 }
 
-func testTattoosReload(t *testing.T) {
+func testDesignsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -923,14 +753,14 @@ func testTattoosReload(t *testing.T) {
 	}
 }
 
-func testTattoosReloadAll(t *testing.T) {
+func testDesignsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -940,21 +770,21 @@ func testTattoosReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := TattooSlice{o}
+	slice := DesignSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testTattoosSelect(t *testing.T) {
+func testDesignsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -964,7 +794,7 @@ func testTattoosSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Tattoos().All(ctx, tx)
+	slice, err := Designs().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -975,25 +805,25 @@ func testTattoosSelect(t *testing.T) {
 }
 
 var (
-	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Likes`: `integer`, `Description`: `text`, `Categories`: `ARRAY_text`, `CreatedAt`: `timestamp without time zone`, `Popularity`: `integer`, `IDPost`: `bigint`, `Views`: `integer`, `Coordinate`: `geometry`}
+	designDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Description`: `text`, `Categories`: `ARRAY_text`, `CreatedAt`: `timestamp without time zone`, `Coordinate`: `geometry`, `Price`: `bigint`}
 	_             = bytes.MinRead
 )
 
-func testTattoosUpdate(t *testing.T) {
+func testDesignsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(tattooPrimaryKeyColumns) {
+	if 0 == len(designPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(tattooAllColumns) == len(tattooPrimaryKeyColumns) {
+	if len(designAllColumns) == len(designPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -1003,7 +833,7 @@ func testTattoosUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1012,8 +842,8 @@ func testTattoosUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err = randomize.Struct(seed, o, designDBTypes, true, designPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -1023,18 +853,18 @@ func testTattoosUpdate(t *testing.T) {
 	}
 }
 
-func testTattoosSliceUpdateAll(t *testing.T) {
+func testDesignsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(tattooAllColumns) == len(tattooPrimaryKeyColumns) {
+	if len(designAllColumns) == len(designPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Tattoo{}
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := &Design{}
+	if err = randomize.Struct(seed, o, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -1044,7 +874,7 @@ func testTattoosSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1053,18 +883,18 @@ func testTattoosSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, tattooDBTypes, true, tattooPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err = randomize.Struct(seed, o, designDBTypes, true, designPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(tattooAllColumns, tattooPrimaryKeyColumns) {
-		fields = tattooAllColumns
+	if strmangle.StringSliceMatch(designAllColumns, designPrimaryKeyColumns) {
+		fields = designAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			tattooAllColumns,
-			tattooPrimaryKeyColumns,
+			designAllColumns,
+			designPrimaryKeyColumns,
 		)
 	}
 
@@ -1082,7 +912,7 @@ func testTattoosSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := TattooSlice{o}
+	slice := DesignSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -1090,29 +920,29 @@ func testTattoosSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testTattoosUpsert(t *testing.T) {
+func testDesignsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(tattooAllColumns) == len(tattooPrimaryKeyColumns) {
+	if len(designAllColumns) == len(designPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Tattoo{}
-	if err = randomize.Struct(seed, &o, tattooDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	o := Design{}
+	if err = randomize.Struct(seed, &o, designDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Tattoo: %s", err)
+		t.Errorf("Unable to upsert Design: %s", err)
 	}
 
-	count, err := Tattoos().Count(ctx, tx)
+	count, err := Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1121,15 +951,15 @@ func testTattoosUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, tattooDBTypes, false, tattooPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	if err = randomize.Struct(seed, &o, designDBTypes, false, designPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Tattoo: %s", err)
+		t.Errorf("Unable to upsert Design: %s", err)
 	}
 
-	count, err = Tattoos().Count(ctx, tx)
+	count, err = Designs().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

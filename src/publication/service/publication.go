@@ -361,6 +361,8 @@ func (publicationService *PublicationService) throwAccessToPublish(
 	userRoles []authModel.Role,
 ) error {
 	if idStudio == 0 && utils.Includes(userRoles, authModel.TATTOO_ARTIST_ROLE) {
+		return nil
+	} else if idStudio == 0 && !utils.Includes(userRoles, authModel.TATTOO_ARTIST_ROLE) {
 		return ErrUnauthorizedPublishPublication
 	}
 
@@ -434,6 +436,7 @@ func (publicationService *PublicationService) Publish(
 	})
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	if _, err := publicationService.tattooService.PublishTattoos(

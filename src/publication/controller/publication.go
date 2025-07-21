@@ -235,7 +235,7 @@ func (httpPC *HttpPublicationController) Publish(c *gin.Context) {
 			}
 			splitName := strings.Split(file.Filename, ".")
 			// Get metadata
-			coord, err := utils.GetCoordTattoo(file)
+			coord, err := utils.GetCoordFile(file)
 			if err != nil {
 				image.Coord = coord
 			}

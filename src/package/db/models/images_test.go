@@ -555,6 +555,67 @@ func testImageOneToOneAppointmentImageUsingIDImageAppointmentImage(t *testing.T)
 	}
 }
 
+func testImageOneToOneDesignUsingIDImageDesign(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign Design
+	var local Image
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, designDBTypes, true, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, imageDBTypes, true, imageColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Image struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.IDImage = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDImageDesign().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.IDImage != foreign.IDImage {
+		t.Errorf("want: %v, got %v", foreign.IDImage, check.IDImage)
+	}
+
+	ranAfterSelectHook := false
+	AddDesignHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ImageSlice{&local}
+	if err = local.L.LoadIDImageDesign(ctx, tx, false, (*[]*Image)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDImageDesign == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDImageDesign = nil
+	if err = local.L.LoadIDImageDesign(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDImageDesign == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testImageOneToOnePostImageUsingIDImagePostImage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -895,6 +956,67 @@ func testImageOneToOneSetOpAppointmentImageUsingIDImageAppointmentImage(t *testi
 		}
 
 		if a.R.IDImageAppointmentImage != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.IDImageImage != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.IDImage {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.IDImage))
+		reflect.Indirect(reflect.ValueOf(&x.IDImage)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.ID != x.IDImage {
+			t.Error("foreign key was wrong value", a.ID, x.IDImage)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+func testImageOneToOneSetOpDesignUsingIDImageDesign(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Image
+	var b, c Design
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, imageDBTypes, false, strmangle.SetComplement(imagePrimaryKeyColumns, imageColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Design{&b, &c} {
+		err = a.SetIDImageDesign(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDImageDesign != x {
 			t.Error("relationship struct not set to correct value")
 		}
 		if x.R.IDImageImage != &a {

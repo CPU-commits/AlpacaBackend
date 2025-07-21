@@ -80,6 +80,7 @@ var ImageWhere = struct {
 // ImageRels is where relationship names are stored.
 var ImageRels = struct {
 	IDImageAppointmentImage string
+	IDImageDesign           string
 	IDImagePostImage        string
 	IDAvatarProfile         string
 	IDAvatarStudio          string
@@ -87,6 +88,7 @@ var ImageRels = struct {
 	IDImageTattoo           string
 }{
 	IDImageAppointmentImage: "IDImageAppointmentImage",
+	IDImageDesign:           "IDImageDesign",
 	IDImagePostImage:        "IDImagePostImage",
 	IDAvatarProfile:         "IDAvatarProfile",
 	IDAvatarStudio:          "IDAvatarStudio",
@@ -97,6 +99,7 @@ var ImageRels = struct {
 // imageR is where relationships are stored.
 type imageR struct {
 	IDImageAppointmentImage *AppointmentImage `boil:"IDImageAppointmentImage" json:"IDImageAppointmentImage" toml:"IDImageAppointmentImage" yaml:"IDImageAppointmentImage"`
+	IDImageDesign           *Design           `boil:"IDImageDesign" json:"IDImageDesign" toml:"IDImageDesign" yaml:"IDImageDesign"`
 	IDImagePostImage        *PostImage        `boil:"IDImagePostImage" json:"IDImagePostImage" toml:"IDImagePostImage" yaml:"IDImagePostImage"`
 	IDAvatarProfile         *Profile          `boil:"IDAvatarProfile" json:"IDAvatarProfile" toml:"IDAvatarProfile" yaml:"IDAvatarProfile"`
 	IDAvatarStudio          *Studio           `boil:"IDAvatarStudio" json:"IDAvatarStudio" toml:"IDAvatarStudio" yaml:"IDAvatarStudio"`
@@ -123,6 +126,22 @@ func (r *imageR) GetIDImageAppointmentImage() *AppointmentImage {
 	}
 
 	return r.IDImageAppointmentImage
+}
+
+func (o *Image) GetIDImageDesign() *Design {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDImageDesign()
+}
+
+func (r *imageR) GetIDImageDesign() *Design {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDImageDesign
 }
 
 func (o *Image) GetIDImagePostImage() *PostImage {
@@ -532,6 +551,17 @@ func (o *Image) IDImageAppointmentImage(mods ...qm.QueryMod) appointmentImageQue
 	return AppointmentImages(queryMods...)
 }
 
+// IDImageDesign pointed to by the foreign key.
+func (o *Image) IDImageDesign(mods ...qm.QueryMod) designQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id_image\" = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Designs(queryMods...)
+}
+
 // IDImagePostImage pointed to by the foreign key.
 func (o *Image) IDImagePostImage(mods ...qm.QueryMod) postImageQuery {
 	queryMods := []qm.QueryMod{
@@ -694,6 +724,123 @@ func (imageL) LoadIDImageAppointmentImage(ctx context.Context, e boil.ContextExe
 				local.R.IDImageAppointmentImage = foreign
 				if foreign.R == nil {
 					foreign.R = &appointmentImageR{}
+				}
+				foreign.R.IDImageImage = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDImageDesign allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (imageL) LoadIDImageDesign(ctx context.Context, e boil.ContextExecutor, singular bool, maybeImage interface{}, mods queries.Applicator) error {
+	var slice []*Image
+	var object *Image
+
+	if singular {
+		var ok bool
+		object, ok = maybeImage.(*Image)
+		if !ok {
+			object = new(Image)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeImage))
+			}
+		}
+	} else {
+		s, ok := maybeImage.(*[]*Image)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeImage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeImage))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &imageR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &imageR{}
+			}
+
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`designs`),
+		qm.WhereIn(`designs.id_image in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Design")
+	}
+
+	var resultSlice []*Design
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Design")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for designs")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for designs")
+	}
+
+	if len(designAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDImageDesign = foreign
+		if foreign.R == nil {
+			foreign.R = &designR{}
+		}
+		foreign.R.IDImageImage = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.IDImage {
+				local.R.IDImageDesign = foreign
+				if foreign.R == nil {
+					foreign.R = &designR{}
 				}
 				foreign.R.IDImageImage = local
 				break
@@ -1331,6 +1478,56 @@ func (o *Image) SetIDImageAppointmentImage(ctx context.Context, exec boil.Contex
 
 	if related.R == nil {
 		related.R = &appointmentImageR{
+			IDImageImage: o,
+		}
+	} else {
+		related.R.IDImageImage = o
+	}
+	return nil
+}
+
+// SetIDImageDesign of the image to the related item.
+// Sets o.R.IDImageDesign to related.
+// Adds o to related.R.IDImageImage.
+func (o *Image) SetIDImageDesign(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Design) error {
+	var err error
+
+	if insert {
+		related.IDImage = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE \"designs\" SET %s WHERE %s",
+			strmangle.SetParamNames("\"", "\"", 1, []string{"id_image"}),
+			strmangle.WhereClause("\"", "\"", 2, designPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.IDImage = o.ID
+	}
+
+	if o.R == nil {
+		o.R = &imageR{
+			IDImageDesign: related,
+		}
+	} else {
+		o.R.IDImageDesign = related
+	}
+
+	if related.R == nil {
+		related.R = &designR{
 			IDImageImage: o,
 		}
 	} else {
