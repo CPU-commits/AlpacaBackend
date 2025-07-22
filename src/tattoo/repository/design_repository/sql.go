@@ -240,6 +240,10 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 		sd.Categories = *data.Categories
 		cols = append(cols, models.DesignColumns.Categories)
 	}
+	if data.Price != nil {
+		sd.Price = null.Int64FromPtr(data.Price)
+		cols = append(cols, models.DesignColumns.Price)
+	}
 	if len(cols) == 0 {
 		return nil
 	}
@@ -262,4 +266,14 @@ func (sqlDS *sqlDesignRepository) FindOne(c *Criteria, o *FindOneOpts) (*model.D
 	}
 
 	return sqlDS.sqlDesignToDesign(sqlDesign), nil
+}
+
+func (sqlDS *sqlDesignRepository) Delete(c *Criteria) error {
+	where := sqlDS.criteriaToWhere(c)
+
+	if _, err := models.Designs(where...).DeleteAll(context.Background(), sqlDS.db); err != nil {
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
 }

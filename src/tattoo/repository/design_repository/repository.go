@@ -53,6 +53,7 @@ func (opts *FindOpts) Sort(sort Sort) *FindOpts {
 type UpdateData struct {
 	Description *string
 	Categories  *[]string
+	Price       *int64
 }
 
 type SimilarityParams struct {
@@ -104,4 +105,5 @@ type DesignRepository interface {
 	FindOne(criteria *Criteria, opts *FindOneOpts) (*model.Design, error)
 	Count(criteria *Criteria) (int64, error)
 	Update(criteria *Criteria, data UpdateData) error
+	Delete(criteria *Criteria) error
 }

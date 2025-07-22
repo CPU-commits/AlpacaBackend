@@ -22,6 +22,16 @@ type DesignDto struct {
 	Coord       *CoordDto
 }
 
+type DataUpdate struct {
+	ID          int64  `uri:"id" binding:"required"`
+	Description string `json:"description" binding:"omitempty"`
+	Price       int64  `json:"price" bindin:"omitempty"`
+}
+
+type DesignParam struct {
+	ID int64 `uri:"id" binding:"required"`
+}
+
 func (designDto *DesignDto) ToModel(image fileModel.Image) model.Design {
 	design := model.Design{
 		Description: designDto.Description,

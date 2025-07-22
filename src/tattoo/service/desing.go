@@ -61,7 +61,7 @@ func (designService *DesignService) GetDesigns(username string, page int) ([]mod
 		return nil, nil, err
 	}
 
-	limit := 10
+	limit := 8
 
 	opts := design_repository.NewFindOptions().
 		Limit(limit).
@@ -97,7 +97,6 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("username: %v\n", username)
 	opts := design_repository.NewFindOptions().Limit(5).Include(design_repository.Include{
 		Image: true,
 	}).Sort(design_repository.Sort{
@@ -107,6 +106,28 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 	return designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
 	}, opts)
+}
+
+func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataUpdate) error {
+	if data.Description == "" && data.Price == 0 {
+		return ErrNotParams
+	}
+
+	return designService.designRepository.Update(&design_repository.Criteria{
+		ID:        data.ID,
+		IDProfile: profileId,
+	}, design_repository.UpdateData{
+		Description: &data.Description,
+		Price:       &data.Price,
+	})
+}
+
+func (designService *DesignService) DeleteDesign(profileId int64, designId int64) error {
+
+	return designService.designRepository.Delete(&design_repository.Criteria{
+		ID:        designId,
+		IDProfile: profileId,
+	})
 }
 
 func NewDesignService(
