@@ -68,6 +68,7 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 				Email:    utils.Bool(true),
 				Phone:    utils.Bool(true),
 				Location: utils.Bool(true),
+				Username: utils.Bool(true),
 			},
 			Roles:     true,
 			UserMedia: true,
