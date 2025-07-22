@@ -75,6 +75,10 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "category.not_exists",
 	}
+	errorsService[tattooService.ErrNotParams] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "design.not_params",
+	}
 	errorsService[authService.ErrUsernameNotExists] = errRes{
 		StatusCode: http.StatusNotFound,
 		MessageId:  "user.username_not_exists",

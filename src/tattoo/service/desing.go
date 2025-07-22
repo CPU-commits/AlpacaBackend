@@ -61,7 +61,7 @@ func (designService *DesignService) GetDesigns(username string, page int) ([]mod
 		return nil, nil, err
 	}
 
-	limit := 10
+	limit := 8
 
 	opts := design_repository.NewFindOptions().
 		Limit(limit).
@@ -97,7 +97,6 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("username: %v\n", username)
 	opts := design_repository.NewFindOptions().Limit(5).Include(design_repository.Include{
 		Image: true,
 	}).Sort(design_repository.Sort{
