@@ -233,6 +233,7 @@ func NewHttpAdminStudioController(bus bus.Bus) httpAdminStudioController {
 	userService := authService.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	studioPeopleService := service.NewPeopleStudioService(

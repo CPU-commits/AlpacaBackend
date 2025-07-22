@@ -25,7 +25,7 @@ type sqlProfileRepository struct {
 type SqlProfileRepository = sqlProfileRepository
 
 // Exclude: "avatar", "user"
-func (sqlProfileRepository) SqlProfileToProfile(
+func (sqlPR sqlProfileRepository) SqlProfileToProfile(
 	profile *models.Profile,
 	exclude ...string,
 ) model.Profile {
@@ -54,15 +54,12 @@ func (sqlProfileRepository) SqlProfileToProfile(
 			}
 		}
 
-		user = &authModel.User{
-			ID:        sqlUser.ID,
-			Roles:     roles,
-			Name:      sqlUser.Name,
-			Email:     sqlUser.Email,
-			Phone:     sqlUser.Phone.String,
-			Username:  sqlUser.Username,
-			CreatedAt: sqlUser.CreatedAt,
-		}
+		user = sqlPR.sqlUserRepository.SqlUserToUser(
+			sqlUser,
+			utils.MapNoError(roles, func(role authModel.Role) string {
+				return string(role)
+			}),
+		)
 	}
 
 	return model.Profile{
@@ -114,6 +111,9 @@ func (sqlPR sqlProfileRepository) loadOpts(load *LoadOpts) []QueryMod {
 	}
 	if load.Roles {
 		mod = append(mod, Load(Rels(models.ProfileRels.IDUserUser, models.UserRels.IDUserRolesUsers)))
+	}
+	if load.UserMedia {
+		mod = append(mod, Load(Rels(models.ProfileRels.IDUserUser, models.UserRels.IDUserLinks)))
 	}
 
 	return mod

@@ -3,6 +3,7 @@ package user_repository
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 )
 
 type Criteria struct {
@@ -22,6 +23,7 @@ type SelectOpts struct {
 	Email    *bool
 	Phone    *bool
 	IDUser   *bool
+	Location *bool
 }
 
 type FindOneOptions struct {
@@ -38,10 +40,18 @@ func (opts *FindOneOptions) Select(selectOpts SelectOpts) *FindOneOptions {
 	return opts
 }
 
+type RemoveMedia struct {
+	IDUser int64
+	IDs    []int64
+}
+
 type UserUpdateData struct {
-	Email *string
-	Name  *string
-	Phone *string
+	Email       *string
+	Name        *string
+	Phone       *string
+	Location    *string
+	AddMedia    []shorterModel.Media
+	RemoveMedia RemoveMedia
 }
 
 type FindOptions struct {

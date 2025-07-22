@@ -102,6 +102,7 @@ var UserRels = struct {
 	IDUserCodes                string
 	IDUserFollows              string
 	IDUserLikes                string
+	IDUserLinks                string
 	IDUserReviews              string
 	IDUserRolesUsers           string
 	IDUserStudioUsers          string
@@ -116,6 +117,7 @@ var UserRels = struct {
 	IDUserCodes:                "IDUserCodes",
 	IDUserFollows:              "IDUserFollows",
 	IDUserLikes:                "IDUserLikes",
+	IDUserLinks:                "IDUserLinks",
 	IDUserReviews:              "IDUserReviews",
 	IDUserRolesUsers:           "IDUserRolesUsers",
 	IDUserStudioUsers:          "IDUserStudioUsers",
@@ -133,6 +135,7 @@ type userR struct {
 	IDUserCodes                CodeSlice        `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
 	IDUserFollows              FollowSlice      `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
 	IDUserLikes                LikeSlice        `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
+	IDUserLinks                LinkSlice        `boil:"IDUserLinks" json:"IDUserLinks" toml:"IDUserLinks" yaml:"IDUserLinks"`
 	IDUserReviews              ReviewSlice      `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
 	IDUserRolesUsers           RolesUserSlice   `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
 	IDUserStudioUsers          StudioUserSlice  `boil:"IDUserStudioUsers" json:"IDUserStudioUsers" toml:"IDUserStudioUsers" yaml:"IDUserStudioUsers"`
@@ -271,6 +274,22 @@ func (r *userR) GetIDUserLikes() LikeSlice {
 	}
 
 	return r.IDUserLikes
+}
+
+func (o *User) GetIDUserLinks() LinkSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDUserLinks()
+}
+
+func (r *userR) GetIDUserLinks() LinkSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDUserLinks
 }
 
 func (o *User) GetIDUserReviews() ReviewSlice {
@@ -770,6 +789,20 @@ func (o *User) IDUserLikes(mods ...qm.QueryMod) likeQuery {
 	)
 
 	return Likes(queryMods...)
+}
+
+// IDUserLinks retrieves all the link's Links with an executor via id_user column.
+func (o *User) IDUserLinks(mods ...qm.QueryMod) linkQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"links\".\"id_user\"=?", o.ID),
+	)
+
+	return Links(queryMods...)
 }
 
 // IDUserReviews retrieves all the review's Reviews with an executor via id_user column.
@@ -1748,6 +1781,119 @@ func (userL) LoadIDUserLikes(ctx context.Context, e boil.ContextExecutor, singul
 				local.R.IDUserLikes = append(local.R.IDUserLikes, foreign)
 				if foreign.R == nil {
 					foreign.R = &likeR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDUserLinks allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserLinks(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`links`),
+		qm.WhereIn(`links.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load links")
+	}
+
+	var resultSlice []*Link
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice links")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on links")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for links")
+	}
+
+	if len(linkAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserLinks = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &linkR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDUser) {
+				local.R.IDUserLinks = append(local.R.IDUserLinks, foreign)
+				if foreign.R == nil {
+					foreign.R = &linkR{}
 				}
 				foreign.R.IDUserUser = local
 				break
@@ -2809,6 +2955,133 @@ func (o *User) AddIDUserLikes(ctx context.Context, exec boil.ContextExecutor, in
 			rel.R.IDUserUser = o
 		}
 	}
+	return nil
+}
+
+// AddIDUserLinks adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserLinks.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserLinks(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Link) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDUser, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"links\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, linkPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDUser, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserLinks: related,
+		}
+	} else {
+		o.R.IDUserLinks = append(o.R.IDUserLinks, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &linkR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
+		}
+	}
+	return nil
+}
+
+// SetIDUserLinks removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDUserUser's IDUserLinks accordingly.
+// Replaces o.R.IDUserLinks with related.
+// Sets related.R.IDUserUser's IDUserLinks accordingly.
+func (o *User) SetIDUserLinks(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Link) error {
+	query := "update \"links\" set \"id_user\" = null where \"id_user\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDUserLinks {
+			queries.SetScanner(&rel.IDUser, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDUserUser = nil
+		}
+		o.R.IDUserLinks = nil
+	}
+
+	return o.AddIDUserLinks(ctx, exec, insert, related...)
+}
+
+// RemoveIDUserLinks relationships from objects passed in.
+// Removes related items from R.IDUserLinks (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDUserUser.
+func (o *User) RemoveIDUserLinks(ctx context.Context, exec boil.ContextExecutor, related ...*Link) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDUser, nil)
+		if rel.R != nil {
+			rel.R.IDUserUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_user")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDUserLinks {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDUserLinks)
+			if ln > 1 && i < ln-1 {
+				o.R.IDUserLinks[i] = o.R.IDUserLinks[ln-1]
+			}
+			o.R.IDUserLinks = o.R.IDUserLinks[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

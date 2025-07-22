@@ -3,6 +3,7 @@ package studio_repository
 import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 )
 
@@ -81,6 +82,11 @@ func (f *findOneOptions) Select(selectOpts SelectOpts) *findOneOptions {
 	return f
 }
 
+type RemoveMedia struct {
+	IDStudio int64
+	IDs      []int64
+}
+
 type UpdateData struct {
 	Name        string
 	Description *string
@@ -89,8 +95,8 @@ type UpdateData struct {
 	Phone       *string
 	Avatar      *fileModel.Image
 	Banner      *fileModel.Image
-	AddMedia    []model.Media
-	RemoveMedia []int64
+	AddMedia    []shorterModel.Media
+	RemoveMedia RemoveMedia
 }
 
 type StudioRepository interface {

@@ -9,6 +9,7 @@ import (
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
@@ -26,9 +27,9 @@ type StudioService struct {
 
 var studioService *StudioService
 
-func (*StudioService) toShortLinksMedia(media []model.Media) []model.Media {
-	return utils.MapNoError(media, func(media model.Media) model.Media {
-		return model.Media{
+func (*StudioService) toShortLinksMedia(media []shorterModel.Media) []shorterModel.Media {
+	return utils.MapNoError(media, func(media shorterModel.Media) shorterModel.Media {
+		return shorterModel.Media{
 			ID:   media.ID,
 			Type: media.Type,
 			Link: fmt.Sprintf("%s/s/%s", settingsData.BACKEND_URL, media.ShortCode),
@@ -299,8 +300,11 @@ func (studioService *StudioService) UpdateStudio(
 			FullAddress: studio.Address,
 			Email:       studio.Email,
 			Phone:       studio.Phone,
-			RemoveMedia: studio.RemoveMedia,
-			AddMedia:    media,
+			RemoveMedia: studio_repository.RemoveMedia{
+				IDs:      studio.RemoveMedia,
+				IDStudio: idStudio,
+			},
+			AddMedia: media,
 		},
 	)
 }

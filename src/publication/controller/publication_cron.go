@@ -23,6 +23,7 @@ func NewCronPublication(
 		*authService.NewUserService(
 			userRepository,
 			roleRepository,
+			uidGenerator,
 			bus,
 		),
 		imageStore,
@@ -33,6 +34,7 @@ func NewCronPublication(
 	userService := authService.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	adminStudioService := studioService.NewPeopleStudioService(

@@ -21,6 +21,7 @@ func NewAuthHttpController(bus bus.Bus) *HttpAuthController {
 		userService: *service.NewUserService(
 			sqlUserRepository,
 			sqlRoleRepository,
+			uidGenerator,
 			bus,
 		),
 		authService: *service.NewAuthService(

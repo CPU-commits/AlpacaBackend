@@ -30,6 +30,7 @@ type Link struct {
 	ShortCode string     `boil:"short_code" json:"short_code" toml:"short_code" yaml:"short_code"`
 	IDStudio  null.Int64 `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDUser    null.Int64 `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
 
 	R *linkR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L linkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,6 +43,7 @@ var LinkColumns = struct {
 	ShortCode string
 	IDStudio  string
 	CreatedAt string
+	IDUser    string
 }{
 	ID:        "id",
 	Type:      "type",
@@ -49,6 +51,7 @@ var LinkColumns = struct {
 	ShortCode: "short_code",
 	IDStudio:  "id_studio",
 	CreatedAt: "created_at",
+	IDUser:    "id_user",
 }
 
 var LinkTableColumns = struct {
@@ -58,6 +61,7 @@ var LinkTableColumns = struct {
 	ShortCode string
 	IDStudio  string
 	CreatedAt string
+	IDUser    string
 }{
 	ID:        "links.id",
 	Type:      "links.type",
@@ -65,6 +69,7 @@ var LinkTableColumns = struct {
 	ShortCode: "links.short_code",
 	IDStudio:  "links.id_studio",
 	CreatedAt: "links.created_at",
+	IDUser:    "links.id_user",
 }
 
 // Generated where
@@ -76,6 +81,7 @@ var LinkWhere = struct {
 	ShortCode whereHelperstring
 	IDStudio  whereHelpernull_Int64
 	CreatedAt whereHelpertime_Time
+	IDUser    whereHelpernull_Int64
 }{
 	ID:        whereHelperint64{field: "\"links\".\"id\""},
 	Type:      whereHelperstring{field: "\"links\".\"type\""},
@@ -83,18 +89,22 @@ var LinkWhere = struct {
 	ShortCode: whereHelperstring{field: "\"links\".\"short_code\""},
 	IDStudio:  whereHelpernull_Int64{field: "\"links\".\"id_studio\""},
 	CreatedAt: whereHelpertime_Time{field: "\"links\".\"created_at\""},
+	IDUser:    whereHelpernull_Int64{field: "\"links\".\"id_user\""},
 }
 
 // LinkRels is where relationship names are stored.
 var LinkRels = struct {
 	IDStudioStudio string
+	IDUserUser     string
 }{
 	IDStudioStudio: "IDStudioStudio",
+	IDUserUser:     "IDUserUser",
 }
 
 // linkR is where relationships are stored.
 type linkR struct {
 	IDStudioStudio *Studio `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
+	IDUserUser     *User   `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 }
 
 // NewStruct creates a new relationship struct
@@ -118,13 +128,29 @@ func (r *linkR) GetIDStudioStudio() *Studio {
 	return r.IDStudioStudio
 }
 
+func (o *Link) GetIDUserUser() *User {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDUserUser()
+}
+
+func (r *linkR) GetIDUserUser() *User {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDUserUser
+}
+
 // linkL is where Load methods for each relationship are stored.
 type linkL struct{}
 
 var (
-	linkAllColumns            = []string{"id", "type", "link", "short_code", "id_studio", "created_at"}
+	linkAllColumns            = []string{"id", "type", "link", "short_code", "id_studio", "created_at", "id_user"}
 	linkColumnsWithoutDefault = []string{"type", "link", "short_code"}
-	linkColumnsWithDefault    = []string{"id", "id_studio", "created_at"}
+	linkColumnsWithDefault    = []string{"id", "id_studio", "created_at", "id_user"}
 	linkPrimaryKeyColumns     = []string{"id"}
 	linkGeneratedColumns      = []string{}
 )
@@ -445,6 +471,17 @@ func (o *Link) IDStudioStudio(mods ...qm.QueryMod) studioQuery {
 	return Studios(queryMods...)
 }
 
+// IDUserUser pointed to by the foreign key.
+func (o *Link) IDUserUser(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDUser),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
 // LoadIDStudioStudio allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (linkL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLink interface{}, mods queries.Applicator) error {
@@ -569,6 +606,130 @@ func (linkL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
+// LoadIDUserUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (linkL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLink interface{}, mods queries.Applicator) error {
+	var slice []*Link
+	var object *Link
+
+	if singular {
+		var ok bool
+		object, ok = maybeLink.(*Link)
+		if !ok {
+			object = new(Link)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeLink)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeLink))
+			}
+		}
+	} else {
+		s, ok := maybeLink.(*[]*Link)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeLink)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeLink))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &linkR{}
+		}
+		if !queries.IsNil(object.IDUser) {
+			args[object.IDUser] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &linkR{}
+			}
+
+			if !queries.IsNil(obj.IDUser) {
+				args[obj.IDUser] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDUserUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.IDUserLinks = append(foreign.R.IDUserLinks, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.IDUser, foreign.ID) {
+				local.R.IDUserUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.IDUserLinks = append(foreign.R.IDUserLinks, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDStudioStudio of the link to the related item.
 // Sets o.R.IDStudioStudio to related.
 // Adds o to related.R.IDStudioLinks.
@@ -644,6 +805,86 @@ func (o *Link) RemoveIDStudioStudio(ctx context.Context, exec boil.ContextExecut
 			related.R.IDStudioLinks[i] = related.R.IDStudioLinks[ln-1]
 		}
 		related.R.IDStudioLinks = related.R.IDStudioLinks[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetIDUserUser of the link to the related item.
+// Sets o.R.IDUserUser to related.
+// Adds o to related.R.IDUserLinks.
+func (o *Link) SetIDUserUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"links\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+		strmangle.WhereClause("\"", "\"", 2, linkPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.IDUser, related.ID)
+	if o.R == nil {
+		o.R = &linkR{
+			IDUserUser: related,
+		}
+	} else {
+		o.R.IDUserUser = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			IDUserLinks: LinkSlice{o},
+		}
+	} else {
+		related.R.IDUserLinks = append(related.R.IDUserLinks, o)
+	}
+
+	return nil
+}
+
+// RemoveIDUserUser relationship.
+// Sets o.R.IDUserUser to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Link) RemoveIDUserUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+	var err error
+
+	queries.SetScanner(&o.IDUser, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("id_user")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDUserUser = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.IDUserLinks {
+		if queries.Equal(o.IDUser, ri.IDUser) {
+			continue
+		}
+
+		ln := len(related.R.IDUserLinks)
+		if ln > 1 && i < ln-1 {
+			related.R.IDUserLinks[i] = related.R.IDUserLinks[ln-1]
+		}
+		related.R.IDUserLinks = related.R.IDUserLinks[:ln-1]
 		break
 	}
 	return nil

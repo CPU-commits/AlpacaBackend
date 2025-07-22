@@ -161,6 +161,7 @@ func NewHTTProfileController() HttpProfileController {
 			*authService.NewUserService(
 				userRepository,
 				roleRepository,
+				uidGenerator,
 				nil,
 			),
 			cloudinary_store.NewCloudinaryImageStore(),

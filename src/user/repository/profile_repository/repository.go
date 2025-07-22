@@ -24,9 +24,10 @@ type SelectOpts struct {
 }
 
 type LoadOpts struct {
-	Avatar bool
-	User   *user_repository.SelectOpts
-	Roles  bool
+	Avatar    bool
+	User      *user_repository.SelectOpts
+	Roles     bool
+	UserMedia bool
 }
 
 type FindOneOptions struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/calendar/googlecalendar"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
@@ -29,6 +30,9 @@ var (
 	peopleStudioRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
 	studioRepository        = studio_repository.NewSqlStudioRepository()
 )
+
+// UID Generator
+var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // calendar
 var googleCalendar = googlecalendar.NewGoogleCalendar()

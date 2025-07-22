@@ -63,12 +63,14 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 		Load(profile_repository.LoadOpts{
 			Avatar: true,
 			User: &user_repository.SelectOpts{
-				Name:  utils.Bool(true),
-				ID:    utils.Bool(true),
-				Email: utils.Bool(true),
-				Phone: utils.Bool(true),
+				Name:     utils.Bool(true),
+				ID:       utils.Bool(true),
+				Email:    utils.Bool(true),
+				Phone:    utils.Bool(true),
+				Location: utils.Bool(true),
 			},
-			Roles: true,
+			Roles:     true,
+			UserMedia: true,
 		})
 
 	profile, err := profileService.profileRepository.FindOne(
@@ -80,6 +82,7 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("profile.User.Media: %v\n", profile.User.Media)
 	return profile, nil
 }
 

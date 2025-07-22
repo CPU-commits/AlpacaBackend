@@ -7,7 +7,11 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/generator/repository/token_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/jwt"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 )
+
+// UID Generator
+var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Repositories
 var (

@@ -8,6 +8,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	generatorModel "github.com/CPU-commits/Template_Go-EventDriven/src/generator/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
 
@@ -16,6 +17,7 @@ var userService *UserService
 type UserService struct {
 	userRepository user_repository.UserRepository
 	roleRepository role_repository.RoleRepository
+	uidGenerator   uid.UIDGenerator
 	bus            bus.Bus
 }
 
@@ -112,8 +114,7 @@ func (userService *UserService) GetEmailUserById(idUser int64) (string, error) {
 	return user.Email, nil
 }
 
-func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData) error {
-
+func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData, roles []model.Role) error {
 	if _, err := userService.GetUserById(idUser); err != nil {
 		return err
 	}
@@ -125,6 +126,25 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 	}
 	if data.Phone != "" {
 		dataUpdate.Phone = &data.Phone
+	}
+	if data.Location != "" {
+		dataUpdate.Location = &data.Location
+	}
+	if utils.Includes(roles, model.TATTOO_ARTIST_ROLE) {
+		if data.AddMedia != nil {
+			addMedia, err := data.ToMedia(userService.uidGenerator, idUser)
+			if err != nil {
+				return err
+			}
+
+			dataUpdate.AddMedia = addMedia
+		}
+		if data.RemoveMedia != nil {
+			dataUpdate.RemoveMedia = user_repository.RemoveMedia{
+				IDUser: idUser,
+				IDs:    data.RemoveMedia,
+			}
+		}
 	}
 
 	return userService.userRepository.UpdateOne(idUser, dataUpdate)
@@ -251,12 +271,14 @@ func (userService *UserService) IsOwner(userId int64, params dto.QueryIsOwner) e
 func NewUserService(
 	userRepository user_repository.UserRepository,
 	roleRepository role_repository.RoleRepository,
+	uidGenerator uid.UIDGenerator,
 	bus bus.Bus,
 ) *UserService {
 	if userService == nil {
 		userService = &UserService{
 			userRepository: userRepository,
 			roleRepository: roleRepository,
+			uidGenerator:   uidGenerator,
 			bus:            bus,
 		}
 	}

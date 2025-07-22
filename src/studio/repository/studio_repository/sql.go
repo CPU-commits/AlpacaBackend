@@ -10,6 +10,7 @@ import (
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/aarondl/null/v8"
@@ -54,16 +55,16 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 			ID: sqlStudio.IDOwner,
 		}
 	}
-	var media []model.Media
+	var media []shorterModel.Media
 	if sqlStudio.R != nil && sqlStudio.R.IDStudioLinks != nil {
 		sqlMedias := sqlStudio.R.IDStudioLinks
 
 		for _, sqlMedia := range sqlMedias {
-			media = append(media, model.Media{
+			media = append(media, shorterModel.Media{
 				ID:        sqlMedia.ID,
 				Link:      sqlMedia.Link,
 				ShortCode: sqlMedia.ShortCode,
-				Type:      model.TypeMedia(sqlMedia.Type),
+				Type:      shorterModel.TypeMedia(sqlMedia.Type),
 			})
 		}
 	}
@@ -361,11 +362,11 @@ func (sqlSR sqlStudioRepository) Update(criteria *Criteria, data UpdateData) err
 			}
 		}
 	}
-	if data.RemoveMedia != nil {
+	if data.RemoveMedia.IDStudio != 0 {
 		if _, err := models.Links(
-			models.LinkWhere.ID.IN(data.RemoveMedia),
-		).DeleteAll(context.Background(), tx); err != nil {
-			tx.Rollback()
+			models.LinkWhere.ID.IN(data.RemoveMedia.IDs),
+			models.LinkWhere.IDStudio.EQ(null.Int64From(data.RemoveMedia.IDStudio)),
+		).DeleteAll(context.Background(), sqlSR.db); err != nil {
 			return utils.ErrRepositoryFailed
 		}
 	}
