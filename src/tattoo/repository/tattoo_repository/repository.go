@@ -6,6 +6,7 @@ type Criteria struct {
 	ID        int64
 	IDs       []int64
 	IDProfile int64
+	IDStudio  int64
 }
 
 type Include struct {

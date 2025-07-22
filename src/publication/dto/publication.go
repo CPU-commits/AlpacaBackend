@@ -28,6 +28,7 @@ func (publicationDto *PublicationDto) ToTattoos(idPublication int64) []dto.Tatto
 			Image:         image.Image,
 			Coord:         image.Coord,
 			IDPublication: idPublication,
+			IDStudio:      &publicationDto.IDStudio,
 		}
 	})
 }

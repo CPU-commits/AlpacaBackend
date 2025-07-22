@@ -28,20 +28,20 @@ type Appointment struct {
 	IDUser         int64        `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
 	IDTattooArtist null.Int64   `boil:"id_tattoo_artist" json:"id_tattoo_artist,omitempty" toml:"id_tattoo_artist" yaml:"id_tattoo_artist,omitempty"`
 	Status         string       `boil:"status" json:"status" toml:"status" yaml:"status"`
-	IDStudio       null.Int64   `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
-	IDCalendar     null.String  `boil:"id_calendar" json:"id_calendar,omitempty" toml:"id_calendar" yaml:"id_calendar,omitempty"`
-	Phone          null.String  `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
-	HasIdea        bool         `boil:"has_idea" json:"has_idea" toml:"has_idea" yaml:"has_idea"`
+	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Area           null.String  `boil:"area" json:"area,omitempty" toml:"area" yaml:"area,omitempty"`
-	Height         null.Float64 `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
-	Width          null.Float64 `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
 	Color          null.String  `boil:"color" json:"color,omitempty" toml:"color" yaml:"color,omitempty"`
 	Description    string       `boil:"description" json:"description" toml:"description" yaml:"description"`
-	ScheduledAt    null.Time    `boil:"scheduled_at" json:"scheduled_at,omitempty" toml:"scheduled_at" yaml:"scheduled_at,omitempty"`
+	HasIdea        bool         `boil:"has_idea" json:"has_idea" toml:"has_idea" yaml:"has_idea"`
+	Height         null.Float64 `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
+	Phone          null.String  `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
+	Width          null.Float64 `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
 	Duration       null.Float64 `boil:"duration" json:"duration,omitempty" toml:"duration" yaml:"duration,omitempty"`
 	FinishedAt     null.Time    `boil:"finished_at" json:"finished_at,omitempty" toml:"finished_at" yaml:"finished_at,omitempty"`
+	ScheduledAt    null.Time    `boil:"scheduled_at" json:"scheduled_at,omitempty" toml:"scheduled_at" yaml:"scheduled_at,omitempty"`
+	IDCalendar     null.String  `boil:"id_calendar" json:"id_calendar,omitempty" toml:"id_calendar" yaml:"id_calendar,omitempty"`
 	IsPaid         bool         `boil:"is_paid" json:"is_paid" toml:"is_paid" yaml:"is_paid"`
-	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDStudio       null.Int64   `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 
 	R *appointmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L appointmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -52,39 +52,39 @@ var AppointmentColumns = struct {
 	IDUser         string
 	IDTattooArtist string
 	Status         string
-	IDStudio       string
-	IDCalendar     string
-	Phone          string
-	HasIdea        string
+	CreatedAt      string
 	Area           string
-	Height         string
-	Width          string
 	Color          string
 	Description    string
-	ScheduledAt    string
+	HasIdea        string
+	Height         string
+	Phone          string
+	Width          string
 	Duration       string
 	FinishedAt     string
+	ScheduledAt    string
+	IDCalendar     string
 	IsPaid         string
-	CreatedAt      string
+	IDStudio       string
 }{
 	ID:             "id",
 	IDUser:         "id_user",
 	IDTattooArtist: "id_tattoo_artist",
 	Status:         "status",
-	IDStudio:       "id_studio",
-	IDCalendar:     "id_calendar",
-	Phone:          "phone",
-	HasIdea:        "has_idea",
+	CreatedAt:      "created_at",
 	Area:           "area",
-	Height:         "height",
-	Width:          "width",
 	Color:          "color",
 	Description:    "description",
-	ScheduledAt:    "scheduled_at",
+	HasIdea:        "has_idea",
+	Height:         "height",
+	Phone:          "phone",
+	Width:          "width",
 	Duration:       "duration",
 	FinishedAt:     "finished_at",
+	ScheduledAt:    "scheduled_at",
+	IDCalendar:     "id_calendar",
 	IsPaid:         "is_paid",
-	CreatedAt:      "created_at",
+	IDStudio:       "id_studio",
 }
 
 var AppointmentTableColumns = struct {
@@ -92,39 +92,39 @@ var AppointmentTableColumns = struct {
 	IDUser         string
 	IDTattooArtist string
 	Status         string
-	IDStudio       string
-	IDCalendar     string
-	Phone          string
-	HasIdea        string
+	CreatedAt      string
 	Area           string
-	Height         string
-	Width          string
 	Color          string
 	Description    string
-	ScheduledAt    string
+	HasIdea        string
+	Height         string
+	Phone          string
+	Width          string
 	Duration       string
 	FinishedAt     string
+	ScheduledAt    string
+	IDCalendar     string
 	IsPaid         string
-	CreatedAt      string
+	IDStudio       string
 }{
 	ID:             "appointments.id",
 	IDUser:         "appointments.id_user",
 	IDTattooArtist: "appointments.id_tattoo_artist",
 	Status:         "appointments.status",
-	IDStudio:       "appointments.id_studio",
-	IDCalendar:     "appointments.id_calendar",
-	Phone:          "appointments.phone",
-	HasIdea:        "appointments.has_idea",
+	CreatedAt:      "appointments.created_at",
 	Area:           "appointments.area",
-	Height:         "appointments.height",
-	Width:          "appointments.width",
 	Color:          "appointments.color",
 	Description:    "appointments.description",
-	ScheduledAt:    "appointments.scheduled_at",
+	HasIdea:        "appointments.has_idea",
+	Height:         "appointments.height",
+	Phone:          "appointments.phone",
+	Width:          "appointments.width",
 	Duration:       "appointments.duration",
 	FinishedAt:     "appointments.finished_at",
+	ScheduledAt:    "appointments.scheduled_at",
+	IDCalendar:     "appointments.id_calendar",
 	IsPaid:         "appointments.is_paid",
-	CreatedAt:      "appointments.created_at",
+	IDStudio:       "appointments.id_studio",
 }
 
 // Generated where
@@ -290,39 +290,39 @@ var AppointmentWhere = struct {
 	IDUser         whereHelperint64
 	IDTattooArtist whereHelpernull_Int64
 	Status         whereHelperstring
-	IDStudio       whereHelpernull_Int64
-	IDCalendar     whereHelpernull_String
-	Phone          whereHelpernull_String
-	HasIdea        whereHelperbool
+	CreatedAt      whereHelpertime_Time
 	Area           whereHelpernull_String
-	Height         whereHelpernull_Float64
-	Width          whereHelpernull_Float64
 	Color          whereHelpernull_String
 	Description    whereHelperstring
-	ScheduledAt    whereHelpernull_Time
+	HasIdea        whereHelperbool
+	Height         whereHelpernull_Float64
+	Phone          whereHelpernull_String
+	Width          whereHelpernull_Float64
 	Duration       whereHelpernull_Float64
 	FinishedAt     whereHelpernull_Time
+	ScheduledAt    whereHelpernull_Time
+	IDCalendar     whereHelpernull_String
 	IsPaid         whereHelperbool
-	CreatedAt      whereHelpertime_Time
+	IDStudio       whereHelpernull_Int64
 }{
 	ID:             whereHelperint64{field: "\"appointments\".\"id\""},
 	IDUser:         whereHelperint64{field: "\"appointments\".\"id_user\""},
 	IDTattooArtist: whereHelpernull_Int64{field: "\"appointments\".\"id_tattoo_artist\""},
 	Status:         whereHelperstring{field: "\"appointments\".\"status\""},
-	IDStudio:       whereHelpernull_Int64{field: "\"appointments\".\"id_studio\""},
-	IDCalendar:     whereHelpernull_String{field: "\"appointments\".\"id_calendar\""},
-	Phone:          whereHelpernull_String{field: "\"appointments\".\"phone\""},
-	HasIdea:        whereHelperbool{field: "\"appointments\".\"has_idea\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"appointments\".\"created_at\""},
 	Area:           whereHelpernull_String{field: "\"appointments\".\"area\""},
-	Height:         whereHelpernull_Float64{field: "\"appointments\".\"height\""},
-	Width:          whereHelpernull_Float64{field: "\"appointments\".\"width\""},
 	Color:          whereHelpernull_String{field: "\"appointments\".\"color\""},
 	Description:    whereHelperstring{field: "\"appointments\".\"description\""},
-	ScheduledAt:    whereHelpernull_Time{field: "\"appointments\".\"scheduled_at\""},
+	HasIdea:        whereHelperbool{field: "\"appointments\".\"has_idea\""},
+	Height:         whereHelpernull_Float64{field: "\"appointments\".\"height\""},
+	Phone:          whereHelpernull_String{field: "\"appointments\".\"phone\""},
+	Width:          whereHelpernull_Float64{field: "\"appointments\".\"width\""},
 	Duration:       whereHelpernull_Float64{field: "\"appointments\".\"duration\""},
 	FinishedAt:     whereHelpernull_Time{field: "\"appointments\".\"finished_at\""},
+	ScheduledAt:    whereHelpernull_Time{field: "\"appointments\".\"scheduled_at\""},
+	IDCalendar:     whereHelpernull_String{field: "\"appointments\".\"id_calendar\""},
 	IsPaid:         whereHelperbool{field: "\"appointments\".\"is_paid\""},
-	CreatedAt:      whereHelpertime_Time{field: "\"appointments\".\"created_at\""},
+	IDStudio:       whereHelpernull_Int64{field: "\"appointments\".\"id_studio\""},
 }
 
 // AppointmentRels is where relationship names are stored.
@@ -438,9 +438,9 @@ func (r *appointmentR) GetIDAppointmentAppointmentImages() AppointmentImageSlice
 type appointmentL struct{}
 
 var (
-	appointmentAllColumns            = []string{"id", "id_user", "id_tattoo_artist", "status", "id_studio", "id_calendar", "phone", "has_idea", "area", "height", "width", "color", "description", "scheduled_at", "duration", "finished_at", "is_paid", "created_at"}
-	appointmentColumnsWithoutDefault = []string{"id_user", "status", "has_idea", "description"}
-	appointmentColumnsWithDefault    = []string{"id", "id_tattoo_artist", "id_studio", "id_calendar", "phone", "area", "height", "width", "color", "scheduled_at", "duration", "finished_at", "is_paid", "created_at"}
+	appointmentAllColumns            = []string{"id", "id_user", "id_tattoo_artist", "status", "created_at", "area", "color", "description", "has_idea", "height", "phone", "width", "duration", "finished_at", "scheduled_at", "id_calendar", "is_paid", "id_studio"}
+	appointmentColumnsWithoutDefault = []string{"id_user", "status", "description", "has_idea"}
+	appointmentColumnsWithDefault    = []string{"id", "id_tattoo_artist", "created_at", "area", "color", "height", "phone", "width", "duration", "finished_at", "scheduled_at", "id_calendar", "is_paid", "id_studio"}
 	appointmentPrimaryKeyColumns     = []string{"id"}
 	appointmentGeneratedColumns      = []string{}
 )

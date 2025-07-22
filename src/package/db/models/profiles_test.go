@@ -597,9 +597,8 @@ func testProfileToManyIDProfileFollows(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b.IDProfile = a.ID
-	c.IDProfile = a.ID
-
+	queries.Assign(&b.IDProfile, a.ID)
+	queries.Assign(&c.IDProfile, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -614,10 +613,10 @@ func testProfileToManyIDProfileFollows(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if v.IDProfile == b.IDProfile {
+		if queries.Equal(v.IDProfile, b.IDProfile) {
 			bFound = true
 		}
-		if v.IDProfile == c.IDProfile {
+		if queries.Equal(v.IDProfile, c.IDProfile) {
 			cFound = true
 		}
 	}
@@ -1082,10 +1081,10 @@ func testProfileToManyAddOpIDProfileFollows(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if a.ID != first.IDProfile {
+		if !queries.Equal(a.ID, first.IDProfile) {
 			t.Error("foreign key was wrong value", a.ID, first.IDProfile)
 		}
-		if a.ID != second.IDProfile {
+		if !queries.Equal(a.ID, second.IDProfile) {
 			t.Error("foreign key was wrong value", a.ID, second.IDProfile)
 		}
 
@@ -1112,6 +1111,182 @@ func testProfileToManyAddOpIDProfileFollows(t *testing.T) {
 		}
 	}
 }
+
+func testProfileToManySetOpIDProfileFollows(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Profile
+	var b, c, d, e Follow
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Follow{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, followDBTypes, false, strmangle.SetComplement(followPrimaryKeyColumns, followColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDProfileFollows(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDProfileFollows().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDProfileFollows(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDProfileFollows().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDProfile) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDProfile) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDProfile) {
+		t.Error("foreign key was wrong value", a.ID, d.IDProfile)
+	}
+	if !queries.Equal(a.ID, e.IDProfile) {
+		t.Error("foreign key was wrong value", a.ID, e.IDProfile)
+	}
+
+	if b.R.IDProfileProfile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDProfileProfile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDProfileProfile != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDProfileProfile != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDProfileFollows[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDProfileFollows[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testProfileToManyRemoveOpIDProfileFollows(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Profile
+	var b, c, d, e Follow
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Follow{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, followDBTypes, false, strmangle.SetComplement(followPrimaryKeyColumns, followColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDProfileFollows(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDProfileFollows().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDProfileFollows(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDProfileFollows().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDProfile) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDProfile) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDProfileProfile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDProfileProfile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDProfileProfile != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDProfileProfile != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDProfileFollows) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDProfileFollows[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDProfileFollows[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
 func testProfileToManyAddOpIDProfileLikes(t *testing.T) {
 	var err error
 

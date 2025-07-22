@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
@@ -23,10 +24,11 @@ import (
 
 // Follow is an object representing the database table.
 type Follow struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDUser    int64     `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
-	IDProfile int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDUser    int64      `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
+	IDProfile null.Int64 `boil:"id_profile" json:"id_profile,omitempty" toml:"id_profile" yaml:"id_profile,omitempty"`
+	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDStudio  null.Int64 `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 
 	R *followR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L followL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,11 +39,13 @@ var FollowColumns = struct {
 	IDUser    string
 	IDProfile string
 	CreatedAt string
+	IDStudio  string
 }{
 	ID:        "id",
 	IDUser:    "id_user",
 	IDProfile: "id_profile",
 	CreatedAt: "created_at",
+	IDStudio:  "id_studio",
 }
 
 var FollowTableColumns = struct {
@@ -49,11 +53,13 @@ var FollowTableColumns = struct {
 	IDUser    string
 	IDProfile string
 	CreatedAt string
+	IDStudio  string
 }{
 	ID:        "follows.id",
 	IDUser:    "follows.id_user",
 	IDProfile: "follows.id_profile",
 	CreatedAt: "follows.created_at",
+	IDStudio:  "follows.id_studio",
 }
 
 // Generated where
@@ -61,27 +67,32 @@ var FollowTableColumns = struct {
 var FollowWhere = struct {
 	ID        whereHelperint64
 	IDUser    whereHelperint64
-	IDProfile whereHelperint64
+	IDProfile whereHelpernull_Int64
 	CreatedAt whereHelpertime_Time
+	IDStudio  whereHelpernull_Int64
 }{
 	ID:        whereHelperint64{field: "\"follows\".\"id\""},
 	IDUser:    whereHelperint64{field: "\"follows\".\"id_user\""},
-	IDProfile: whereHelperint64{field: "\"follows\".\"id_profile\""},
+	IDProfile: whereHelpernull_Int64{field: "\"follows\".\"id_profile\""},
 	CreatedAt: whereHelpertime_Time{field: "\"follows\".\"created_at\""},
+	IDStudio:  whereHelpernull_Int64{field: "\"follows\".\"id_studio\""},
 }
 
 // FollowRels is where relationship names are stored.
 var FollowRels = struct {
 	IDProfileProfile string
+	IDStudioStudio   string
 	IDUserUser       string
 }{
 	IDProfileProfile: "IDProfileProfile",
+	IDStudioStudio:   "IDStudioStudio",
 	IDUserUser:       "IDUserUser",
 }
 
 // followR is where relationships are stored.
 type followR struct {
 	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDStudioStudio   *Studio  `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
 	IDUserUser       *User    `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 }
 
@@ -106,6 +117,22 @@ func (r *followR) GetIDProfileProfile() *Profile {
 	return r.IDProfileProfile
 }
 
+func (o *Follow) GetIDStudioStudio() *Studio {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDStudioStudio()
+}
+
+func (r *followR) GetIDStudioStudio() *Studio {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDStudioStudio
+}
+
 func (o *Follow) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -126,9 +153,9 @@ func (r *followR) GetIDUserUser() *User {
 type followL struct{}
 
 var (
-	followAllColumns            = []string{"id", "id_user", "id_profile", "created_at"}
-	followColumnsWithoutDefault = []string{"id_user", "id_profile"}
-	followColumnsWithDefault    = []string{"id", "created_at"}
+	followAllColumns            = []string{"id", "id_user", "id_profile", "created_at", "id_studio"}
+	followColumnsWithoutDefault = []string{"id_user"}
+	followColumnsWithDefault    = []string{"id", "id_profile", "created_at", "id_studio"}
 	followPrimaryKeyColumns     = []string{"id"}
 	followGeneratedColumns      = []string{}
 )
@@ -449,6 +476,17 @@ func (o *Follow) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 	return Profiles(queryMods...)
 }
 
+// IDStudioStudio pointed to by the foreign key.
+func (o *Follow) IDStudioStudio(mods ...qm.QueryMod) studioQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDStudio),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Studios(queryMods...)
+}
+
 // IDUserUser pointed to by the foreign key.
 func (o *Follow) IDUserUser(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
@@ -493,7 +531,9 @@ func (followL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &followR{}
 		}
-		args[object.IDProfile] = struct{}{}
+		if !queries.IsNil(object.IDProfile) {
+			args[object.IDProfile] = struct{}{}
+		}
 
 	} else {
 		for _, obj := range slice {
@@ -501,7 +541,9 @@ func (followL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 				obj.R = &followR{}
 			}
 
-			args[obj.IDProfile] = struct{}{}
+			if !queries.IsNil(obj.IDProfile) {
+				args[obj.IDProfile] = struct{}{}
+			}
 
 		}
 	}
@@ -566,12 +608,136 @@ func (followL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.IDProfile == foreign.ID {
+			if queries.Equal(local.IDProfile, foreign.ID) {
 				local.R.IDProfileProfile = foreign
 				if foreign.R == nil {
 					foreign.R = &profileR{}
 				}
 				foreign.R.IDProfileFollows = append(foreign.R.IDProfileFollows, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDStudioStudio allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (followL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, singular bool, maybeFollow interface{}, mods queries.Applicator) error {
+	var slice []*Follow
+	var object *Follow
+
+	if singular {
+		var ok bool
+		object, ok = maybeFollow.(*Follow)
+		if !ok {
+			object = new(Follow)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeFollow)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFollow))
+			}
+		}
+	} else {
+		s, ok := maybeFollow.(*[]*Follow)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeFollow)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFollow))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &followR{}
+		}
+		if !queries.IsNil(object.IDStudio) {
+			args[object.IDStudio] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &followR{}
+			}
+
+			if !queries.IsNil(obj.IDStudio) {
+				args[obj.IDStudio] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`studios`),
+		qm.WhereIn(`studios.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Studio")
+	}
+
+	var resultSlice []*Studio
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Studio")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for studios")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studios")
+	}
+
+	if len(studioAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDStudioStudio = foreign
+		if foreign.R == nil {
+			foreign.R = &studioR{}
+		}
+		foreign.R.IDStudioFollows = append(foreign.R.IDStudioFollows, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.IDStudio, foreign.ID) {
+				local.R.IDStudioStudio = foreign
+				if foreign.R == nil {
+					foreign.R = &studioR{}
+				}
+				foreign.R.IDStudioFollows = append(foreign.R.IDStudioFollows, local)
 				break
 			}
 		}
@@ -727,7 +893,7 @@ func (o *Follow) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.IDProfile = related.ID
+	queries.Assign(&o.IDProfile, related.ID)
 	if o.R == nil {
 		o.R = &followR{
 			IDProfileProfile: related,
@@ -744,6 +910,119 @@ func (o *Follow) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecu
 		related.R.IDProfileFollows = append(related.R.IDProfileFollows, o)
 	}
 
+	return nil
+}
+
+// RemoveIDProfileProfile relationship.
+// Sets o.R.IDProfileProfile to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Follow) RemoveIDProfileProfile(ctx context.Context, exec boil.ContextExecutor, related *Profile) error {
+	var err error
+
+	queries.SetScanner(&o.IDProfile, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("id_profile")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDProfileProfile = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.IDProfileFollows {
+		if queries.Equal(o.IDProfile, ri.IDProfile) {
+			continue
+		}
+
+		ln := len(related.R.IDProfileFollows)
+		if ln > 1 && i < ln-1 {
+			related.R.IDProfileFollows[i] = related.R.IDProfileFollows[ln-1]
+		}
+		related.R.IDProfileFollows = related.R.IDProfileFollows[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetIDStudioStudio of the follow to the related item.
+// Sets o.R.IDStudioStudio to related.
+// Adds o to related.R.IDStudioFollows.
+func (o *Follow) SetIDStudioStudio(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Studio) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"follows\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_studio"}),
+		strmangle.WhereClause("\"", "\"", 2, followPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.IDStudio, related.ID)
+	if o.R == nil {
+		o.R = &followR{
+			IDStudioStudio: related,
+		}
+	} else {
+		o.R.IDStudioStudio = related
+	}
+
+	if related.R == nil {
+		related.R = &studioR{
+			IDStudioFollows: FollowSlice{o},
+		}
+	} else {
+		related.R.IDStudioFollows = append(related.R.IDStudioFollows, o)
+	}
+
+	return nil
+}
+
+// RemoveIDStudioStudio relationship.
+// Sets o.R.IDStudioStudio to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Follow) RemoveIDStudioStudio(ctx context.Context, exec boil.ContextExecutor, related *Studio) error {
+	var err error
+
+	queries.SetScanner(&o.IDStudio, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("id_studio")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDStudioStudio = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.IDStudioFollows {
+		if queries.Equal(o.IDStudio, ri.IDStudio) {
+			continue
+		}
+
+		ln := len(related.R.IDStudioFollows)
+		if ln > 1 && i < ln-1 {
+			related.R.IDStudioFollows[i] = related.R.IDStudioFollows[ln-1]
+		}
+		related.R.IDStudioFollows = related.R.IDStudioFollows[:ln-1]
+		break
+	}
 	return nil
 }
 

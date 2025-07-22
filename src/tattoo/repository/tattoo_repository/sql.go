@@ -95,6 +95,9 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IDProfile != 0 {
 		mod = append(mod, models.TattooWhere.IDProfile.EQ(criteria.IDProfile))
 	}
+	if criteria.IDStudio != 0 {
+		mod = append(mod, models.TattooWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
+	}
 
 	return mod
 }
@@ -105,6 +108,7 @@ func (sqlTattooRepository) tattooModelToSqlTattoo(tattoo model.Tattoo, idProfile
 		IDProfile:  idProfile,
 		IDImage:    sqlImageID,
 		Categories: tattoo.Categories,
+		IDStudio:   null.Int64FromPtr(tattoo.IDStudio),
 	}
 	if tattoo.Description != "" {
 		sqlTattoo.Description = null.StringFrom(tattoo.Description)

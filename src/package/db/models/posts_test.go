@@ -1490,7 +1490,7 @@ func testPostsSelect(t *testing.T) {
 }
 
 var (
-	postDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDStudio`: `bigint`, `IsStudioPost`: `boolean`, `Content`: `text`, `Likes`: `integer`, `Categories`: `ARRAY_text`, `Mentions`: `ARRAY_int4`, `Views`: `integer`, `CreatedAt`: `timestamp without time zone`}
+	postDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Likes`: `integer`, `CreatedAt`: `timestamp without time zone`, `Categories`: `ARRAY_text`, `Mentions`: `ARRAY_int4`, `Views`: `integer`, `IDStudio`: `bigint`, `IsStudioPost`: `boolean`}
 	_           = bytes.MinRead
 )
 

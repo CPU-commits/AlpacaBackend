@@ -8,6 +8,8 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	fileService "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	followDto "github.com/CPU-commits/Template_Go-EventDriven/src/follow/dto"
+	followService "github.com/CPU-commits/Template_Go-EventDriven/src/follow/service"
 	generatorService "github.com/CPU-commits/Template_Go-EventDriven/src/generator/services"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
@@ -208,5 +210,13 @@ func init() {
 	errorsService[appointmentDto.ErrIDTattooArtistOrStudioMissing] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "appointment.tattoo_artist_or_studio_missing",
+	}
+	errorsService[followDto.ErrNeedProfileOrStudio] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "follow.no_who",
+	}
+	errorsService[followService.ErrCantFollowYou] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "follow.cant_follow_you",
 	}
 }

@@ -20,6 +20,7 @@ type TattooDto struct {
 	Image         store.ImageDto
 	Coord         *CoordDto
 	IDPublication int64
+	IDStudio      *int64
 }
 
 func (tattooDto *TattooDto) ToModel(image fileModel.Image) model.Tattoo {
@@ -28,6 +29,7 @@ func (tattooDto *TattooDto) ToModel(image fileModel.Image) model.Tattoo {
 		Image:         image,
 		Description:   tattooDto.Description,
 		IDPublication: tattooDto.IDPublication,
+		IDStudio:      tattooDto.IDStudio,
 	}
 	if tattooDto.Coord != nil {
 		tattoo.Coord = &model.Coord{

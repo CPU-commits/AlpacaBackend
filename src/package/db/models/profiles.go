@@ -1129,7 +1129,7 @@ func (profileL) LoadIDProfileFollows(ctx context.Context, e boil.ContextExecutor
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if local.ID == foreign.IDProfile {
+			if queries.Equal(local.ID, foreign.IDProfile) {
 				local.R.IDProfileFollows = append(local.R.IDProfileFollows, foreign)
 				if foreign.R == nil {
 					foreign.R = &followR{}
@@ -1772,7 +1772,7 @@ func (o *Profile) AddIDProfileFollows(ctx context.Context, exec boil.ContextExec
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.IDProfile = o.ID
+			queries.Assign(&rel.IDProfile, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1793,7 +1793,7 @@ func (o *Profile) AddIDProfileFollows(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.IDProfile = o.ID
+			queries.Assign(&rel.IDProfile, o.ID)
 		}
 	}
 
@@ -1814,6 +1814,80 @@ func (o *Profile) AddIDProfileFollows(ctx context.Context, exec boil.ContextExec
 			rel.R.IDProfileProfile = o
 		}
 	}
+	return nil
+}
+
+// SetIDProfileFollows removes all previously related items of the
+// profile replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDProfileProfile's IDProfileFollows accordingly.
+// Replaces o.R.IDProfileFollows with related.
+// Sets related.R.IDProfileProfile's IDProfileFollows accordingly.
+func (o *Profile) SetIDProfileFollows(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Follow) error {
+	query := "update \"follows\" set \"id_profile\" = null where \"id_profile\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDProfileFollows {
+			queries.SetScanner(&rel.IDProfile, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDProfileProfile = nil
+		}
+		o.R.IDProfileFollows = nil
+	}
+
+	return o.AddIDProfileFollows(ctx, exec, insert, related...)
+}
+
+// RemoveIDProfileFollows relationships from objects passed in.
+// Removes related items from R.IDProfileFollows (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDProfileProfile.
+func (o *Profile) RemoveIDProfileFollows(ctx context.Context, exec boil.ContextExecutor, related ...*Follow) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDProfile, nil)
+		if rel.R != nil {
+			rel.R.IDProfileProfile = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_profile")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDProfileFollows {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDProfileFollows)
+			if ln > 1 && i < ln-1 {
+				o.R.IDProfileFollows[i] = o.R.IDProfileFollows[ln-1]
+			}
+			o.R.IDProfileFollows = o.R.IDProfileFollows[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

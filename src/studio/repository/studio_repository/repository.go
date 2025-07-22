@@ -1,6 +1,7 @@
 package studio_repository
 
 import (
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 )
@@ -8,8 +9,9 @@ import (
 type Criteria struct {
 	ID       int64
 	IDOwner  int64
-	Email    string
-	Username string
+	Email    repository.CriteriaString
+	Username repository.CriteriaString
+	Name     repository.CriteriaString
 	OR       []Criteria
 }
 
@@ -33,6 +35,7 @@ type SelectOpts struct {
 type findOptions struct {
 	include    *Include
 	selectOpts *SelectOpts
+	limit      *int64
 }
 
 func NewFindOptions() *findOptions {
@@ -47,6 +50,12 @@ func (f *findOptions) Select(selectOpts SelectOpts) *findOptions {
 
 func (f *findOptions) Include(include Include) *findOptions {
 	f.include = &include
+
+	return f
+}
+
+func (f *findOptions) Limit(limit int64) *findOptions {
+	f.limit = &limit
 
 	return f
 }

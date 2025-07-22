@@ -503,7 +503,7 @@ func testFollowToOneProfileUsingIDProfileProfile(t *testing.T) {
 	var foreign Profile
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, followDBTypes, false, followColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, followDBTypes, true, followColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Follow struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, profileDBTypes, false, profileColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testFollowToOneProfileUsingIDProfileProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.IDProfile = foreign.ID
+	queries.Assign(&local.IDProfile, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testFollowToOneProfileUsingIDProfileProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if check.ID != foreign.ID {
+	if !queries.Equal(check.ID, foreign.ID) {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -547,6 +547,67 @@ func testFollowToOneProfileUsingIDProfileProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	if local.R.IDProfileProfile == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testFollowToOneStudioUsingIDStudioStudio(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Follow
+	var foreign Studio
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, followDBTypes, true, followColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Follow struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, studioDBTypes, false, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDStudio, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDStudioStudio().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddStudioHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Studio) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := FollowSlice{&local}
+	if err = local.L.LoadIDStudioStudio(ctx, tx, false, (*[]*Follow)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDStudioStudio = nil
+	if err = local.L.LoadIDStudioStudio(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDStudioStudio == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -657,7 +718,7 @@ func testFollowToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 		if x.R.IDProfileFollows[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.IDProfile != x.ID {
+		if !queries.Equal(a.IDProfile, x.ID) {
 			t.Error("foreign key was wrong value", a.IDProfile)
 		}
 
@@ -668,11 +729,172 @@ func testFollowToOneSetOpProfileUsingIDProfileProfile(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.IDProfile != x.ID {
+		if !queries.Equal(a.IDProfile, x.ID) {
 			t.Error("foreign key was wrong value", a.IDProfile, x.ID)
 		}
 	}
 }
+
+func testFollowToOneRemoveOpProfileUsingIDProfileProfile(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Follow
+	var b Profile
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, followDBTypes, false, strmangle.SetComplement(followPrimaryKeyColumns, followColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, profileDBTypes, false, strmangle.SetComplement(profilePrimaryKeyColumns, profileColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDProfileProfile(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDProfileProfile(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDProfileProfile().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDProfileProfile != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDProfile) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDProfileFollows) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
+func testFollowToOneSetOpStudioUsingIDStudioStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Follow
+	var b, c Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, followDBTypes, false, strmangle.SetComplement(followPrimaryKeyColumns, followColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Studio{&b, &c} {
+		err = a.SetIDStudioStudio(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDStudioStudio != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDStudioFollows[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.IDStudio, x.ID) {
+			t.Error("foreign key was wrong value", a.IDStudio)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDStudio))
+		reflect.Indirect(reflect.ValueOf(&a.IDStudio)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDStudio, x.ID) {
+			t.Error("foreign key was wrong value", a.IDStudio, x.ID)
+		}
+	}
+}
+
+func testFollowToOneRemoveOpStudioUsingIDStudioStudio(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Follow
+	var b Studio
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, followDBTypes, false, strmangle.SetComplement(followPrimaryKeyColumns, followColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDStudioStudio(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDStudioStudio(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDStudioStudio().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDStudioStudio != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDStudio) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDStudioFollows) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
 func testFollowToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
@@ -805,7 +1027,7 @@ func testFollowsSelect(t *testing.T) {
 }
 
 var (
-	followDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `CreatedAt`: `timestamp without time zone`}
+	followDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `CreatedAt`: `timestamp without time zone`, `IDStudio`: `bigint`}
 	_             = bytes.MinRead
 )
 

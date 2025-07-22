@@ -12,6 +12,7 @@ type Criteria struct {
 	Name     repository.CriteriaString
 	Email    repository.CriteriaString
 	Or       []Criteria
+	Roles    []model.Role
 }
 
 type SelectOpts struct {
@@ -20,6 +21,7 @@ type SelectOpts struct {
 	Name     *bool
 	Email    *bool
 	Phone    *bool
+	IDUser   *bool
 }
 
 type FindOneOptions struct {

@@ -3,14 +3,15 @@ package service
 import (
 	"fmt"
 
+	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
@@ -80,6 +81,39 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 		return nil, err
 	}
 	return profile, nil
+}
+
+func (profileService *ProfileService) SearchProfile(q string) ([]model.Profile, error) {
+	users, err := profileService.userService.SearchUsers(q, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := profile_repository.NewFindOptions().
+		Load(profile_repository.LoadOpts{
+			Avatar: true,
+			User: &user_repository.SelectOpts{
+				Name:     utils.Bool(true),
+				ID:       utils.Bool(true),
+				IDUser:   utils.Bool(true),
+				Username: utils.Bool(true),
+			},
+			Roles: true,
+		})
+
+	profiles, err := profileService.profileRepository.Find(
+		&profile_repository.Criteria{
+			IDUser_IN: utils.MapNoError(users, func(user authModel.User) int64 {
+				return user.ID
+			}),
+		},
+		opts,
+	)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return nil, err
+	}
+	return profiles, nil
 }
 
 func (profileService *ProfileService) UpdateProfile(
@@ -185,11 +219,9 @@ func (profileService *ProfileService) GetProfileIDFromIDUser(idUser int64) (int6
 }
 
 func (profileService *ProfileService) GetFollows(idProfile int64) (int64, error) {
-
-	return profileService.followRepository.CountProfileFollowers(&follow_repository.FollowCriteria{
+	return profileService.followRepository.Count(&follow_repository.Criteria{
 		IDProfile: idProfile,
 	})
-
 }
 
 // GetAllUserView
