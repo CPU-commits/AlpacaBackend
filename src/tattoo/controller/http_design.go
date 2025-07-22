@@ -34,7 +34,7 @@ type HttpDesignController struct {
 //	@description	"design": [
 //	@description	{
 //	@description	"description": "Descripción del diseño",
-//	@description 	"price" : "Precio del diseño"
+//	@description	"price" : "Precio del diseño"
 //	@description	"image": "archivo_imagen",
 //	@description	"coord": {"x": 100, "y": 200},
 //	@description	}]
@@ -97,13 +97,14 @@ func (httpDesign *HttpDesignController) UploadDesigns(c *gin.Context) {
 }
 
 // Get doc
-// @Summary	Recibir los diseños de un usuario
-// @Tags		design
-// @Success	200			{object}	controller.GetDesignsResponse
-// @Param		username	path		string					true	"username"
-// @Param		page		query		int						true	"numero de pagina"
-// @Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
-// @Router		/api/designs/{username} [Get]
+//
+//	@Summary	Recibir los diseños de un usuario
+//	@Tags		designs
+//	@Success	200			{object}	controller.GetDesignsResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		page		query		int						true	"numero de pagina"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/designs/{username} [Get]
 func (httpDesign *HttpDesignController) GetDesigns(c *gin.Context) {
 	var designFind *dto.DesignFindDto
 
@@ -133,7 +134,7 @@ func (httpDesign *HttpDesignController) GetDesigns(c *gin.Context) {
 //
 //	@Summary	Recibir los ultimos diseños de un usuario
 //	@Tags		designs
-//	@Success	200			{object}	controller.GetDesingsResponse
+//	@Success	200			{object}	controller.GetDesignsResponse
 //	@Param		username	path		string					true	"username"
 //	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
 //	@Router		/api/designs/latest/{username} [Get]
@@ -151,6 +152,65 @@ func (httpDesign *HttpDesignController) GetLatestDesigns(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, designs)
+}
+
+// Update godoc
+//
+//	@Summary	Actualizar un diseño del usuario
+//	@Tags		designs
+//	@Success	200
+//	@Param		id			path	string					true	"id del diseño"
+//	@Param		description	body	string					false	"descripcion"
+//	@Param		price		body	int						false	"precio"
+//	@Failure	503			object	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/designs/{id} [Patch]
+func (httpDesign *HttpDesignController) UpdateDesign(c *gin.Context) {
+	var dataUpdate *dto.DataUpdate
+
+	if err := c.ShouldBindUri(&dataUpdate); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	if err := c.ShouldBind(&dataUpdate); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	err := httpDesign.designService.UpdateDesign(claims.ID, *dataUpdate)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
+// Delete godoc
+//
+//	@Summary	Eliminar un diseño del usuario
+//	@Tags		designs
+//	@Success	200
+//	@Param		id			path	string					true	"id del diseño"
+//	@Failure	503			object	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/designs/{id} [Delete]
+func (httpDesign *HttpDesignController) DeleteDesign(c *gin.Context) {
+	var param *dto.DesignParam
+
+	if err := c.ShouldBindUri(&param); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+
+	err := httpDesign.designService.DeleteDesign(claims.ID, param.ID)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }
 
 func NewDesignHttpController(bus bus.Bus) *HttpDesignController {

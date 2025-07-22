@@ -2,6 +2,13 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  controller.GetDesignsResponse:
+    properties:
+      designs:
+        items:
+          $ref: '#/definitions/model.Design'
+        type: array
+    type: object
   controller.GetLikeResponse:
     properties:
       isLiked:
@@ -146,6 +153,29 @@ definitions:
       "y":
         type: number
     type: object
+  model.Design:
+    properties:
+      categories:
+        items:
+          type: string
+        type: array
+      coord:
+        $ref: '#/definitions/model.Coord'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      idProfile:
+        type: integer
+      image:
+        $ref: '#/definitions/model.Image'
+      price:
+        type: integer
+      profile:
+        $ref: '#/definitions/model.Profile'
+    type: object
   model.Image:
     properties:
       createdAt:
@@ -189,6 +219,8 @@ definitions:
       id:
         type: integer
       idProfile:
+        type: integer
+      idStudio:
         type: integer
       images:
         items:
@@ -252,6 +284,8 @@ definitions:
         type: string
       id:
         type: integer
+      location:
+        type: string
       name:
         type: string
       phone:
@@ -482,6 +516,136 @@ paths:
       summary: Actualizar informacion del usuario, name || phone
       tags:
       - auth
+  /api/designs:
+    post:
+      consumes:
+      - multipart/form-data
+      description: |-
+        ```json
+        {
+        "design": [
+        {
+        "description": "Descripción del diseño",
+        "price" : "Precio del diseño"
+        "image": "archivo_imagen",
+        "coord": {"x": 100, "y": 200},
+        }]
+        }
+        ```
+      parameters:
+      - description: Imagen del diseño (jpg/png/webp)
+        in: formData
+        name: image
+        required: true
+        type: file
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Formulario inválido o sin datos de tatuajes
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "415":
+          description: El tipo de imagen es inválido, debe ser jpg/png/webp
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+        "502":
+          description: Falló el repositorio
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Publicar nuevos diseños {tatuador}
+      tags:
+      - designs
+  /api/designs/{id}:
+    delete:
+      parameters:
+      - description: id del diseño
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Eliminar un diseño del usuario
+      tags:
+      - designs
+    patch:
+      parameters:
+      - description: id del diseño
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: descripcion
+        in: body
+        name: description
+        schema:
+          type: string
+      - description: precio
+        in: body
+        name: price
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Actualizar un diseño del usuario
+      tags:
+      - designs
+  /api/designs/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: numero de pagina
+        in: query
+        name: page
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetDesignsResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir los diseños de un usuario
+      tags:
+      - designs
+  /api/designs/latest/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetDesignsResponse'
+        "503":
+          description: Error con la base de datos
+          schema:
+            $ref: '#/definitions/utils.ProblemDetails'
+      summary: Recibir los ultimos diseños de un usuario
+      tags:
+      - designs
   /api/generators/code:
     post:
       parameters:

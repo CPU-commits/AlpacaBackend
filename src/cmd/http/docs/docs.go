@@ -303,6 +303,189 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/designs": {
+            "post": {
+                "description": "` + "`" + `` + "`" + `` + "`" + `json\n{\n\"design\": [\n{\n\"description\": \"Descripción del diseño\",\n\"price\" : \"Precio del diseño\"\n\"image\": \"archivo_imagen\",\n\"coord\": {\"x\": 100, \"y\": 200},\n}]\n}\n` + "`" + `` + "`" + `` + "`" + `",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "designs"
+                ],
+                "summary": "Publicar nuevos diseños {tatuador}",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Imagen del diseño (jpg/png/webp)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Formulario inválido o sin datos de tatuajes",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "415": {
+                        "description": "El tipo de imagen es inválido, debe ser jpg/png/webp",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    },
+                    "502": {
+                        "description": "Falló el repositorio",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/designs/latest/{username}": {
+            "get": {
+                "tags": [
+                    "designs"
+                ],
+                "summary": "Recibir los ultimos diseños de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetDesignsResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/designs/{id}": {
+            "delete": {
+                "tags": [
+                    "designs"
+                ],
+                "summary": "Eliminar un diseño del usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id del diseño",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "designs"
+                ],
+                "summary": "Actualizar un diseño del usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id del diseño",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "descripcion",
+                        "name": "description",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "precio",
+                        "name": "price",
+                        "in": "body",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/designs/{username}": {
+            "get": {
+                "tags": [
+                    "designs"
+                ],
+                "summary": "Recibir los diseños de un usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "numero de pagina",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetDesignsResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Error con la base de datos",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/api/generators/code": {
             "post": {
                 "tags": [
@@ -840,6 +1023,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controller.GetDesignsResponse": {
+            "type": "object",
+            "properties": {
+                "designs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Design"
+                    }
+                }
+            }
+        },
         "controller.GetLikeResponse": {
             "type": "object",
             "properties": {
@@ -1055,6 +1249,41 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Design": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "coord": {
+                    "$ref": "#/definitions/model.Coord"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "idProfile": {
+                    "type": "integer"
+                },
+                "image": {
+                    "$ref": "#/definitions/model.Image"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "profile": {
+                    "$ref": "#/definitions/model.Profile"
+                }
+            }
+        },
         "model.Image": {
             "type": "object",
             "properties": {
@@ -1120,6 +1349,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "idProfile": {
+                    "type": "integer"
+                },
+                "idStudio": {
                     "type": "integer"
                 },
                 "images": {
@@ -1213,6 +1445,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "location": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

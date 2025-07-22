@@ -109,6 +109,28 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 	}, opts)
 }
 
+func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataUpdate) error {
+	if data.Description == "" && data.Price == 0 {
+		return ErrNotParams
+	}
+
+	return designService.designRepository.Update(&design_repository.Criteria{
+		ID:        data.ID,
+		IDProfile: profileId,
+	}, design_repository.UpdateData{
+		Description: &data.Description,
+		Price:       &data.Price,
+	})
+}
+
+func (designService *DesignService) DeleteDesign(profileId int64, designId int64) error {
+
+	return designService.designRepository.Delete(&design_repository.Criteria{
+		ID:        designId,
+		IDProfile: profileId,
+	})
+}
+
 func NewDesignService(
 	imageStore store.ImageStore,
 	profileService service.ProfileService,
