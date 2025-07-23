@@ -55,27 +55,32 @@ func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, u
 	return modelDesigns, nil
 }
 
-func (designService *DesignService) GetDesigns(username string, page int) ([]model.Design, *DesignsMetadata, error) {
+func (designService *DesignService) GetDesigns(username string, params dto.DesignFindDto) ([]model.Design, *DesignsMetadata, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	limit := 8
+	limit := 20
 
+	if params.SortCreatedAt == "" {
+		params.SortCreatedAt = "DESC"
+	}
 	opts := design_repository.NewFindOptions().
 		Limit(limit).
-		Skip(limit * page).
+		Skip(limit * params.Page).
 		Include(design_repository.Include{
 			Image:       true,
 			ProfileUser: true,
 			Categories:  true,
 		}).
 		Sort(design_repository.Sort{
-			CreatedAt: "DESC",
+			CreatedAt: params.SortCreatedAt,
+			Price:     params.SortPrice,
 		})
 	desings, err := designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
+		Category:  params.Category,
 	}, opts)
 	if err != nil {
 		return nil, nil, err
@@ -126,6 +131,17 @@ func (designService *DesignService) DeleteDesign(profileId int64, designId int64
 
 	return designService.designRepository.Delete(&design_repository.Criteria{
 		ID:        designId,
+		IDProfile: profileId,
+	})
+}
+
+func (designService *DesignService) GetDesignCategories(username string) ([]string, error) {
+	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return designService.designRepository.GetCategories(&design_repository.Criteria{
 		IDProfile: profileId,
 	})
 }

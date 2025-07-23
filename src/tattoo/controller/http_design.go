@@ -118,7 +118,7 @@ func (httpDesign *HttpDesignController) GetDesigns(c *gin.Context) {
 	}
 	designs, metadata, err := httpDesign.designService.GetDesigns(
 		designFind.Username,
-		designFind.Page,
+		*designFind,
 	)
 	if err != nil {
 		utils.ResFromErr(c, err)
@@ -211,6 +211,33 @@ func (httpDesign *HttpDesignController) DeleteDesign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, nil)
+}
+
+// Get godoc
+//
+//	@Summary	Recibe todas las categorias
+//	@Tags		designs
+//	@Success	200 {object} controller.GetCategoriesResponse
+//	@Failure	503			object	utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/designs/categories/username [get]
+func (httpDesign *HttpDesignController) GetCategories(c *gin.Context) {
+
+	var param *dto.DesignFindDto
+
+	if err := c.ShouldBindUri(&param); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	categories, err := httpDesign.designService.GetDesignCategories(param.Username)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, GetCategoriesResponse{
+		Categories: categories,
+	})
 }
 
 func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
