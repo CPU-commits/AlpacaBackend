@@ -148,9 +148,9 @@ model designs{
 	id_profile BigInt
 	id_image  BigInt @unique
 	description String?
+	price BigInt?
 	categories String[]
 	coordinate Unsupported("GEOMETRY")?
-	price BigInt?
 	created_at DateTime @default(now()) @db.Timestamp(6)
 
 	image images @relation(fields: [id_image], references: [id])

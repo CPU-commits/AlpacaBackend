@@ -81,6 +81,7 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 		opts,
 	)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	fmt.Printf("profile.User.Media: %v\n", profile.User.Media)

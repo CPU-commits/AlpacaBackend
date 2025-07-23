@@ -27,6 +27,7 @@ func NewSqlDesignRepository(sqlDB *sql.DB) DesignRepository {
 }
 
 func (sqlDS *sqlDesignRepository) sqlDesignToDesign(sqlDR *models.Design) *model.Design {
+
 	design := &model.Design{
 		ID:          sqlDR.ID,
 		IDProfile:   sqlDR.IDProfile,
@@ -132,15 +133,19 @@ func (*sqlDesignRepository) sortOpts(s *Sort) []QueryMod {
 		return mods
 	}
 
+	var whereClauses []string
 	var orderClauses []string
 
 	if s.Price != "" {
+		whereClauses = append(whereClauses, "price > 0")
 		orderClauses = append(orderClauses, fmt.Sprintf("price %s", s.Price))
 	}
 	if s.CreatedAt != "" {
 		orderClauses = append(orderClauses, fmt.Sprintf("created_at %s", s.CreatedAt))
 	}
-
+	if len(whereClauses) > 0 {
+		mods = append(mods, Where(strings.Join(whereClauses, " AND ")))
+	}
 	if len(orderClauses) > 0 {
 		mods = append(mods, OrderBy(strings.Join(orderClauses, ", ")))
 	}
