@@ -326,6 +326,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		*authService.NewUserService(
 			userRepository,
 			roleRepository,
+			uidGenerator,
 			bus,
 		),
 		imageStore,
@@ -336,6 +337,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 	userService := authService.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	adminStudioService := studioService.NewPeopleStudioService(

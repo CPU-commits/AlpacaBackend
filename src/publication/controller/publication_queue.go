@@ -19,7 +19,7 @@ func NewPublicationQueueController(
 	return &QueuePublicationController{
 		profileService: *service.NewProfileService(
 			profileRepository,
-			*authService.NewUserService(userRepository, roleRepository, bus),
+			*authService.NewUserService(userRepository, roleRepository, uidGenerator, bus),
 			imageStore,
 			*fileService,
 			followRepository,

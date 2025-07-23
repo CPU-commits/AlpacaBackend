@@ -17,7 +17,7 @@ type HttpCodeController struct {
 }
 
 func NewCodeHttpController(bus bus.Bus) *HttpCodeController {
-	userService := *service.NewUserService(sqlUserRepository, sqlRoleRepository, bus)
+	userService := *service.NewUserService(sqlUserRepository, sqlRoleRepository, uidGenerator, bus)
 	return &HttpCodeController{
 		bus: bus,
 		codeService: services.NewCodeService(

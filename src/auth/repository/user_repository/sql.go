@@ -8,6 +8,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/boil"
@@ -25,6 +26,20 @@ func (sqlUserRepository) SqlUserToUser(
 	sqlUser *models.User,
 	roles []string,
 ) *model.User {
+	var media []shorterModel.Media
+	if sqlUser.R != nil && sqlUser.R.IDUserLinks != nil {
+		sqlLinks := sqlUser.R.IDUserLinks
+
+		for _, sqlLink := range sqlLinks {
+			media = append(media, shorterModel.Media{
+				ID:        sqlLink.ID,
+				Link:      sqlLink.Link,
+				ShortCode: sqlLink.ShortCode,
+				Type:      shorterModel.TypeMedia(sqlLink.Type),
+			})
+		}
+	}
+
 	return &model.User{
 		ID:    sqlUser.ID,
 		Email: sqlUser.Email,
@@ -35,6 +50,7 @@ func (sqlUserRepository) SqlUserToUser(
 		}),
 		Username: sqlUser.Username,
 		Location: sqlUser.Location.String,
+		Media:    media,
 	}
 }
 
@@ -117,6 +133,9 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.Username != nil && *selectOpts.Username {
 		mod = append(mod, Select(models.UserColumns.Username))
+	}
+	if selectOpts.Location != nil && *selectOpts.Location {
+		mod = append(mod, Select(models.UserColumns.Location))
 	}
 
 	return mod
@@ -311,6 +330,35 @@ func (sqlUR sqlUserRepository) UpdateOne(userId int64, data UserUpdateData) erro
 	if data.Phone != nil {
 		user.Phone = null.StringFrom(*data.Phone)
 		cols = append(cols, models.UserColumns.Phone)
+	}
+	if data.Location != nil {
+		user.Location = null.StringFromPtr(data.Location)
+		cols = append(cols, models.UserColumns.Location)
+	}
+	if data.AddMedia != nil {
+		for _, media := range data.AddMedia {
+			sqlMedia := models.Link{
+				Type:      string(media.Type),
+				Link:      media.Link,
+				ShortCode: media.ShortCode,
+				IDUser:    null.Int64From(media.IDUser),
+			}
+
+			if err := sqlMedia.Insert(context.Background(), sqlUR.db, boil.Infer()); err != nil {
+				return utils.ErrRepositoryFailed
+			}
+		}
+	}
+	if data.RemoveMedia.IDUser != 0 {
+		if _, err := models.Links(
+			models.LinkWhere.ID.IN(data.RemoveMedia.IDs),
+			models.LinkWhere.IDUser.EQ(null.Int64From(data.RemoveMedia.IDUser)),
+		).DeleteAll(context.Background(), sqlUR.db); err != nil {
+			return utils.ErrRepositoryFailed
+		}
+	}
+	if len(cols) == 0 {
+		return nil
 	}
 
 	_, err = user.Update(context.Background(), sqlUR.db, boil.Whitelist(cols...))

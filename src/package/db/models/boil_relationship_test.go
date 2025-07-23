@@ -25,6 +25,7 @@ func TestToOne(t *testing.T) {
 	t.Run("LikeToProfileUsingIDProfileProfile", testLikeToOneProfileUsingIDProfileProfile)
 	t.Run("LikeToUserUsingIDUserUser", testLikeToOneUserUsingIDUserUser)
 	t.Run("LinkToStudioUsingIDStudioStudio", testLinkToOneStudioUsingIDStudioStudio)
+	t.Run("LinkToUserUsingIDUserUser", testLinkToOneUserUsingIDUserUser)
 	t.Run("PostImageToImageUsingIDImageImage", testPostImageToOneImageUsingIDImageImage)
 	t.Run("PostImageToPostUsingIDPostPost", testPostImageToOnePostUsingIDPostPost)
 	t.Run("PostToProfileUsingIDProfileProfile", testPostToOneProfileUsingIDProfileProfile)
@@ -93,6 +94,7 @@ func TestToMany(t *testing.T) {
 	t.Run("UserToIDUserCodes", testUserToManyIDUserCodes)
 	t.Run("UserToIDUserFollows", testUserToManyIDUserFollows)
 	t.Run("UserToIDUserLikes", testUserToManyIDUserLikes)
+	t.Run("UserToIDUserLinks", testUserToManyIDUserLinks)
 	t.Run("UserToIDUserReviews", testUserToManyIDUserReviews)
 	t.Run("UserToIDUserRolesUsers", testUserToManyIDUserRolesUsers)
 	t.Run("UserToIDUserStudioUsers", testUserToManyIDUserStudioUsers)
@@ -120,6 +122,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("LikeToProfileUsingIDProfileLikes", testLikeToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("LikeToUserUsingIDUserLikes", testLikeToOneSetOpUserUsingIDUserUser)
 	t.Run("LinkToStudioUsingIDStudioLinks", testLinkToOneSetOpStudioUsingIDStudioStudio)
+	t.Run("LinkToUserUsingIDUserLinks", testLinkToOneSetOpUserUsingIDUserUser)
 	t.Run("PostImageToImageUsingIDImagePostImage", testPostImageToOneSetOpImageUsingIDImageImage)
 	t.Run("PostImageToPostUsingIDPostPostImages", testPostImageToOneSetOpPostUsingIDPostPost)
 	t.Run("PostToProfileUsingIDProfilePosts", testPostToOneSetOpProfileUsingIDProfileProfile)
@@ -153,6 +156,7 @@ func TestToOneRemove(t *testing.T) {
 	t.Run("FollowToProfileUsingIDProfileFollows", testFollowToOneRemoveOpProfileUsingIDProfileProfile)
 	t.Run("FollowToStudioUsingIDStudioFollows", testFollowToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("LinkToStudioUsingIDStudioLinks", testLinkToOneRemoveOpStudioUsingIDStudioStudio)
+	t.Run("LinkToUserUsingIDUserLinks", testLinkToOneRemoveOpUserUsingIDUserUser)
 	t.Run("PostToStudioUsingIDStudioPosts", testPostToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("ProfileToImageUsingIDAvatarProfile", testProfileToOneRemoveOpImageUsingIDAvatarImage)
 	t.Run("StudioToImageUsingIDAvatarStudio", testStudioToOneRemoveOpImageUsingIDAvatarImage)
@@ -212,6 +216,7 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("UserToIDUserCodes", testUserToManyAddOpIDUserCodes)
 	t.Run("UserToIDUserFollows", testUserToManyAddOpIDUserFollows)
 	t.Run("UserToIDUserLikes", testUserToManyAddOpIDUserLikes)
+	t.Run("UserToIDUserLinks", testUserToManyAddOpIDUserLinks)
 	t.Run("UserToIDUserReviews", testUserToManyAddOpIDUserReviews)
 	t.Run("UserToIDUserRolesUsers", testUserToManyAddOpIDUserRolesUsers)
 	t.Run("UserToIDUserStudioUsers", testUserToManyAddOpIDUserStudioUsers)
@@ -230,6 +235,7 @@ func TestToManySet(t *testing.T) {
 	t.Run("StudioToIDStudioPosts", testStudioToManySetOpIDStudioPosts)
 	t.Run("StudioToIDStudioTattoos", testStudioToManySetOpIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManySetOpIDTattooArtistAppointments)
+	t.Run("UserToIDUserLinks", testUserToManySetOpIDUserLinks)
 }
 
 // TestToManyRemove tests cannot be run in parallel
@@ -243,4 +249,5 @@ func TestToManyRemove(t *testing.T) {
 	t.Run("StudioToIDStudioPosts", testStudioToManyRemoveOpIDStudioPosts)
 	t.Run("StudioToIDStudioTattoos", testStudioToManyRemoveOpIDStudioTattoos)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyRemoveOpIDTattooArtistAppointments)
+	t.Run("UserToIDUserLinks", testUserToManyRemoveOpIDUserLinks)
 }

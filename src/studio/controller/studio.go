@@ -185,6 +185,7 @@ func NewHttpStudioController(bus bus.Bus) httpStudioController {
 	userService := authService.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	authService := authService.NewAuthService(

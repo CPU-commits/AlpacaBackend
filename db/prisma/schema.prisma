@@ -69,6 +69,7 @@ model users {
 	codes codes[]
 	tokens tokens[]
 	ownStudios studios[]
+	links links[]
 }
 
 model token_passwords {
@@ -204,7 +205,9 @@ model links {
 	link String
 	short_code String @unique
 	id_studio BigInt?
+	id_user BigInt?
 	studio studios? @relation(fields: [id_studio], references: [id])
+	user users? @relation(fields: [id_user], references: [id])
 	created_at DateTime @default(now()) @db.Timestamp(6)
 }
 

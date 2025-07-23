@@ -7,6 +7,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 )
@@ -19,6 +20,9 @@ var (
 	followRepository        = follow_repository.NewSqlFollowRepository()
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 )
+
+// UID Generator
+var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Image
 var imageStore = cloudinary_store.NewCloudinaryImageStore()

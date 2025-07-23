@@ -250,6 +250,7 @@ func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
 				*authService.NewUserService(
 					userRepository,
 					roleRepository,
+					uidGenerator,
 					bus,
 				),
 				cloudinary_store.NewCloudinaryImageStore(),

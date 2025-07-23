@@ -12,9 +12,11 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/jwt"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 )
 
-// Generator
+// UID Generator
+var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Repositories
 var (

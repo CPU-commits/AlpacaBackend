@@ -24,6 +24,7 @@ func NewUserHttpController(bus bus.Bus) *HttpUserController {
 		userService: service.NewUserService(
 			sqlUserRepository,
 			sqlRoleRepository,
+			uidGenerator,
 			bus,
 		),
 	}
@@ -69,7 +70,7 @@ func (httpUser *HttpUserController) UpdateUser(c *gin.Context) {
 	}
 	claims, _ := utils.NewClaimsFromContext(c)
 
-	if err := httpUser.userService.UserUpdate(claims.ID, *userUpdateData); err != nil {
+	if err := httpUser.userService.UserUpdate(claims.ID, *userUpdateData, claims.Roles); err != nil {
 		utils.ResFromErr(c, err)
 		return
 	}

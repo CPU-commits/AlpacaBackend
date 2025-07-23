@@ -20,14 +20,15 @@ var ALL_MEDIAS = []TypeMedia{
 	INSTAGRAM_MEDIA,
 }
 
+func IsMediaType(media string) bool {
+	return utils.Includes(ALL_MEDIAS, TypeMedia(media))
+}
+
 type Media struct {
 	ID        int64     `json:"id"`
 	Link      string    `json:"link"`
 	Type      TypeMedia `json:"typeMedia"`
 	ShortCode string    `json:"-"`
 	IDStudio  int64     `json:"-"`
-}
-
-func IsMediaType(media string) bool {
-	return utils.Includes(ALL_MEDIAS, TypeMedia(media))
+	IDUser    int64     `json:"-"`
 }

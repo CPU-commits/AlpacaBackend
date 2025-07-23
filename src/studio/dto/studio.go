@@ -5,6 +5,7 @@ import (
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/go-playground/validator/v10"
@@ -54,7 +55,7 @@ type UpdateMediaDTO struct {
 var IsMediaType validator.Func = func(fl validator.FieldLevel) bool {
 	media, ok := fl.Field().Interface().(string)
 	if ok {
-		return model.IsMediaType(media)
+		return shorterModel.IsMediaType(media)
 	}
 	return false
 }
@@ -71,17 +72,17 @@ type UpdateStudioDTO struct {
 	RemoveMedia []int64          `form:"removeMedia"`
 }
 
-func (s *UpdateStudioDTO) ToMedia(generator uid.UIDGenerator, idStudio int64) ([]model.Media, error) {
-	return utils.Map(s.AddMedia, func(media UpdateMediaDTO) (model.Media, error) {
+func (s *UpdateStudioDTO) ToMedia(generator uid.UIDGenerator, idStudio int64) ([]shorterModel.Media, error) {
+	return utils.Map(s.AddMedia, func(media UpdateMediaDTO) (shorterModel.Media, error) {
 		code, err := generator.Generate()
 		if err != nil {
-			return model.Media{}, err
+			return shorterModel.Media{}, err
 		}
 
-		return model.Media{
+		return shorterModel.Media{
 			ShortCode: code,
 			Link:      media.Link,
-			Type:      model.TypeMedia(media.Type),
+			Type:      shorterModel.TypeMedia(media.Type),
 			IDStudio:  idStudio,
 		}, nil
 	})

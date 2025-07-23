@@ -68,6 +68,7 @@ func NewFollowController(bus bus.Bus) httpFollowController {
 	userServices := authService.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	fileService := fileService.NewFileService(imageStore)

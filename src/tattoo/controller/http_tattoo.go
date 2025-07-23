@@ -250,6 +250,7 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 				*authService.NewUserService(
 					userRepository,
 					roleRepository,
+					uidGenerator,
 					bus,
 				),
 				cloudinary_store.NewCloudinaryImageStore(),

@@ -269,6 +269,7 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 	userService := authServices.NewUserService(
 		userRepository,
 		roleRepository,
+		uidGenerator,
 		bus,
 	)
 	profileService := userServices.NewProfileService(
