@@ -13,7 +13,10 @@ type DesignsDto struct {
 type DesignFindDto struct {
 	Username string `uri:"username"`
 
-	Page int `form:"page,default=0" binding:"min=0"`
+	Page          int    `form:"page,default=0" binding:"min=0"`
+	Category      string `form:"category"`
+	SortCreatedAt string `form:"sortCreatedAt"`
+	SortPrice     string `form:"sortPrice"`
 }
 type DesignDto struct {
 	Description string `form:"description" binding:"omitempty, max=500"`

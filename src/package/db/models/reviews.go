@@ -26,10 +26,10 @@ type Review struct {
 	ID            int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDUser        int64     `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
 	IDProfile     int64     `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	IDAppointment int64     `boil:"id_appointment" json:"id_appointment" toml:"id_appointment" yaml:"id_appointment"`
 	Content       string    `boil:"content" json:"content" toml:"content" yaml:"content"`
 	Stars         int       `boil:"stars" json:"stars" toml:"stars" yaml:"stars"`
 	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	IDAppointment int64     `boil:"id_appointment" json:"id_appointment" toml:"id_appointment" yaml:"id_appointment"`
 
 	R *reviewR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reviewL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,36 +39,36 @@ var ReviewColumns = struct {
 	ID            string
 	IDUser        string
 	IDProfile     string
+	IDAppointment string
 	Content       string
 	Stars         string
 	CreatedAt     string
-	IDAppointment string
 }{
 	ID:            "id",
 	IDUser:        "id_user",
 	IDProfile:     "id_profile",
+	IDAppointment: "id_appointment",
 	Content:       "content",
 	Stars:         "stars",
 	CreatedAt:     "created_at",
-	IDAppointment: "id_appointment",
 }
 
 var ReviewTableColumns = struct {
 	ID            string
 	IDUser        string
 	IDProfile     string
+	IDAppointment string
 	Content       string
 	Stars         string
 	CreatedAt     string
-	IDAppointment string
 }{
 	ID:            "reviews.id",
 	IDUser:        "reviews.id_user",
 	IDProfile:     "reviews.id_profile",
+	IDAppointment: "reviews.id_appointment",
 	Content:       "reviews.content",
 	Stars:         "reviews.stars",
 	CreatedAt:     "reviews.created_at",
-	IDAppointment: "reviews.id_appointment",
 }
 
 // Generated where
@@ -77,18 +77,18 @@ var ReviewWhere = struct {
 	ID            whereHelperint64
 	IDUser        whereHelperint64
 	IDProfile     whereHelperint64
+	IDAppointment whereHelperint64
 	Content       whereHelperstring
 	Stars         whereHelperint
 	CreatedAt     whereHelpertime_Time
-	IDAppointment whereHelperint64
 }{
 	ID:            whereHelperint64{field: "\"reviews\".\"id\""},
 	IDUser:        whereHelperint64{field: "\"reviews\".\"id_user\""},
 	IDProfile:     whereHelperint64{field: "\"reviews\".\"id_profile\""},
+	IDAppointment: whereHelperint64{field: "\"reviews\".\"id_appointment\""},
 	Content:       whereHelperstring{field: "\"reviews\".\"content\""},
 	Stars:         whereHelperint{field: "\"reviews\".\"stars\""},
 	CreatedAt:     whereHelpertime_Time{field: "\"reviews\".\"created_at\""},
-	IDAppointment: whereHelperint64{field: "\"reviews\".\"id_appointment\""},
 }
 
 // ReviewRels is where relationship names are stored.
@@ -166,8 +166,8 @@ func (r *reviewR) GetIDUserUser() *User {
 type reviewL struct{}
 
 var (
-	reviewAllColumns            = []string{"id", "id_user", "id_profile", "content", "stars", "created_at", "id_appointment"}
-	reviewColumnsWithoutDefault = []string{"id_user", "id_profile", "content", "stars", "id_appointment"}
+	reviewAllColumns            = []string{"id", "id_user", "id_profile", "id_appointment", "content", "stars", "created_at"}
+	reviewColumnsWithoutDefault = []string{"id_user", "id_profile", "id_appointment", "content", "stars"}
 	reviewColumnsWithDefault    = []string{"id", "created_at"}
 	reviewPrimaryKeyColumns     = []string{"id"}
 	reviewGeneratedColumns      = []string{}

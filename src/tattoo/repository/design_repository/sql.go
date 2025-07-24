@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
@@ -26,6 +27,7 @@ func NewSqlDesignRepository(sqlDB *sql.DB) DesignRepository {
 }
 
 func (sqlDS *sqlDesignRepository) sqlDesignToDesign(sqlDR *models.Design) *model.Design {
+
 	design := &model.Design{
 		ID:          sqlDR.ID,
 		IDProfile:   sqlDR.IDProfile,
@@ -90,6 +92,9 @@ func (*sqlDesignRepository) criteriaToWhere(c *Criteria) []QueryMod {
 	if c.IDProfile != 0 {
 		mods = append(mods, models.DesignWhere.IDProfile.EQ(c.IDProfile))
 	}
+	if c.Category != "" {
+		mods = append(mods, Where("categories && ARRAY[?]::text[]", c.Category))
+	}
 	return mods
 }
 
@@ -127,9 +132,24 @@ func (*sqlDesignRepository) sortOpts(s *Sort) []QueryMod {
 	if s == nil {
 		return mods
 	}
-	if s.CreatedAt != "" {
-		mods = append(mods, OrderBy(fmt.Sprintf("created_at %s", s.CreatedAt)))
+
+	var whereClauses []string
+	var orderClauses []string
+
+	if s.Price != "" {
+		whereClauses = append(whereClauses, "price > 0")
+		orderClauses = append(orderClauses, fmt.Sprintf("price %s", s.Price))
 	}
+	if s.CreatedAt != "" {
+		orderClauses = append(orderClauses, fmt.Sprintf("created_at %s", s.CreatedAt))
+	}
+	if len(whereClauses) > 0 {
+		mods = append(mods, Where(strings.Join(whereClauses, " AND ")))
+	}
+	if len(orderClauses) > 0 {
+		mods = append(mods, OrderBy(strings.Join(orderClauses, ", ")))
+	}
+
 	return mods
 }
 
@@ -163,6 +183,7 @@ func (sqlDS *sqlDesignRepository) Find(c *Criteria, o *FindOpts) ([]model.Design
 	mods := append(sqlDS.findOptionsToMod(o), sqlDS.criteriaToWhere(c)...)
 	sqlRes, err := models.Designs(mods...).All(context.Background(), sqlDS.db)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 	return utils.MapNoError(sqlRes, func(d *models.Design) model.Design {
@@ -276,4 +297,19 @@ func (sqlDS *sqlDesignRepository) Delete(c *Criteria) error {
 	}
 
 	return nil
+}
+func (sqlDS *sqlDesignRepository) GetCategories(c *Criteria) ([]string, error) {
+	where := sqlDS.criteriaToWhere(c)
+	sqlDesigns, err := models.Designs(where...).All(context.Background(), sqlDS.db)
+	if err != nil {
+		return nil, utils.ErrRepositoryFailed
+	}
+
+	set := utils.NewSet[string]()
+	utils.ConcurrentForEach(sqlDesigns, func(d *models.Design) error {
+		set.Add(d.Categories...)
+		return nil
+	}, nil)
+
+	return set.Values(), nil
 }

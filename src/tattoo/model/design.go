@@ -13,8 +13,8 @@ type Design struct {
 	Image       model.Image `json:"image"`
 	Coord       *Coord      `json:"coord,omitempty"`
 	Description string      `json:"description,omitempty"`
-	Categories  []string    `json:"categories,omitempty"`
 	Price       int64       `json:"price" binding:"omitempty"`
+	Categories  []string    `json:"categories,omitempty"`
 	CreatedAt   time.Time   `json:"createdAt"`
 
 	Profile *userModel.Profile `json:"profile,omitempty"`

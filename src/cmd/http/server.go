@@ -144,6 +144,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		design.GET("/latest/:username", middleware.JWTMiddleware(), designController.GetLatestDesigns)
 		design.DELETE("/:id", middleware.JWTMiddleware(), designController.DeleteDesign)
 		design.PATCH("/:id", middleware.JWTMiddleware(), designController.UpdateDesign)
+		design.GET("/categories/:username", middleware.JWTMiddleware(), designController.GetCategories)
 	}
 	profile := router.Group("api/profiles")
 	{

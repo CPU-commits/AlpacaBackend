@@ -6,6 +6,7 @@ type Criteria struct {
 	ID        int64
 	IDs       []int64
 	IDProfile int64
+	Category  string
 }
 
 type Include struct {
@@ -17,6 +18,7 @@ type Include struct {
 
 type Sort struct {
 	CreatedAt string
+	Price     string
 }
 
 type FindOpts struct {
@@ -106,4 +108,5 @@ type DesignRepository interface {
 	Count(criteria *Criteria) (int64, error)
 	Update(criteria *Criteria, data UpdateData) error
 	Delete(criteria *Criteria) error
+	GetCategories(criteria *Criteria) ([]string, error)
 }

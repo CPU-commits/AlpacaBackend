@@ -9,3 +9,7 @@ type GetTattoosResponse struct {
 type GetDesignsResponse struct {
 	Designs []model.Design `json:"designs"`
 }
+
+type GetCategoriesResponse struct {
+	Categories []string `json:"categories"`
+}

@@ -29,13 +29,13 @@ type Tattoo struct {
 	IDProfile   int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
 	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
 	Likes       int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	IDPost      null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
 	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Popularity  int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
+	IDPost      null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
 	Views       int               `boil:"views" json:"views" toml:"views" yaml:"views"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
-	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	IDStudio    null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 
 	R *tattooR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,26 +47,26 @@ var TattooColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Likes       string
-	CreatedAt   string
-	IDPost      string
 	Description string
+	Categories  string
+	CreatedAt   string
 	Popularity  string
+	IDPost      string
 	Views       string
 	Coordinate  string
-	Categories  string
 	IDStudio    string
 }{
 	ID:          "id",
 	IDProfile:   "id_profile",
 	IDImage:     "id_image",
 	Likes:       "likes",
-	CreatedAt:   "created_at",
-	IDPost:      "id_post",
 	Description: "description",
+	Categories:  "categories",
+	CreatedAt:   "created_at",
 	Popularity:  "popularity",
+	IDPost:      "id_post",
 	Views:       "views",
 	Coordinate:  "coordinate",
-	Categories:  "categories",
 	IDStudio:    "id_studio",
 }
 
@@ -75,26 +75,26 @@ var TattooTableColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Likes       string
-	CreatedAt   string
-	IDPost      string
 	Description string
+	Categories  string
+	CreatedAt   string
 	Popularity  string
+	IDPost      string
 	Views       string
 	Coordinate  string
-	Categories  string
 	IDStudio    string
 }{
 	ID:          "tattoos.id",
 	IDProfile:   "tattoos.id_profile",
 	IDImage:     "tattoos.id_image",
 	Likes:       "tattoos.likes",
-	CreatedAt:   "tattoos.created_at",
-	IDPost:      "tattoos.id_post",
 	Description: "tattoos.description",
+	Categories:  "tattoos.categories",
+	CreatedAt:   "tattoos.created_at",
 	Popularity:  "tattoos.popularity",
+	IDPost:      "tattoos.id_post",
 	Views:       "tattoos.views",
 	Coordinate:  "tattoos.coordinate",
-	Categories:  "tattoos.categories",
 	IDStudio:    "tattoos.id_studio",
 }
 
@@ -105,26 +105,26 @@ var TattooWhere = struct {
 	IDProfile   whereHelperint64
 	IDImage     whereHelperint64
 	Likes       whereHelperint
-	CreatedAt   whereHelpertime_Time
-	IDPost      whereHelpernull_Int64
 	Description whereHelpernull_String
+	Categories  whereHelpertypes_StringArray
+	CreatedAt   whereHelpertime_Time
 	Popularity  whereHelperint
+	IDPost      whereHelpernull_Int64
 	Views       whereHelperint
 	Coordinate  whereHelpernull_String
-	Categories  whereHelpertypes_StringArray
 	IDStudio    whereHelpernull_Int64
 }{
 	ID:          whereHelperint64{field: "\"tattoos\".\"id\""},
 	IDProfile:   whereHelperint64{field: "\"tattoos\".\"id_profile\""},
 	IDImage:     whereHelperint64{field: "\"tattoos\".\"id_image\""},
 	Likes:       whereHelperint{field: "\"tattoos\".\"likes\""},
-	CreatedAt:   whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
-	IDPost:      whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
 	Description: whereHelpernull_String{field: "\"tattoos\".\"description\""},
+	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
+	CreatedAt:   whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
 	Popularity:  whereHelperint{field: "\"tattoos\".\"popularity\""},
+	IDPost:      whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
 	Views:       whereHelperint{field: "\"tattoos\".\"views\""},
 	Coordinate:  whereHelpernull_String{field: "\"tattoos\".\"coordinate\""},
-	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
 	IDStudio:    whereHelpernull_Int64{field: "\"tattoos\".\"id_studio\""},
 }
 
@@ -222,9 +222,9 @@ func (r *tattooR) GetIDStudioStudio() *Studio {
 type tattooL struct{}
 
 var (
-	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio"}
+	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate", "id_studio"}
 	tattooColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	tattooColumnsWithDefault    = []string{"id", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio"}
+	tattooColumnsWithDefault    = []string{"id", "likes", "description", "categories", "created_at", "popularity", "id_post", "views", "coordinate", "id_studio"}
 	tattooPrimaryKeyColumns     = []string{"id"}
 	tattooGeneratedColumns      = []string{}
 )

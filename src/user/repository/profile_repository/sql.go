@@ -166,6 +166,7 @@ func (sqlPR sqlProfileRepository) FindOne(criteria *Criteria, opts *FindOneOptio
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
+		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 
