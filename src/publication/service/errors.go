@@ -7,4 +7,5 @@ var (
 	ErrPublicationNotAccess           = errors.New("err: no access no publication")
 	ErrTooManyImages                  = errors.New("err: too many images")
 	ErrUnauthorizedPublishPublication = errors.New("err: no authorized publish")
+	ErrInvalidIdentifier              = errors.New("err: invalid identifier")
 )

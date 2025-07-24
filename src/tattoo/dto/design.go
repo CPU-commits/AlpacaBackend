@@ -17,6 +17,7 @@ type DesignFindDto struct {
 	Category      string `form:"category"`
 	SortCreatedAt string `form:"sortCreatedAt"`
 	SortPrice     string `form:"sortPrice"`
+	Paginated     bool   `form:"paginated"`
 }
 type DesignDto struct {
 	Description string `form:"description" binding:"omitempty, max=500"`

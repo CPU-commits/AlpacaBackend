@@ -6,6 +6,7 @@ import (
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	userModel "github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 )
 
@@ -65,6 +66,9 @@ type Appointment struct {
 	Status              AppointmentStatus   `json:"status"`
 	Phone               string              `json:"phone,omitempty"`
 	HasIdea             *bool               `json:"hasIdea,omitempty"`
+	HasDesign           *bool               `json:"hasDesign,omitempty"`
+	IDDesign            *int64              `json:"idDesign,omitempty"`
+	Design              tattooModel.Design  `json:"design,omitempty"`
 	Review              *Review             `json:"review,omitempty"`
 	Area                AppointmentArea     `json:"area,omitempty"`
 	Height              float32             `json:"height,omitempty"`

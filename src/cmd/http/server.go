@@ -170,7 +170,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.GET("/search", publicationController.Search)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
-		publication.POST("/:idPost/view", publicationController.AddViewPublication)
+		publication.POST("/:idPost/view", middleware.OptionalJWTMiddleware(), publicationController.AddViewPublication)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
 	}
 	appointment := router.Group("api/appointments", middleware.JWTMiddleware())

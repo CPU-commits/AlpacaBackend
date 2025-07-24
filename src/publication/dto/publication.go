@@ -19,6 +19,11 @@ type PublicationDto struct {
 	IDStudio int64                 `form:"idStudio"`
 }
 
+type ViewIdentifier struct {
+	Identifier     string `form:"identifier"`
+	IdentifierType string `form:"identifierType"`
+}
+
 func (publicationDto *PublicationDto) ToTattoos(idPublication int64) []dto.TattooDto {
 	return utils.MapNoError(utils.FilterNoError(publicationDto.Images, func(image PublicationImageDto) bool {
 		return *image.IsTattoo

@@ -38,7 +38,8 @@
 		"not_exists": "No existe la publicación",
 		"not_have_access": "No tienes accesso a la publicación",
 		"too_images": "Cada publicación puede tener máximo 5 imágenes",
-		"not_have_access_publish": "No tienes permiso para publicar"
+		"not_have_access_publish": "No tienes permiso para publicar",
+		"invalid_identifier": "Identificador invalido"
 	},
 	"file": {
 		"invalid_mime_type": "El tipo de archivo es incorrecto"
@@ -58,7 +59,8 @@
 		"appointment_to_me": "No puedes agendarte una cita a ti mismo",
 		"not_found": "No existe la cita",
 		"no_studio": "Esta cita no está vinculada a ningún estudio",
-		"already_tattoo_artist": "La cita ya tiene un tatuador asignado"
+		"already_tattoo_artist": "La cita ya tiene un tatuador asignado",
+		"excluyent_params": "Parametros excluyentes"
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"

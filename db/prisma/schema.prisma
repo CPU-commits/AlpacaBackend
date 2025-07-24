@@ -155,6 +155,7 @@ model designs{
 
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
+	appoitments appointments[]
 }
 
 model studio_users {
@@ -279,10 +280,12 @@ model appointments {
   id_calendar String?
   phone String?
   has_idea Boolean
+  has_design Boolean
   area tattoo_area?
   height Float?
   width Float?
   color tattoo_color?
+  id_design BigInt?
   description String
   scheduled_at DateTime?
   duration Float?
@@ -295,6 +298,7 @@ model appointments {
   user          users @relation("UserAppointments", fields: [id_user], references: [id])
   tattoo_artist users? @relation("TattooArtistAppointments", fields: [id_tattoo_artist], references: [id])
   studio studios? @relation(fields: [id_studio], references: [id])
+  design designs? @relation(fields: [id_design],references: [id])
 }
 
 model codes{

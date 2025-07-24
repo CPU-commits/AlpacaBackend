@@ -12,6 +12,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/aarondl/null/v8"
@@ -38,6 +39,8 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 		Description:    sqlAppointment.Description,
 		Phone:          sqlAppointment.Phone.String,
 		HasIdea:        &sqlAppointment.HasIdea,
+		HasDesign:      &sqlAppointment.HasDesign,
+		IDDesign:       &sqlAppointment.IDDesign.Int64,
 		Area:           model.AppointmentArea(sqlAppointment.Area.String),
 		Height:         float32(sqlAppointment.Height.Float64),
 		Width:          float32(sqlAppointment.Width.Float64),
@@ -127,6 +130,25 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 
 		appointment.Studio = studio
 	}
+	if sqlAppointment.R != nil && sqlAppointment.R.IDDesignDesign != nil {
+		sqlDesign := sqlAppointment.R.IDDesignDesign
+		sqlImage := sqlDesign.R.IDImageImage
+		design := tattooModel.Design{
+			ID: sqlDesign.ID,
+			Image: fileModel.Image{
+				ID:        sqlImage.ID,
+				Key:       sqlImage.Key,
+				MimeType:  sqlImage.MimeType,
+				Name:      sqlImage.Name,
+				CreatedAt: sqlImage.CreatedAt,
+			},
+			Description: sqlDesign.Description.String,
+			Price:       sqlDesign.Price.Int64,
+			Categories:  sqlDesign.Categories,
+			CreatedAt:   sqlDesign.CreatedAt,
+		}
+		appointment.Design = design
+	}
 
 	return appointment
 }
@@ -215,6 +237,12 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 	if load.Review {
 		mod = append(mod, Load(models.AppointmentRels.IDAppointmentReview))
 	}
+	if load.Design {
+		mod = append(mod, Load(Rels(
+			models.AppointmentRels.IDDesignDesign,
+			models.DesignRels.IDImageImage,
+		)))
+	}
 	if load.User != nil {
 		mod = append(mod, Load(
 			models.AppointmentRels.IDUserUser,
@@ -244,6 +272,7 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 			}
 		}
 	}
+
 	if load.Studio != nil {
 		mod = append(mod, Load(
 			models.AppointmentRels.IDStudioStudio,
@@ -399,6 +428,8 @@ func (sqlAR appointmentRepositorySql) Insert(
 ) (*model.Appointment, error) {
 	tx, err := sqlAR.db.BeginTx(context.Background(), nil)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
+
 		return nil, utils.ErrRepositoryFailed
 	}
 
@@ -410,6 +441,8 @@ func (sqlAR appointmentRepositorySql) Insert(
 		Color:          null.NewString(string(appointment.Color), appointment.Color != ""),
 		Description:    appointment.Description,
 		HasIdea:        *appointment.HasIdea,
+		HasDesign:      *appointment.HasDesign,
+		IDDesign:       null.Int64FromPtr(appointment.IDDesign),
 		Height:         null.Float64From(float64(appointment.Height)),
 		Width:          null.Float64From(float64(appointment.Width)),
 		Phone:          null.StringFrom(appointment.Phone),
@@ -417,6 +450,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 	}
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
+		fmt.Printf("err: %v\n", err)
 
 		return nil, utils.ErrRepositoryFailed
 	}
@@ -430,6 +464,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 
 		if err := sqlImage.Insert(context.Background(), tx, boil.Infer()); err != nil {
 			tx.Rollback()
+			fmt.Printf("err: %v\n", err)
 
 			return nil, utils.ErrRepositoryFailed
 		}
@@ -439,6 +474,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 		}
 		if err := sqlImageAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 			tx.Rollback()
+			fmt.Printf("err: %v\n", err)
 
 			return nil, utils.ErrRepositoryFailed
 		}
@@ -446,7 +482,7 @@ func (sqlAR appointmentRepositorySql) Insert(
 
 	if err := tx.Commit(); err != nil {
 		tx.Rollback()
-
+		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 

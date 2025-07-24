@@ -128,17 +128,20 @@ var DesignWhere = struct {
 
 // DesignRels is where relationship names are stored.
 var DesignRels = struct {
-	IDImageImage     string
-	IDProfileProfile string
+	IDImageImage         string
+	IDProfileProfile     string
+	IDDesignAppointments string
 }{
-	IDImageImage:     "IDImageImage",
-	IDProfileProfile: "IDProfileProfile",
+	IDImageImage:         "IDImageImage",
+	IDProfileProfile:     "IDProfileProfile",
+	IDDesignAppointments: "IDDesignAppointments",
 }
 
 // designR is where relationships are stored.
 type designR struct {
-	IDImageImage     *Image   `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
-	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDImageImage         *Image           `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
+	IDProfileProfile     *Profile         `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDDesignAppointments AppointmentSlice `boil:"IDDesignAppointments" json:"IDDesignAppointments" toml:"IDDesignAppointments" yaml:"IDDesignAppointments"`
 }
 
 // NewStruct creates a new relationship struct
@@ -176,6 +179,22 @@ func (r *designR) GetIDProfileProfile() *Profile {
 	}
 
 	return r.IDProfileProfile
+}
+
+func (o *Design) GetIDDesignAppointments() AppointmentSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDDesignAppointments()
+}
+
+func (r *designR) GetIDDesignAppointments() AppointmentSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDDesignAppointments
 }
 
 // designL is where Load methods for each relationship are stored.
@@ -516,6 +535,20 @@ func (o *Design) IDProfileProfile(mods ...qm.QueryMod) profileQuery {
 	return Profiles(queryMods...)
 }
 
+// IDDesignAppointments retrieves all the appointment's Appointments with an executor via id_design column.
+func (o *Design) IDDesignAppointments(mods ...qm.QueryMod) appointmentQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"appointments\".\"id_design\"=?", o.ID),
+	)
+
+	return Appointments(queryMods...)
+}
+
 // LoadIDImageImage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (designL) LoadIDImageImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDesign interface{}, mods queries.Applicator) error {
@@ -756,6 +789,119 @@ func (designL) LoadIDProfileProfile(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
+// LoadIDDesignAppointments allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (designL) LoadIDDesignAppointments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDesign interface{}, mods queries.Applicator) error {
+	var slice []*Design
+	var object *Design
+
+	if singular {
+		var ok bool
+		object, ok = maybeDesign.(*Design)
+		if !ok {
+			object = new(Design)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeDesign)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeDesign))
+			}
+		}
+	} else {
+		s, ok := maybeDesign.(*[]*Design)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeDesign)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeDesign))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &designR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &designR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`appointments`),
+		qm.WhereIn(`appointments.id_design in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load appointments")
+	}
+
+	var resultSlice []*Appointment
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice appointments")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on appointments")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for appointments")
+	}
+
+	if len(appointmentAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDDesignAppointments = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &appointmentR{}
+			}
+			foreign.R.IDDesignDesign = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDDesign) {
+				local.R.IDDesignAppointments = append(local.R.IDDesignAppointments, foreign)
+				if foreign.R == nil {
+					foreign.R = &appointmentR{}
+				}
+				foreign.R.IDDesignDesign = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDImageImage of the design to the related item.
 // Sets o.R.IDImageImage to related.
 // Adds o to related.R.IDImageDesign.
@@ -845,6 +991,133 @@ func (o *Design) SetIDProfileProfile(ctx context.Context, exec boil.ContextExecu
 		}
 	} else {
 		related.R.IDProfileDesigns = append(related.R.IDProfileDesigns, o)
+	}
+
+	return nil
+}
+
+// AddIDDesignAppointments adds the given related objects to the existing relationships
+// of the design, optionally inserting them as new records.
+// Appends related to o.R.IDDesignAppointments.
+// Sets related.R.IDDesignDesign appropriately.
+func (o *Design) AddIDDesignAppointments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Appointment) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDDesign, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"appointments\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_design"}),
+				strmangle.WhereClause("\"", "\"", 2, appointmentPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDDesign, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &designR{
+			IDDesignAppointments: related,
+		}
+	} else {
+		o.R.IDDesignAppointments = append(o.R.IDDesignAppointments, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &appointmentR{
+				IDDesignDesign: o,
+			}
+		} else {
+			rel.R.IDDesignDesign = o
+		}
+	}
+	return nil
+}
+
+// SetIDDesignAppointments removes all previously related items of the
+// design replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDDesignDesign's IDDesignAppointments accordingly.
+// Replaces o.R.IDDesignAppointments with related.
+// Sets related.R.IDDesignDesign's IDDesignAppointments accordingly.
+func (o *Design) SetIDDesignAppointments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Appointment) error {
+	query := "update \"appointments\" set \"id_design\" = null where \"id_design\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDDesignAppointments {
+			queries.SetScanner(&rel.IDDesign, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDDesignDesign = nil
+		}
+		o.R.IDDesignAppointments = nil
+	}
+
+	return o.AddIDDesignAppointments(ctx, exec, insert, related...)
+}
+
+// RemoveIDDesignAppointments relationships from objects passed in.
+// Removes related items from R.IDDesignAppointments (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDDesignDesign.
+func (o *Design) RemoveIDDesignAppointments(ctx context.Context, exec boil.ContextExecutor, related ...*Appointment) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDDesign, nil)
+		if rel.R != nil {
+			rel.R.IDDesignDesign = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_design")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDDesignAppointments {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDDesignAppointments)
+			if ln > 1 && i < ln-1 {
+				o.R.IDDesignAppointments[i] = o.R.IDDesignAppointments[ln-1]
+			}
+			o.R.IDDesignAppointments = o.R.IDDesignAppointments[:ln-1]
+			break
+		}
 	}
 
 	return nil

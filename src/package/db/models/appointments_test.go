@@ -770,6 +770,67 @@ func testAppointmentToManyAddOpIDAppointmentAppointmentImages(t *testing.T) {
 		}
 	}
 }
+func testAppointmentToOneDesignUsingIDDesignDesign(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Appointment
+	var foreign Design
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, appointmentDBTypes, true, appointmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Appointment struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, designDBTypes, false, designColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Design struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDDesign, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDDesignDesign().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddDesignHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Design) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := AppointmentSlice{&local}
+	if err = local.L.LoadIDDesignDesign(ctx, tx, false, (*[]*Appointment)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDDesignDesign == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDDesignDesign = nil
+	if err = local.L.LoadIDDesignDesign(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDDesignDesign == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testAppointmentToOneStudioUsingIDStudioStudio(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -950,6 +1011,115 @@ func testAppointmentToOneUserUsingIDUserUser(t *testing.T) {
 
 	if !ranAfterSelectHook {
 		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testAppointmentToOneSetOpDesignUsingIDDesignDesign(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b, c Design
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Design{&b, &c} {
+		err = a.SetIDDesignDesign(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDDesignDesign != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDDesignAppointments[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.IDDesign, x.ID) {
+			t.Error("foreign key was wrong value", a.IDDesign)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDDesign))
+		reflect.Indirect(reflect.ValueOf(&a.IDDesign)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDDesign, x.ID) {
+			t.Error("foreign key was wrong value", a.IDDesign, x.ID)
+		}
+	}
+}
+
+func testAppointmentToOneRemoveOpDesignUsingIDDesignDesign(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Appointment
+	var b Design
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, appointmentDBTypes, false, strmangle.SetComplement(appointmentPrimaryKeyColumns, appointmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, designDBTypes, false, strmangle.SetComplement(designPrimaryKeyColumns, designColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDDesignDesign(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDDesignDesign(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDDesignDesign().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDDesignDesign != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDDesign) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDDesignAppointments) != 0 {
+		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1303,7 +1473,7 @@ func testAppointmentsSelect(t *testing.T) {
 }
 
 var (
-	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('scheduled','canceled','created','reviewed')`, `IDStudio`: `bigint`, `IDCalendar`: `text`, `Phone`: `text`, `HasIdea`: `boolean`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Height`: `double precision`, `Width`: `double precision`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `ScheduledAt`: `timestamp without time zone`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `IsPaid`: `boolean`, `CreatedAt`: `timestamp without time zone`}
+	appointmentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDTattooArtist`: `bigint`, `Status`: `enum.appointment_status('scheduled','canceled','created','reviewed')`, `IDStudio`: `bigint`, `IDCalendar`: `text`, `Phone`: `text`, `HasIdea`: `boolean`, `Area`: `enum.tattoo_area('arm','leg','back','chest','abdomen','neck','head','hand','foot','hip','other')`, `Height`: `double precision`, `Width`: `double precision`, `Color`: `enum.tattoo_color('black','full_color')`, `Description`: `text`, `ScheduledAt`: `timestamp without time zone`, `Duration`: `double precision`, `FinishedAt`: `timestamp without time zone`, `IsPaid`: `boolean`, `CreatedAt`: `timestamp without time zone`, `HasDesign`: `boolean`, `IDDesign`: `bigint`}
 	_                  = bytes.MinRead
 )
 

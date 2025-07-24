@@ -304,14 +304,36 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 	idPublicationStr := c.Param("idPost")
 	idPublication, err := strconv.Atoi(idPublicationStr)
 	if err != nil {
-		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		utils.ResErrValidators(c, err)
 		return
 	}
-	identifier := c.Query("identifier") // Se debe cambiar por IP o identificador
+	var identifier *dto.ViewIdentifier
+	if err := c.ShouldBindQuery(&identifier); err != nil {
+
+		utils.ResErrValidators(c, err)
+		return
+	}
+	ip := c.ClientIP()
+	fmt.Printf("c.ClientIP(): %v\n", ip)
+	claims, _ := utils.NewClaimsFromContext(c)
+	identifierInt, err := strconv.ParseInt(identifier.Identifier, 10, 64)
+	if err != nil {
+		utils.ResErrValidators(c, err)
+
+		return
+	}
+	if identifier.IdentifierType == "ip" && identifier.Identifier != c.ClientIP() {
+		utils.ResFromErr(c, service.ErrInvalidIdentifier)
+		return
+	} else if identifierInt != claims.ID {
+
+		utils.ResFromErr(c, service.ErrInvalidIdentifier)
+		return
+	}
 
 	if err := httpPC.publicationService.AddView(
 		int64(idPublication),
-		identifier,
+		*identifier,
 	); err != nil {
 		utils.ResFromErr(c, err)
 		return
