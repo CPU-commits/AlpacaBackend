@@ -62,13 +62,18 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 	}
 
 	limit := 20
-
+	skip := 0
 	if params.SortCreatedAt == "" {
 		params.SortCreatedAt = "DESC"
 	}
+	if !params.Paginated {
+		limit = 0
+	} else {
+		skip = limit * params.Page
+	}
 	opts := design_repository.NewFindOptions().
 		Limit(limit).
-		Skip(limit * params.Page).
+		Skip(skip).
 		Include(design_repository.Include{
 			Image:       true,
 			ProfileUser: true,
@@ -82,6 +87,7 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 		IDProfile: profileId,
 		Category:  params.Category,
 	}, opts)
+	fmt.Printf("desings: %v\n", desings)
 	if err != nil {
 		return nil, nil, err
 	}

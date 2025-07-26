@@ -574,7 +574,7 @@ func (publicationService *PublicationService) DeletePublication(
 	return nil
 }
 
-func (publicationService *PublicationService) AddView(idPublication int64, identifier string) error {
+func (publicationService *PublicationService) AddView(idPublication int64, identifier dto.ViewIdentifier) error {
 
 	publication, err := publicationService.publicationRepository.FindOne(
 		&publication_repository.Criteria{
@@ -604,7 +604,7 @@ func (publicationService *PublicationService) AddView(idPublication int64, ident
 
 	data := model.TemporalViewPublication{
 		IDPublication: idPublication,
-		Identifier:    identifier,
+		Identifier:    identifier.Identifier,
 	}
 
 	go publicationService.bus.Publish(bus.Event{

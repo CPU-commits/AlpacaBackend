@@ -223,4 +223,12 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "follow.cant_follow_you",
 	}
+	errorsService[appointmentService.ErrExcluyentParams] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.excluyent_params",
+	}
+	errorsService[publicationService.ErrInvalidIdentifier] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "publication.invalid_identifier",
+	}
 }

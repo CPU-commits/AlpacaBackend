@@ -43,3 +43,27 @@ func JWTMiddleware() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+func OptionalJWTMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		localizer := utils.GetI18nLocalizer(ctx)
+		token, err := utils.VerifyToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+
+			return
+		}
+
+		metadata, err := utils.ExtractTokenMetadata(token)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, &utils.ProblemDetails{
+				Detail: err.Error(),
+				Title: localizer.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "unauthorized",
+				}),
+			})
+			return
+		}
+		ctx.Set("user", metadata)
+		ctx.Next()
+	}
+}

@@ -48,6 +48,7 @@ type LoadOpts struct {
 	ProfileAvatar bool
 	Images        bool
 	Review        bool
+	Design        bool
 }
 
 func (f *findOptions) Skip(skip int64) *findOptions {

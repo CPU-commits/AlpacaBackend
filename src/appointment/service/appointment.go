@@ -106,6 +106,7 @@ func (appointmentService *AppointmentService) GetAppointments(
 			Name:     true,
 			Username: true,
 		},
+		Design: true,
 	}
 	if params.AllAppointments && isArtist {
 		load.User = &user_repository.SelectOpts{
@@ -595,7 +596,9 @@ func (appointmentService *AppointmentService) RequestAppointment(
 	if idUser == appointmentDto.IDTattooArtist {
 		return ErrCantRequestAppointmentToMe
 	}
-
+	if *appointmentDto.HasDesign && *appointmentDto.HasIdea {
+		return ErrExcluyentParams
+	}
 	if appointmentDto.IDTattooArtist != 0 && appointmentDto.IDStudio == 0 {
 		isTattooArtist, err := appointmentService.userService.UserIsTattooArtist(
 			appointmentDto.IDTattooArtist,
@@ -632,7 +635,6 @@ func (appointmentService *AppointmentService) RequestAppointment(
 	}
 	appointment.Images = images
 	appointment.IDUser = idUser
-
 	_, err = appointmentService.appointmentRepository.Insert(
 		appointment,
 	)

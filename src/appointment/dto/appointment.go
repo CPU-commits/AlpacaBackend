@@ -17,6 +17,8 @@ type AppointmentDto struct {
 	Color          string           `form:"color" binding:"required_if=HasIdea true,omitempty,colorvalidator"`
 	Description    string           `form:"description" binding:"required,max=500"`
 	Images         []store.ImageDto `form:"-"`
+	HasDesign      *bool            `form:"hasDesign" binding:"required"`
+	IDDesign       *int64           `form:"idDesign" binding:"required_if=HasDesign true"`
 }
 
 func (appointment *AppointmentDto) ToModel(idUser int64) (*model.Appointment, error) {
@@ -36,6 +38,8 @@ func (appointment *AppointmentDto) ToModel(idUser int64) (*model.Appointment, er
 		Description:    appointment.Description,
 		IDTattooArtist: appointment.IDTattooArtist,
 		IDStudio:       appointment.IDStudio,
+		HasDesign:      appointment.HasDesign,
+		IDDesign:       appointment.IDDesign,
 	}, nil
 }
 

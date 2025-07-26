@@ -104,6 +104,7 @@ func (*QueuePublicationController) AddTemporalView(c bus.Context) error {
 	if err := c.BindData(&data); err != nil {
 		return c.Kill(err.Error())
 	}
+
 	return publicationRDRepository.AddView(
 		data.IDPublication, data.Identifier,
 	)

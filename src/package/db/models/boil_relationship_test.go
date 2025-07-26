@@ -11,6 +11,7 @@ func TestToOne(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionSession", testAccessToOneSessionUsingIDSessionSession)
 	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointment", testAppointmentImageToOneAppointmentUsingIDAppointmentAppointment)
 	t.Run("AppointmentImageToImageUsingIDImageImage", testAppointmentImageToOneImageUsingIDImageImage)
+	t.Run("AppointmentToDesignUsingIDDesignDesign", testAppointmentToOneDesignUsingIDDesignDesign)
 	t.Run("AppointmentToStudioUsingIDStudioStudio", testAppointmentToOneStudioUsingIDStudioStudio)
 	t.Run("AppointmentToUserUsingIDTattooArtistUser", testAppointmentToOneUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserUser", testAppointmentToOneUserUsingIDUserUser)
@@ -72,6 +73,7 @@ func TestOneToOne(t *testing.T) {
 func TestToMany(t *testing.T) {
 	t.Run("AppointmentToIDAppointmentAppointmentImages", testAppointmentToManyIDAppointmentAppointmentImages)
 	t.Run("AuthToIDAuthSessions", testAuthToManyIDAuthSessions)
+	t.Run("DesignToIDDesignAppointments", testDesignToManyIDDesignAppointments)
 	t.Run("PostToIDPostLikes", testPostToManyIDPostLikes)
 	t.Run("PostToIDPostPostImages", testPostToManyIDPostPostImages)
 	t.Run("PostToIDPostTattoos", testPostToManyIDPostTattoos)
@@ -108,6 +110,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("AccessToSessionUsingIDSessionAccesses", testAccessToOneSetOpSessionUsingIDSessionSession)
 	t.Run("AppointmentImageToAppointmentUsingIDAppointmentAppointmentImages", testAppointmentImageToOneSetOpAppointmentUsingIDAppointmentAppointment)
 	t.Run("AppointmentImageToImageUsingIDImageAppointmentImage", testAppointmentImageToOneSetOpImageUsingIDImageImage)
+	t.Run("AppointmentToDesignUsingIDDesignAppointments", testAppointmentToOneSetOpDesignUsingIDDesignDesign)
 	t.Run("AppointmentToStudioUsingIDStudioAppointments", testAppointmentToOneSetOpStudioUsingIDStudioStudio)
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneSetOpUserUsingIDTattooArtistUser)
 	t.Run("AppointmentToUserUsingIDUserAppointments", testAppointmentToOneSetOpUserUsingIDUserUser)
@@ -151,6 +154,7 @@ func TestToOneSet(t *testing.T) {
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
+	t.Run("AppointmentToDesignUsingIDDesignAppointments", testAppointmentToOneRemoveOpDesignUsingIDDesignDesign)
 	t.Run("AppointmentToStudioUsingIDStudioAppointments", testAppointmentToOneRemoveOpStudioUsingIDStudioStudio)
 	t.Run("AppointmentToUserUsingIDTattooArtistAppointments", testAppointmentToOneRemoveOpUserUsingIDTattooArtistUser)
 	t.Run("FollowToProfileUsingIDProfileFollows", testFollowToOneRemoveOpProfileUsingIDProfileProfile)
@@ -194,6 +198,7 @@ func TestOneToOneRemove(t *testing.T) {
 func TestToManyAdd(t *testing.T) {
 	t.Run("AppointmentToIDAppointmentAppointmentImages", testAppointmentToManyAddOpIDAppointmentAppointmentImages)
 	t.Run("AuthToIDAuthSessions", testAuthToManyAddOpIDAuthSessions)
+	t.Run("DesignToIDDesignAppointments", testDesignToManyAddOpIDDesignAppointments)
 	t.Run("PostToIDPostLikes", testPostToManyAddOpIDPostLikes)
 	t.Run("PostToIDPostPostImages", testPostToManyAddOpIDPostPostImages)
 	t.Run("PostToIDPostTattoos", testPostToManyAddOpIDPostTattoos)
@@ -227,6 +232,7 @@ func TestToManyAdd(t *testing.T) {
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
+	t.Run("DesignToIDDesignAppointments", testDesignToManySetOpIDDesignAppointments)
 	t.Run("PostToIDPostTattoos", testPostToManySetOpIDPostTattoos)
 	t.Run("ProfileToIDProfileFollows", testProfileToManySetOpIDProfileFollows)
 	t.Run("StudioToIDStudioAppointments", testStudioToManySetOpIDStudioAppointments)
@@ -241,6 +247,7 @@ func TestToManySet(t *testing.T) {
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
+	t.Run("DesignToIDDesignAppointments", testDesignToManyRemoveOpIDDesignAppointments)
 	t.Run("PostToIDPostTattoos", testPostToManyRemoveOpIDPostTattoos)
 	t.Run("ProfileToIDProfileFollows", testProfileToManyRemoveOpIDProfileFollows)
 	t.Run("StudioToIDStudioAppointments", testStudioToManyRemoveOpIDStudioAppointments)

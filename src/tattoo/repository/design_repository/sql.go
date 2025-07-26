@@ -160,7 +160,7 @@ func (sqlDS sqlDesignRepository) findOptionsToMod(o *FindOpts) []QueryMod {
 	}
 	mods = append(mods, sqlDS.includeOpts(o.include)...)
 	mods = append(mods, sqlDS.sortOpts(o.sort)...)
-	if o.limit != nil {
+	if o.limit != nil && *o.limit > 0 {
 		mods = append(mods, Limit(*o.limit))
 	}
 	if o.skip != nil {
