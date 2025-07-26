@@ -92,6 +92,9 @@ func (profileService *ProfileService) SearchProfile(q string) ([]model.Profile, 
 	if err != nil {
 		return nil, err
 	}
+	if users == nil {
+		return nil, nil
+	}
 
 	opts := profile_repository.NewFindOptions().
 		Load(profile_repository.LoadOpts{
@@ -114,7 +117,6 @@ func (profileService *ProfileService) SearchProfile(q string) ([]model.Profile, 
 		opts,
 	)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	return profiles, nil

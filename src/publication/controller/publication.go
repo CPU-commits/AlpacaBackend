@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
@@ -46,10 +47,33 @@ func (httpPC *HttpPublicationController) GetUserPublications(c *gin.Context) {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	q := c.Query("q")
+	var from time.Time
+	var to time.Time
+
+	fromStr := c.Query("from")
+	if fromStr != "" {
+		from, err = time.Parse(time.RFC3339, fromStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toStr := c.Query("to")
+	if toStr != "" {
+		to, err = time.Parse(time.RFC3339, toStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
 
 	publications, metadata, err := httpPC.publicationService.GetPublications(
 		service.PublicationsParams{
 			Username: username,
+			Q:        q,
+			FromDate: from,
+			ToDate:   to,
 		},
 		page,
 	)

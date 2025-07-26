@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -177,7 +176,9 @@ func (tsPR *tsPublicationRepository) UpdatePublication(
 		var httpError *typesense.HTTPError
 
 		if ok := errors.As(err, &httpError); ok {
-			fmt.Printf("httpError: %v\n", httpError)
+			if httpError.Status == 404 {
+				return nil
+			}
 		}
 		panic(err)
 	}

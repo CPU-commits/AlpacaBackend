@@ -45,11 +45,34 @@ type PublicationsMetadata struct {
 	Total int
 }
 
+func (publicationService *PublicationService) GetPublicationMetrics(
+	idPublication int64,
+) {
+
+}
+
 func (publicationService *PublicationService) GetPublications(
 	params PublicationsParams,
 	page int,
 ) ([]model.Publication, *PublicationsMetadata, error) {
 	criteria := &publication_repository.Criteria{}
+	if params.Q != "" {
+		criteria.Content = repository.CriteriaString{
+			IContains: &params.Q,
+		}
+	}
+	if !params.FromDate.IsZero() {
+		criteria.CreatedAt = &repository.CriteriaTime{
+			GTE: params.FromDate,
+		}
+	}
+	if !params.ToDate.IsZero() {
+		if criteria.CreatedAt == nil {
+			criteria.CreatedAt = &repository.CriteriaTime{}
+		}
+
+		criteria.CreatedAt.LTE = params.ToDate
+	}
 
 	if params.Username != "" {
 		idProfile, err := publicationService.profileService.GetProfileIdFromUsername(

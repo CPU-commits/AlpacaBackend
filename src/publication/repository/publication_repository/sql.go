@@ -132,6 +132,28 @@ func (sqlPublicationRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 			mod = append(mod, models.PostWhere.IDStudio.EQ(null.Int64FromPtr(criteria.IDStudio.EQ)))
 		}
 	}
+	if criteria.Content.EQ != nil {
+		mod = append(mod, models.PostWhere.Content.EQ(*criteria.Content.EQ))
+	} else if criteria.Content.IContains != nil {
+		mod = append(mod, models.PostWhere.Content.ILIKE(fmt.Sprintf("%%%s%%", *criteria.Content.IContains)))
+	}
+	if criteria.CreatedAt != nil {
+		if !criteria.CreatedAt.LTE.IsZero() {
+			mod = append(mod, models.PostWhere.CreatedAt.LTE(criteria.CreatedAt.LTE))
+		}
+		if !criteria.CreatedAt.LT.IsZero() {
+			mod = append(mod, models.PostWhere.CreatedAt.LT(criteria.CreatedAt.LT))
+		}
+		if !criteria.CreatedAt.GTE.IsZero() {
+			mod = append(mod, models.PostWhere.CreatedAt.GTE(criteria.CreatedAt.GTE))
+		}
+		if !criteria.CreatedAt.GT.IsZero() {
+			mod = append(mod, models.PostWhere.CreatedAt.GT(criteria.CreatedAt.GT))
+		}
+		if !criteria.CreatedAt.EQ.IsZero() {
+			mod = append(mod, models.PostWhere.CreatedAt.EQ(criteria.CreatedAt.EQ))
+		}
+	}
 
 	return mod
 }

@@ -12,6 +12,8 @@ type Criteria struct {
 	IDProfile  int64
 	Categories []string
 	IDStudio   *repository.CriteriaNull[*int64]
+	Content    repository.CriteriaString
+	CreatedAt  *repository.CriteriaTime
 }
 
 type SelectOpts struct {
