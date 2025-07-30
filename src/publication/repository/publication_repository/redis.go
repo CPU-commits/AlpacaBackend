@@ -29,7 +29,7 @@ func (rdPublicationRepository *RdPublicationRepository) AddView(idPost int64, id
 
 	_, err := rdPublicationRepository.rd.SAdd(context.Background(), key, idPost).Result()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	_, err = rdPublicationRepository.rd.Expire(context.Background(), key, timeExpired).Result()
@@ -66,7 +66,6 @@ func (rdPublicationRepository *RdPublicationRepository) DeleteUserView(idUser in
 	}
 	return nil
 }
-
 func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(redisPublication *model.RedisPublication) error {
 
 	_, err := rdPublicationRepository.rd.JSONDel(context.Background(), fmt.Sprintf("publication:%d", redisPublication.IDPublication), "$").Result()
@@ -76,7 +75,6 @@ func (rdPublicationRepository *RdPublicationRepository) DeleteRedisPublications(
 
 	return nil
 }
-
 func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]model.RedisPublication, error) {
 	var cursor uint64
 	var keys []string
@@ -120,7 +118,6 @@ func (rdPublicationRepository *RdPublicationRepository) GetAllPublications() ([]
 
 	return publications, nil
 }
-
 func (rdPublicationRepository *RdPublicationRepository) AddInteraction(publication *model.Publication) error {
 	post := model.RedisPublication{
 		IDPublication: publication.ID,
@@ -137,7 +134,6 @@ func (rdPublicationRepository *RdPublicationRepository) AddInteraction(publicati
 
 	return nil
 }
-
 func init() {
 	client := db.RClient
 

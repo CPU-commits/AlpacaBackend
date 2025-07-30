@@ -337,8 +337,7 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 		utils.ResErrValidators(c, err)
 		return
 	}
-	ip := c.ClientIP()
-	fmt.Printf("c.ClientIP(): %v\n", ip)
+
 	claims, _ := utils.NewClaimsFromContext(c)
 	identifierInt, err := strconv.ParseInt(identifier.Identifier, 10, 64)
 	if err != nil {

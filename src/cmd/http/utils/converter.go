@@ -231,4 +231,8 @@ func init() {
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "publication.invalid_identifier",
 	}
+	errorsService[publicationService.ErrTemporalViewExists] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "publication.temporal_view_exists",
+	}
 }

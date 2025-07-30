@@ -607,6 +607,13 @@ func (publicationService *PublicationService) AddView(idPublication int64, ident
 		Identifier:    identifier.Identifier,
 	}
 
+	isViewExists, err := publicationService.TemporalViewExists(data)
+	if err != nil {
+		return err
+	}
+	if isViewExists {
+		return ErrTemporalViewExists
+	}
 	go publicationService.bus.Publish(bus.Event{
 		Name:    ADD_TEMPORAL_VIEW,
 		Payload: utils.Payload(data),
@@ -632,6 +639,15 @@ func (publicationService *PublicationService) UpdateRatings() {
 	go publicationService.bus.Publish(bus.Event{
 		Name: PUBLICATION_UPDATE_RATING,
 	})
+}
+
+func (publicationService *PublicationService) TemporalViewExists(data model.TemporalViewPublication) (bool, error) {
+	var isTemporalView bool
+	err := publicationService.bus.Request(bus.Event{
+		Name:    VERIFY_TEMPORAL_VIEW,
+		Payload: utils.Payload(data),
+	}, &isTemporalView)
+	return isTemporalView, err
 }
 
 func NewPublicationService(

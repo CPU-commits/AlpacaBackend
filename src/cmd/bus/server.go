@@ -71,5 +71,8 @@ func Init(logger logger.Logger) {
 		SEND_EMAIL_RESET,
 		emailController.SendEmailResetCode,
 	)
-
+	queueBus.SubscribeAndRespond(
+		VERIFY_TEMPORAL_VIEW,
+		publicationController.ExistsTemporalView,
+	)
 }
