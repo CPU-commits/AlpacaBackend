@@ -133,11 +133,15 @@ func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataU
 	})
 }
 
-func (designService *DesignService) DeleteDesign(profileId int64, designId int64) error {
+func (designService *DesignService) DeleteDesign(idUser int64, designId int64) error {
+	idProfile, err := designService.profileService.GetProfileIDFromIDUser(idUser)
+	if err != nil {
+		return err
+	}
 
 	return designService.designRepository.Delete(&design_repository.Criteria{
 		ID:        designId,
-		IDProfile: profileId,
+		IDProfile: idProfile,
 	})
 }
 
