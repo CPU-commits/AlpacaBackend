@@ -20,6 +20,8 @@ const (
 	STATUS_REVIEWED  AppointmentStatus = "reviewed"
 )
 
+var ALL_STATUSES = []AppointmentStatus{STATUS_CANCELED, STATUS_CREATED, STATUS_REVIEWED, STATUS_SCHEDULED}
+
 // Area
 type AppointmentArea string
 

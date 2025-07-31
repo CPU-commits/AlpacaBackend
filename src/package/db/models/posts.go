@@ -27,14 +27,15 @@ import (
 type Post struct {
 	ID           int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDProfile    int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	IDStudio     null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
-	IsStudioPost bool              `boil:"is_studio_post" json:"is_studio_post" toml:"is_studio_post" yaml:"is_studio_post"`
 	Content      string            `boil:"content" json:"content" toml:"content" yaml:"content"`
 	Likes        int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
+	CreatedAt    time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Categories   types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Mentions     types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
 	Views        int               `boil:"views" json:"views" toml:"views" yaml:"views"`
-	CreatedAt    time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDStudio     null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	IsStudioPost bool              `boil:"is_studio_post" json:"is_studio_post" toml:"is_studio_post" yaml:"is_studio_post"`
+	Shares       int               `boil:"shares" json:"shares" toml:"shares" yaml:"shares"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,49 +44,53 @@ type Post struct {
 var PostColumns = struct {
 	ID           string
 	IDProfile    string
-	IDStudio     string
-	IsStudioPost string
 	Content      string
 	Likes        string
+	CreatedAt    string
 	Categories   string
 	Mentions     string
 	Views        string
-	CreatedAt    string
+	IDStudio     string
+	IsStudioPost string
+	Shares       string
 }{
 	ID:           "id",
 	IDProfile:    "id_profile",
-	IDStudio:     "id_studio",
-	IsStudioPost: "is_studio_post",
 	Content:      "content",
 	Likes:        "likes",
+	CreatedAt:    "created_at",
 	Categories:   "categories",
 	Mentions:     "mentions",
 	Views:        "views",
-	CreatedAt:    "created_at",
+	IDStudio:     "id_studio",
+	IsStudioPost: "is_studio_post",
+	Shares:       "shares",
 }
 
 var PostTableColumns = struct {
 	ID           string
 	IDProfile    string
-	IDStudio     string
-	IsStudioPost string
 	Content      string
 	Likes        string
+	CreatedAt    string
 	Categories   string
 	Mentions     string
 	Views        string
-	CreatedAt    string
+	IDStudio     string
+	IsStudioPost string
+	Shares       string
 }{
 	ID:           "posts.id",
 	IDProfile:    "posts.id_profile",
-	IDStudio:     "posts.id_studio",
-	IsStudioPost: "posts.is_studio_post",
 	Content:      "posts.content",
 	Likes:        "posts.likes",
+	CreatedAt:    "posts.created_at",
 	Categories:   "posts.categories",
 	Mentions:     "posts.mentions",
 	Views:        "posts.views",
-	CreatedAt:    "posts.created_at",
+	IDStudio:     "posts.id_studio",
+	IsStudioPost: "posts.is_studio_post",
+	Shares:       "posts.shares",
 }
 
 // Generated where
@@ -140,25 +145,27 @@ func (w whereHelpertypes_Int64Array) IsNotNull() qm.QueryMod { return qmhelper.W
 var PostWhere = struct {
 	ID           whereHelperint64
 	IDProfile    whereHelperint64
-	IDStudio     whereHelpernull_Int64
-	IsStudioPost whereHelperbool
 	Content      whereHelperstring
 	Likes        whereHelperint
+	CreatedAt    whereHelpertime_Time
 	Categories   whereHelpertypes_StringArray
 	Mentions     whereHelpertypes_Int64Array
 	Views        whereHelperint
-	CreatedAt    whereHelpertime_Time
+	IDStudio     whereHelpernull_Int64
+	IsStudioPost whereHelperbool
+	Shares       whereHelperint
 }{
 	ID:           whereHelperint64{field: "\"posts\".\"id\""},
 	IDProfile:    whereHelperint64{field: "\"posts\".\"id_profile\""},
-	IDStudio:     whereHelpernull_Int64{field: "\"posts\".\"id_studio\""},
-	IsStudioPost: whereHelperbool{field: "\"posts\".\"is_studio_post\""},
 	Content:      whereHelperstring{field: "\"posts\".\"content\""},
 	Likes:        whereHelperint{field: "\"posts\".\"likes\""},
+	CreatedAt:    whereHelpertime_Time{field: "\"posts\".\"created_at\""},
 	Categories:   whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
 	Mentions:     whereHelpertypes_Int64Array{field: "\"posts\".\"mentions\""},
 	Views:        whereHelperint{field: "\"posts\".\"views\""},
-	CreatedAt:    whereHelpertime_Time{field: "\"posts\".\"created_at\""},
+	IDStudio:     whereHelpernull_Int64{field: "\"posts\".\"id_studio\""},
+	IsStudioPost: whereHelperbool{field: "\"posts\".\"is_studio_post\""},
+	Shares:       whereHelperint{field: "\"posts\".\"shares\""},
 }
 
 // PostRels is where relationship names are stored.
@@ -167,13 +174,17 @@ var PostRels = struct {
 	IDStudioStudio   string
 	IDPostLikes      string
 	IDPostPostImages string
+	IDPostShares     string
 	IDPostTattoos    string
+	IDPostViews      string
 }{
 	IDProfileProfile: "IDProfileProfile",
 	IDStudioStudio:   "IDStudioStudio",
 	IDPostLikes:      "IDPostLikes",
 	IDPostPostImages: "IDPostPostImages",
+	IDPostShares:     "IDPostShares",
 	IDPostTattoos:    "IDPostTattoos",
+	IDPostViews:      "IDPostViews",
 }
 
 // postR is where relationships are stored.
@@ -182,7 +193,9 @@ type postR struct {
 	IDStudioStudio   *Studio        `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
 	IDPostLikes      LikeSlice      `boil:"IDPostLikes" json:"IDPostLikes" toml:"IDPostLikes" yaml:"IDPostLikes"`
 	IDPostPostImages PostImageSlice `boil:"IDPostPostImages" json:"IDPostPostImages" toml:"IDPostPostImages" yaml:"IDPostPostImages"`
+	IDPostShares     ShareSlice     `boil:"IDPostShares" json:"IDPostShares" toml:"IDPostShares" yaml:"IDPostShares"`
 	IDPostTattoos    TattooSlice    `boil:"IDPostTattoos" json:"IDPostTattoos" toml:"IDPostTattoos" yaml:"IDPostTattoos"`
+	IDPostViews      ViewSlice      `boil:"IDPostViews" json:"IDPostViews" toml:"IDPostViews" yaml:"IDPostViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -254,6 +267,22 @@ func (r *postR) GetIDPostPostImages() PostImageSlice {
 	return r.IDPostPostImages
 }
 
+func (o *Post) GetIDPostShares() ShareSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDPostShares()
+}
+
+func (r *postR) GetIDPostShares() ShareSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDPostShares
+}
+
 func (o *Post) GetIDPostTattoos() TattooSlice {
 	if o == nil {
 		return nil
@@ -270,13 +299,29 @@ func (r *postR) GetIDPostTattoos() TattooSlice {
 	return r.IDPostTattoos
 }
 
+func (o *Post) GetIDPostViews() ViewSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDPostViews()
+}
+
+func (r *postR) GetIDPostViews() ViewSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDPostViews
+}
+
 // postL is where Load methods for each relationship are stored.
 type postL struct{}
 
 var (
-	postAllColumns            = []string{"id", "id_profile", "id_studio", "is_studio_post", "content", "likes", "categories", "mentions", "views", "created_at"}
+	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at", "categories", "mentions", "views", "id_studio", "is_studio_post", "shares"}
 	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "id_studio", "is_studio_post", "categories", "mentions", "views", "created_at"}
+	postColumnsWithDefault    = []string{"id", "created_at", "categories", "mentions", "views", "id_studio", "is_studio_post", "shares"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )
@@ -636,6 +681,20 @@ func (o *Post) IDPostPostImages(mods ...qm.QueryMod) postImageQuery {
 	return PostImages(queryMods...)
 }
 
+// IDPostShares retrieves all the share's Shares with an executor via id_post column.
+func (o *Post) IDPostShares(mods ...qm.QueryMod) shareQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"shares\".\"id_post\"=?", o.ID),
+	)
+
+	return Shares(queryMods...)
+}
+
 // IDPostTattoos retrieves all the tattoo's Tattoos with an executor via id_post column.
 func (o *Post) IDPostTattoos(mods ...qm.QueryMod) tattooQuery {
 	var queryMods []qm.QueryMod
@@ -648,6 +707,20 @@ func (o *Post) IDPostTattoos(mods ...qm.QueryMod) tattooQuery {
 	)
 
 	return Tattoos(queryMods...)
+}
+
+// IDPostViews retrieves all the view's Views with an executor via id_post column.
+func (o *Post) IDPostViews(mods ...qm.QueryMod) viewQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"views\".\"id_post\"=?", o.ID),
+	)
+
+	return Views(queryMods...)
 }
 
 // LoadIDProfileProfile allows an eager lookup of values, cached into the
@@ -1120,6 +1193,119 @@ func (postL) LoadIDPostPostImages(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
+// LoadIDPostShares allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (postL) LoadIDPostShares(ctx context.Context, e boil.ContextExecutor, singular bool, maybePost interface{}, mods queries.Applicator) error {
+	var slice []*Post
+	var object *Post
+
+	if singular {
+		var ok bool
+		object, ok = maybePost.(*Post)
+		if !ok {
+			object = new(Post)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePost)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePost))
+			}
+		}
+	} else {
+		s, ok := maybePost.(*[]*Post)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePost)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePost))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &postR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &postR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shares`),
+		qm.WhereIn(`shares.id_post in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load shares")
+	}
+
+	var resultSlice []*Share
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice shares")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on shares")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shares")
+	}
+
+	if len(shareAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDPostShares = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &shareR{}
+			}
+			foreign.R.IDPostPost = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDPost {
+				local.R.IDPostShares = append(local.R.IDPostShares, foreign)
+				if foreign.R == nil {
+					foreign.R = &shareR{}
+				}
+				foreign.R.IDPostPost = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDPostTattoos allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (postL) LoadIDPostTattoos(ctx context.Context, e boil.ContextExecutor, singular bool, maybePost interface{}, mods queries.Applicator) error {
@@ -1223,6 +1409,119 @@ func (postL) LoadIDPostTattoos(ctx context.Context, e boil.ContextExecutor, sing
 				local.R.IDPostTattoos = append(local.R.IDPostTattoos, foreign)
 				if foreign.R == nil {
 					foreign.R = &tattooR{}
+				}
+				foreign.R.IDPostPost = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDPostViews allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (postL) LoadIDPostViews(ctx context.Context, e boil.ContextExecutor, singular bool, maybePost interface{}, mods queries.Applicator) error {
+	var slice []*Post
+	var object *Post
+
+	if singular {
+		var ok bool
+		object, ok = maybePost.(*Post)
+		if !ok {
+			object = new(Post)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePost)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePost))
+			}
+		}
+	} else {
+		s, ok := maybePost.(*[]*Post)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePost)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePost))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &postR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &postR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`views`),
+		qm.WhereIn(`views.id_post in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load views")
+	}
+
+	var resultSlice []*View
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice views")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on views")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for views")
+	}
+
+	if len(viewAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDPostViews = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &viewR{}
+			}
+			foreign.R.IDPostPost = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDPost) {
+				local.R.IDPostViews = append(local.R.IDPostViews, foreign)
+				if foreign.R == nil {
+					foreign.R = &viewR{}
 				}
 				foreign.R.IDPostPost = local
 				break
@@ -1466,6 +1765,59 @@ func (o *Post) AddIDPostPostImages(ctx context.Context, exec boil.ContextExecuto
 	return nil
 }
 
+// AddIDPostShares adds the given related objects to the existing relationships
+// of the post, optionally inserting them as new records.
+// Appends related to o.R.IDPostShares.
+// Sets related.R.IDPostPost appropriately.
+func (o *Post) AddIDPostShares(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Share) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDPost = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"shares\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_post"}),
+				strmangle.WhereClause("\"", "\"", 2, sharePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDPost = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &postR{
+			IDPostShares: related,
+		}
+	} else {
+		o.R.IDPostShares = append(o.R.IDPostShares, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &shareR{
+				IDPostPost: o,
+			}
+		} else {
+			rel.R.IDPostPost = o
+		}
+	}
+	return nil
+}
+
 // AddIDPostTattoos adds the given related objects to the existing relationships
 // of the post, optionally inserting them as new records.
 // Appends related to o.R.IDPostTattoos.
@@ -1586,6 +1938,133 @@ func (o *Post) RemoveIDPostTattoos(ctx context.Context, exec boil.ContextExecuto
 				o.R.IDPostTattoos[i] = o.R.IDPostTattoos[ln-1]
 			}
 			o.R.IDPostTattoos = o.R.IDPostTattoos[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddIDPostViews adds the given related objects to the existing relationships
+// of the post, optionally inserting them as new records.
+// Appends related to o.R.IDPostViews.
+// Sets related.R.IDPostPost appropriately.
+func (o *Post) AddIDPostViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDPost, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"views\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_post"}),
+				strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDPost, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &postR{
+			IDPostViews: related,
+		}
+	} else {
+		o.R.IDPostViews = append(o.R.IDPostViews, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &viewR{
+				IDPostPost: o,
+			}
+		} else {
+			rel.R.IDPostPost = o
+		}
+	}
+	return nil
+}
+
+// SetIDPostViews removes all previously related items of the
+// post replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDPostPost's IDPostViews accordingly.
+// Replaces o.R.IDPostViews with related.
+// Sets related.R.IDPostPost's IDPostViews accordingly.
+func (o *Post) SetIDPostViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	query := "update \"views\" set \"id_post\" = null where \"id_post\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDPostViews {
+			queries.SetScanner(&rel.IDPost, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDPostPost = nil
+		}
+		o.R.IDPostViews = nil
+	}
+
+	return o.AddIDPostViews(ctx, exec, insert, related...)
+}
+
+// RemoveIDPostViews relationships from objects passed in.
+// Removes related items from R.IDPostViews (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDPostPost.
+func (o *Post) RemoveIDPostViews(ctx context.Context, exec boil.ContextExecutor, related ...*View) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDPost, nil)
+		if rel.R != nil {
+			rel.R.IDPostPost = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_post")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDPostViews {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDPostViews)
+			if ln > 1 && i < ln-1 {
+				o.R.IDPostViews[i] = o.R.IDPostViews[ln-1]
+			}
+			o.R.IDPostViews = o.R.IDPostViews[:ln-1]
 			break
 		}
 	}

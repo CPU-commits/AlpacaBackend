@@ -19,6 +19,7 @@ type Criteria struct {
 type SelectOpts struct {
 	User      *user_repository.SelectOpts
 	ID        *bool
+	IDStudio  *bool
 	IDProfile *bool
 }
 
@@ -100,8 +101,9 @@ func NewFindOptions() *FindOptions {
 }
 
 type UpdateData struct {
-	SumLikes int
-	SumViews int
+	SumLikes  int
+	SumViews  int
+	SumShares int
 }
 
 type SearchOptions struct {

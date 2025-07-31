@@ -257,6 +257,8 @@ func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
 				*fileService,
 				followRepository,
 				publicationRDRepository,
+				*viewService,
+				userServices.SinglentonFollowService(),
 			),
 			designRepository,
 			*fileService,

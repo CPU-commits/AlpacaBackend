@@ -1483,6 +1483,84 @@ func testUserToManyIDUserRolesUsers(t *testing.T) {
 	}
 }
 
+func testUserToManyIDUserShares(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c Share
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, true, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, shareDBTypes, false, shareColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, shareDBTypes, false, shareColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.IDUser = a.ID
+	c.IDUser = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDUserShares().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.IDUser == b.IDUser {
+			bFound = true
+		}
+		if v.IDUser == c.IDUser {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UserSlice{&a}
+	if err = a.L.LoadIDUserShares(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDUserShares); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDUserShares = nil
+	if err = a.L.LoadIDUserShares(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDUserShares); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testUserToManyIDUserStudioUsers(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -1709,6 +1787,83 @@ func testUserToManyIDUserTokens(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := len(a.R.IDUserTokens); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testUserToManyIDUserViews(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, true, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, viewDBTypes, false, viewColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, viewDBTypes, false, viewColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDUser, a.ID)
+	queries.Assign(&c.IDUser, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDUserViews().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDUser, b.IDUser) {
+			bFound = true
+		}
+		if queries.Equal(v.IDUser, c.IDUser) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UserSlice{&a}
+	if err = a.L.LoadIDUserViews(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDUserViews); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDUserViews = nil
+	if err = a.L.LoadIDUserViews(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDUserViews); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -2669,6 +2824,81 @@ func testUserToManyAddOpIDUserRolesUsers(t *testing.T) {
 		}
 	}
 }
+func testUserToManyAddOpIDUserShares(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c, d, e Share
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Share{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, shareDBTypes, false, strmangle.SetComplement(sharePrimaryKeyColumns, shareColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*Share{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDUserShares(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.IDUser {
+			t.Error("foreign key was wrong value", a.ID, first.IDUser)
+		}
+		if a.ID != second.IDUser {
+			t.Error("foreign key was wrong value", a.ID, second.IDUser)
+		}
+
+		if first.R.IDUserUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDUserUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDUserShares[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDUserShares[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDUserShares().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
 func testUserToManyAddOpIDUserStudioUsers(t *testing.T) {
 	var err error
 
@@ -2894,6 +3124,256 @@ func testUserToManyAddOpIDUserTokens(t *testing.T) {
 		}
 	}
 }
+func testUserToManyAddOpIDUserViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*View{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDUserViews(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDUser) {
+			t.Error("foreign key was wrong value", a.ID, first.IDUser)
+		}
+		if !queries.Equal(a.ID, second.IDUser) {
+			t.Error("foreign key was wrong value", a.ID, second.IDUser)
+		}
+
+		if first.R.IDUserUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDUserUser != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDUserViews[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDUserViews[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDUserViews().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testUserToManySetOpIDUserViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDUserViews(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDUserViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDUserViews(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDUserViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDUser) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDUser) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDUser) {
+		t.Error("foreign key was wrong value", a.ID, d.IDUser)
+	}
+	if !queries.Equal(a.ID, e.IDUser) {
+		t.Error("foreign key was wrong value", a.ID, e.IDUser)
+	}
+
+	if b.R.IDUserUser != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDUserUser != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDUserUser != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDUserUser != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDUserViews[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDUserViews[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testUserToManyRemoveOpIDUserViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDUserViews(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDUserViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDUserViews(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDUserViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDUser) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDUser) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDUserUser != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDUserUser != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDUserUser != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDUserUser != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDUserViews) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDUserViews[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDUserViews[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
 
 func testUsersReload(t *testing.T) {
 	t.Parallel()
@@ -2969,7 +3449,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Username`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `Location`: `text`}
+	userDBTypes = map[string]string{`ID`: `bigint`, `Email`: `text`, `Name`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `Username`: `text`, `Location`: `text`}
 	_           = bytes.MinRead
 )
 

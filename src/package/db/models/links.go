@@ -96,15 +96,18 @@ var LinkWhere = struct {
 var LinkRels = struct {
 	IDStudioStudio string
 	IDUserUser     string
+	IDLinkViews    string
 }{
 	IDStudioStudio: "IDStudioStudio",
 	IDUserUser:     "IDUserUser",
+	IDLinkViews:    "IDLinkViews",
 }
 
 // linkR is where relationships are stored.
 type linkR struct {
-	IDStudioStudio *Studio `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
-	IDUserUser     *User   `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+	IDStudioStudio *Studio   `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
+	IDUserUser     *User     `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
+	IDLinkViews    ViewSlice `boil:"IDLinkViews" json:"IDLinkViews" toml:"IDLinkViews" yaml:"IDLinkViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -142,6 +145,22 @@ func (r *linkR) GetIDUserUser() *User {
 	}
 
 	return r.IDUserUser
+}
+
+func (o *Link) GetIDLinkViews() ViewSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDLinkViews()
+}
+
+func (r *linkR) GetIDLinkViews() ViewSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDLinkViews
 }
 
 // linkL is where Load methods for each relationship are stored.
@@ -482,6 +501,20 @@ func (o *Link) IDUserUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
+// IDLinkViews retrieves all the view's Views with an executor via id_link column.
+func (o *Link) IDLinkViews(mods ...qm.QueryMod) viewQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"views\".\"id_link\"=?", o.ID),
+	)
+
+	return Views(queryMods...)
+}
+
 // LoadIDStudioStudio allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (linkL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLink interface{}, mods queries.Applicator) error {
@@ -730,6 +763,119 @@ func (linkL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singula
 	return nil
 }
 
+// LoadIDLinkViews allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (linkL) LoadIDLinkViews(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLink interface{}, mods queries.Applicator) error {
+	var slice []*Link
+	var object *Link
+
+	if singular {
+		var ok bool
+		object, ok = maybeLink.(*Link)
+		if !ok {
+			object = new(Link)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeLink)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeLink))
+			}
+		}
+	} else {
+		s, ok := maybeLink.(*[]*Link)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeLink)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeLink))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &linkR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &linkR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`views`),
+		qm.WhereIn(`views.id_link in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load views")
+	}
+
+	var resultSlice []*View
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice views")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on views")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for views")
+	}
+
+	if len(viewAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDLinkViews = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &viewR{}
+			}
+			foreign.R.IDLinkLink = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDLink) {
+				local.R.IDLinkViews = append(local.R.IDLinkViews, foreign)
+				if foreign.R == nil {
+					foreign.R = &viewR{}
+				}
+				foreign.R.IDLinkLink = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDStudioStudio of the link to the related item.
 // Sets o.R.IDStudioStudio to related.
 // Adds o to related.R.IDStudioLinks.
@@ -887,6 +1033,133 @@ func (o *Link) RemoveIDUserUser(ctx context.Context, exec boil.ContextExecutor, 
 		related.R.IDUserLinks = related.R.IDUserLinks[:ln-1]
 		break
 	}
+	return nil
+}
+
+// AddIDLinkViews adds the given related objects to the existing relationships
+// of the link, optionally inserting them as new records.
+// Appends related to o.R.IDLinkViews.
+// Sets related.R.IDLinkLink appropriately.
+func (o *Link) AddIDLinkViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDLink, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"views\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_link"}),
+				strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDLink, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &linkR{
+			IDLinkViews: related,
+		}
+	} else {
+		o.R.IDLinkViews = append(o.R.IDLinkViews, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &viewR{
+				IDLinkLink: o,
+			}
+		} else {
+			rel.R.IDLinkLink = o
+		}
+	}
+	return nil
+}
+
+// SetIDLinkViews removes all previously related items of the
+// link replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDLinkLink's IDLinkViews accordingly.
+// Replaces o.R.IDLinkViews with related.
+// Sets related.R.IDLinkLink's IDLinkViews accordingly.
+func (o *Link) SetIDLinkViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	query := "update \"views\" set \"id_link\" = null where \"id_link\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDLinkViews {
+			queries.SetScanner(&rel.IDLink, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDLinkLink = nil
+		}
+		o.R.IDLinkViews = nil
+	}
+
+	return o.AddIDLinkViews(ctx, exec, insert, related...)
+}
+
+// RemoveIDLinkViews relationships from objects passed in.
+// Removes related items from R.IDLinkViews (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDLinkLink.
+func (o *Link) RemoveIDLinkViews(ctx context.Context, exec boil.ContextExecutor, related ...*View) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDLink, nil)
+		if rel.R != nil {
+			rel.R.IDLinkLink = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_link")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDLinkViews {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDLinkViews)
+			if ln > 1 && i < ln-1 {
+				o.R.IDLinkViews[i] = o.R.IDLinkViews[ln-1]
+			}
+			o.R.IDLinkViews = o.R.IDLinkViews[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

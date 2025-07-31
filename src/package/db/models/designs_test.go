@@ -1133,7 +1133,7 @@ func testDesignsSelect(t *testing.T) {
 }
 
 var (
-	designDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Description`: `text`, `Categories`: `ARRAY_text`, `CreatedAt`: `timestamp without time zone`, `Coordinate`: `geometry`, `Price`: `bigint`}
+	designDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Description`: `text`, `Categories`: `ARRAY_text`, `Coordinate`: `geometry`, `Price`: `bigint`, `CreatedAt`: `timestamp without time zone`}
 	_             = bytes.MinRead
 )
 

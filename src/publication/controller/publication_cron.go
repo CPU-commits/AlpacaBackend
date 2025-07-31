@@ -30,6 +30,8 @@ func NewCronPublication(
 		*fileService,
 		followRepository,
 		publicationRDRepository,
+		*viewService,
+		userServices.SinglentonFollowService(),
 	)
 	userService := authService.NewUserService(
 		userRepository,
@@ -61,6 +63,8 @@ func NewCronPublication(
 			userRepository,
 			*fileService,
 			*adminStudioService,
+			*viewService,
+			shareRepository,
 			bus,
 		),
 	}

@@ -283,6 +283,35 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 	return mod
 }
 
+func (sqlAR appointmentRepositorySql) CountGroupByStatus(criteria *Criteria) ([]CountGroupByStatusResult, error) {
+	where := sqlAR.criteriaToWhere(criteria)
+
+	type SqlCountResult struct {
+		Count  int64  `boil:"count"`
+		Status string `boil:"status"`
+	}
+	var count []SqlCountResult
+
+	err := models.NewQuery(
+		append([]QueryMod{
+			From(models.TableNames.Appointments),
+			Select("status"),
+			Select("COUNT(*) as count"),
+			GroupBy("status"),
+		}, where...)...,
+	).Bind(context.Background(), sqlAR.db, &count)
+	if err != nil {
+		return nil, utils.ErrRepositoryFailed
+	}
+
+	return utils.MapNoError(count, func(count SqlCountResult) CountGroupByStatusResult {
+		return CountGroupByStatusResult{
+			Count:  count.Count,
+			Status: model.AppointmentStatus(count.Status),
+		}
+	}), nil
+}
+
 func (sqlAR appointmentRepositorySql) findOptionsToMod(opts *findOptions) []QueryMod {
 	mod := []QueryMod{}
 	if opts == nil {

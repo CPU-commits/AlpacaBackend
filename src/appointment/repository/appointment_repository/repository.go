@@ -104,6 +104,11 @@ type UpdateData struct {
 	IDTattooArtist  int64
 }
 
+type CountGroupByStatusResult struct {
+	Status model.AppointmentStatus
+	Count  int64
+}
+
 type AppointmentRepository interface {
 	Find(criteria *Criteria, opts *findOptions) ([]model.Appointment, error)
 	FindOne(criteria *Criteria, opts *findOneOptions) (*model.Appointment, error)
@@ -111,4 +116,5 @@ type AppointmentRepository interface {
 	Exists(criteria *Criteria) (bool, error)
 	Update(criteria *Criteria, data *UpdateData) error
 	Insert(appointment *model.Appointment) (*model.Appointment, error)
+	CountGroupByStatus(criteria *Criteria) ([]CountGroupByStatusResult, error)
 }

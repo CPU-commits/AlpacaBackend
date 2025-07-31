@@ -17,6 +17,7 @@ const (
 	SCHEDULE_APPOINTMENT_PERMISSION StudioPermission = "s.schedule_appointment"
 	CANCEL_APPOINTMENT_PERMISSION   StudioPermission = "s.cancel_appointment"
 	UPDATE_STUDIO_PERMISSION        StudioPermission = "s.update"
+	SHOW_METRICS_PERMISSION         StudioPermission = "s.show_metrics"
 )
 
 var ALL_PERMISSIONS []StudioPermission = []StudioPermission{
@@ -31,6 +32,7 @@ var ALL_PERMISSIONS []StudioPermission = []StudioPermission{
 	SCHEDULE_APPOINTMENT_PERMISSION,
 	CANCEL_APPOINTMENT_PERMISSION,
 	UPDATE_STUDIO_PERMISSION,
+	SHOW_METRICS_PERMISSION,
 }
 
 // Struct permissions
@@ -88,6 +90,9 @@ var (
 	UpdateStudioPermission = Permission{
 		Permission: UPDATE_STUDIO_PERMISSION,
 	}
+	ShowMetricsPermission = Permission{
+		Permission: SHOW_METRICS_PERMISSION,
+	}
 )
 
 var AllPermissionsTree = []Permission{
@@ -102,6 +107,7 @@ var AllPermissionsTree = []Permission{
 	CancelAppointmentPermission,
 	ScheduleAppointmentPermission,
 	UpdateStudioPermission,
+	ShowMetricsPermission,
 }
 
 func IsPermission(permission string) bool {

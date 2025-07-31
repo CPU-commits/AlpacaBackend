@@ -10,10 +10,12 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	shorterModel "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	view_service "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 )
 
 var profileService *ProfileService
@@ -21,10 +23,12 @@ var profileService *ProfileService
 type ProfileService struct {
 	profileRepository       profile_repository.ProfileRepository
 	followRepository        follow_repository.FollowRepository
+	followService           *FollowService
 	userService             authService.UserService
 	imageStore              store.ImageStore
 	fileService             file_service.FileService
 	publicationRDRepository publication_repository.RedisPublicationRepository
+	viewService             view_service.ViewService
 }
 
 func (profileService *ProfileService) GetAvatarFromIDUser(idUser int64) (string, error) {
@@ -53,11 +57,131 @@ func (profileService *ProfileService) GetAvatarFromIDUser(idUser int64) (string,
 	return profile.Avatar.Key, nil
 }
 
-func (profileService *ProfileService) GetProfile(username string) (*model.Profile, error) {
+func (profileService *ProfileService) GetProfileMetrics(
+	username string,
+	idUser int64,
+	params MetricsParams,
+) (*Metrics, error) {
 	idProfile, err := profileService.GetProfileIdFromUsername(username)
 	if err != nil {
 		return nil, err
 	}
+	idProfileFromIdUser, err := profileService.GetProfileIDFromIDUser(idUser)
+	if err != nil {
+		return nil, err
+	}
+	if idProfile != idProfileFromIdUser {
+		return nil, ErrUnauthorizedProfile
+	}
+
+	statsLocation, countLocation, err := profileService.viewService.StatsViewsByLocation(
+		view_service.ToView{
+			IDProfile: idProfile,
+		},
+		params.From,
+		params.To,
+		utils.GetTagsGeo(utils.SANTIAGO)...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	stats, countViews, err := profileService.viewService.StatsViews(
+		view_service.ToView{
+			IDProfile: idProfile,
+		},
+		params.From,
+		params.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsComparative, countViewsComparative, err := profileService.viewService.StatsViews(
+		view_service.ToView{
+			IDProfile: idProfile,
+		},
+		params.FromComparative,
+		params.ToComparative,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsFollows, countFollows, err := profileService.followService.StatsFollows(
+		idProfile,
+		0,
+		params.From,
+		params.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsFollowsComparative, countFollowsComparative, err := profileService.followService.StatsFollows(
+		idProfile,
+		0,
+		params.FromComparative,
+		params.ToComparative,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var metrics []LocationMetric
+	for k, v := range statsLocation {
+		metrics = append(metrics, LocationMetric{
+			Location: k,
+			Value:    v,
+		})
+	}
+
+	return &Metrics{
+		Views: MetricsViews{
+			ByLocation: MetricsLocation{
+				Locations: metrics,
+				Count:     countLocation,
+			},
+			Timeline: MetricsTimeline{
+				Stats: stats,
+				Count: countViews,
+			},
+			TimelineComparative: MetricsTimeline{
+				Stats: statsComparative,
+				Count: countViewsComparative,
+			},
+		},
+		Follows: MetricsFollows{
+			Timeline: MetricsFollowsTimeline{
+				Stats: statsFollows,
+				Count: countFollows,
+			},
+			TimelineComparative: MetricsFollowsTimeline{
+				Stats: statsFollowsComparative,
+				Count: countFollowsComparative,
+			},
+		},
+	}, nil
+}
+
+func (*ProfileService) toShortLinksMedia(media []shorterModel.Media) []shorterModel.Media {
+	return utils.MapNoError(media, func(media shorterModel.Media) shorterModel.Media {
+		return shorterModel.Media{
+			ID:   media.ID,
+			Type: media.Type,
+			Link: fmt.Sprintf("%s/s/%s", settingsData.BACKEND_URL, media.ShortCode),
+		}
+	})
+}
+
+func (profileService *ProfileService) GetProfile(username, identifier, ip string) (*model.Profile, error) {
+	idProfile, err := profileService.GetProfileIdFromUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	go profileService.viewService.AddPermanentViewIfTemporalViewNotExists(
+		identifier,
+		view_service.ToView{
+			IDProfile: idProfile,
+		},
+		utils.String(ip),
+	)
 
 	opts := profile_repository.NewFindOneOptions().
 		Load(profile_repository.LoadOpts{
@@ -81,9 +205,12 @@ func (profileService *ProfileService) GetProfile(username string) (*model.Profil
 		opts,
 	)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
+	profile.User.Media = profileService.toShortLinksMedia(
+		profile.User.Media,
+	)
+
 	return profile, nil
 }
 
@@ -247,7 +374,8 @@ func NewProfileService(
 	fileService file_service.FileService,
 	followRepository follow_repository.FollowRepository,
 	publicationRDRepository publication_repository.RedisPublicationRepository,
-
+	viewService view_service.ViewService,
+	followService *FollowService,
 ) *ProfileService {
 	if profileService == nil {
 		profileService = &ProfileService{
@@ -257,6 +385,8 @@ func NewProfileService(
 			fileService:             fileService,
 			followRepository:        followRepository,
 			publicationRDRepository: publicationRDRepository,
+			viewService:             viewService,
+			followService:           followService,
 		}
 	}
 	return profileService

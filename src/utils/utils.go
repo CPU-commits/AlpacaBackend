@@ -66,3 +66,12 @@ func GenerateRandomString(length int) (string, error) {
 	code := strings.ToUpper(base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b))
 	return code[:length], nil
 }
+
+func IterateDates[T any](from time.Time, to time.Time, fun func(d time.Time) T) (result []T) {
+	for d := from; !d.After(to); d = d.AddDate(0, 0, 1) {
+		r := fun(d)
+		result = append(result, r)
+	}
+
+	return result
+}

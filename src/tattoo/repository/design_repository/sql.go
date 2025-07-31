@@ -306,9 +306,8 @@ func (sqlDS *sqlDesignRepository) GetCategories(c *Criteria) ([]string, error) {
 	}
 
 	set := utils.NewSet[string]()
-	utils.ConcurrentForEach(sqlDesigns, func(d *models.Design) error {
+	utils.ConcurrentForEach(sqlDesigns, func(d *models.Design, setError func(err error)) {
 		set.Add(d.Categories...)
-		return nil
 	}, nil)
 
 	return set.Values(), nil

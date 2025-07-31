@@ -284,6 +284,19 @@ func Reduce[T any, R any](
 	return
 }
 
+func ReduceNoError[T any, R any](
+	slide []T,
+	reducer func(acum R, v T) R,
+	initialValue R,
+) (reduce R) {
+	reduce = initialValue
+
+	for _, v := range slide {
+		reduce = reducer(reduce, v)
+	}
+	return
+}
+
 func Find[T any](slide []T, cond func(v T) (bool, error)) (findValue *T, err error) {
 	for _, v := range slide {
 		isValue, errCond := cond(v)
@@ -298,59 +311,86 @@ func Find[T any](slide []T, cond func(v T) (bool, error)) (findValue *T, err err
 	return
 }
 
+func FindNoError[T any](slide []T, cond func(v T) bool) (findValue *T) {
+	for _, v := range slide {
+		isValue := cond(v)
+		if isValue {
+			return &v
+		}
+	}
+	return
+}
+
 type OptionsConcurrentForEach struct {
 	MaxConcurrency int
 }
 
 func ConcurrentForEach[T any](
 	slice []T,
-	toDo func(v T) error,
+	do func(v T, setError func(err error)),
 	options *OptionsConcurrentForEach,
 ) error {
-	maxConc := 10
-	if options != nil && options.MaxConcurrency > 0 {
-		maxConc = options.MaxConcurrency
-	}
+	return ForEach(slice, func(v T) error {
+		var err error
 
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var err error
+		do(v, func(cerr error) {
+			err = cerr
+		})
+		return err
+	})
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	sem := make(chan struct{}, maxConc)
-
-	for _, v := range slice {
-		select {
-		case <-ctx.Done():
-			break
-		case sem <- struct{}{}:
+	/*
+		maxConcurrency := 10
+		if options != nil && options.MaxConcurrency != 0 {
+			maxConcurrency = options.MaxConcurrency
 		}
 
-		wg.Add(1)
-		go func(v T) {
-			defer wg.Done()
-			defer func() { <-sem }()
+		var wg sync.WaitGroup
+		sem := semaphore.NewWeighted(int64(maxConcurrency))
+		// Ctx with cancel if error
+		ctx, cancel := context.WithCancel(context.Background())
+		// Ctx error
+		const keyPrincipalID key = iota
+		ctx = context.WithValue(ctx, keyPrincipalID, nil)
+		count := len(slice)
 
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				if errRet := toDo(v); errRet != nil {
-					mu.Lock()
-					if err == nil {
-						err = errRet
-						cancel()
+		wg.Add(count)
+		for _, v := range slice {
+			if err := sem.Acquire(ctx, 1); err != nil {
+				wg.Done()
+				// Close go routines
+				cancel()
+				if errors.Is(err, context.Canceled) {
+					if errRes := ctx.Value(keyPrincipalID); errRes != nil {
+						return errRes.(error)
 					}
-					mu.Unlock()
 				}
+				return err
 			}
-		}(v)
-	}
+			// Wrapper
+			go func(wg *sync.WaitGroup, v T) {
+				defer wg.Done()
 
-	wg.Wait()
-	return err
+				context := &Context{
+					Ctx:    &ctx,
+					Cancel: cancel,
+					Key:    keyPrincipalID,
+				}
+				do(v, func(err error) {
+					setContextAndCancel(err, context)
+				})
+				// Free semaphore
+				sem.Release(1)
+			}(&wg, v)
+		}
+		// Close all
+		wg.Wait()
+		cancel()
+		// Catch error
+		if err := ctx.Value(keyPrincipalID); err != nil {
+			return err.(error)
+		}
+		return nil*/
 }
 
 func ForEach[T any](slide []T, toDo func(v T) error) error {

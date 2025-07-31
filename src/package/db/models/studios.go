@@ -25,16 +25,16 @@ import (
 // Studio is an object representing the database table.
 type Studio struct {
 	ID          int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Username    string      `boil:"username" json:"username" toml:"username" yaml:"username"`
-	IDAvatar    null.Int64  `boil:"id_avatar" json:"id_avatar,omitempty" toml:"id_avatar" yaml:"id_avatar,omitempty"`
-	IDBanner    null.Int64  `boil:"id_banner" json:"id_banner,omitempty" toml:"id_banner" yaml:"id_banner,omitempty"`
 	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	FullAddress string      `boil:"full_address" json:"full_address" toml:"full_address" yaml:"full_address"`
 	Email       string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Phone       null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
-	IDOwner     int64       `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
 	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDAvatar    null.Int64  `boil:"id_avatar" json:"id_avatar,omitempty" toml:"id_avatar" yaml:"id_avatar,omitempty"`
+	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Username    string      `boil:"username" json:"username" toml:"username" yaml:"username"`
+	FullAddress string      `boil:"full_address" json:"full_address" toml:"full_address" yaml:"full_address"`
+	IDOwner     int64       `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
+	IDBanner    null.Int64  `boil:"id_banner" json:"id_banner,omitempty" toml:"id_banner" yaml:"id_banner,omitempty"`
 
 	R *studioR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,82 +42,82 @@ type Studio struct {
 
 var StudioColumns = struct {
 	ID          string
-	Name        string
-	Username    string
-	IDAvatar    string
-	IDBanner    string
 	Description string
-	FullAddress string
 	Email       string
 	Phone       string
-	IDOwner     string
 	CreatedAt   string
+	IDAvatar    string
+	Name        string
+	Username    string
+	FullAddress string
+	IDOwner     string
+	IDBanner    string
 }{
 	ID:          "id",
-	Name:        "name",
-	Username:    "username",
-	IDAvatar:    "id_avatar",
-	IDBanner:    "id_banner",
 	Description: "description",
-	FullAddress: "full_address",
 	Email:       "email",
 	Phone:       "phone",
-	IDOwner:     "id_owner",
 	CreatedAt:   "created_at",
+	IDAvatar:    "id_avatar",
+	Name:        "name",
+	Username:    "username",
+	FullAddress: "full_address",
+	IDOwner:     "id_owner",
+	IDBanner:    "id_banner",
 }
 
 var StudioTableColumns = struct {
 	ID          string
-	Name        string
-	Username    string
-	IDAvatar    string
-	IDBanner    string
 	Description string
-	FullAddress string
 	Email       string
 	Phone       string
-	IDOwner     string
 	CreatedAt   string
+	IDAvatar    string
+	Name        string
+	Username    string
+	FullAddress string
+	IDOwner     string
+	IDBanner    string
 }{
 	ID:          "studios.id",
-	Name:        "studios.name",
-	Username:    "studios.username",
-	IDAvatar:    "studios.id_avatar",
-	IDBanner:    "studios.id_banner",
 	Description: "studios.description",
-	FullAddress: "studios.full_address",
 	Email:       "studios.email",
 	Phone:       "studios.phone",
-	IDOwner:     "studios.id_owner",
 	CreatedAt:   "studios.created_at",
+	IDAvatar:    "studios.id_avatar",
+	Name:        "studios.name",
+	Username:    "studios.username",
+	FullAddress: "studios.full_address",
+	IDOwner:     "studios.id_owner",
+	IDBanner:    "studios.id_banner",
 }
 
 // Generated where
 
 var StudioWhere = struct {
 	ID          whereHelperint64
-	Name        whereHelperstring
-	Username    whereHelperstring
-	IDAvatar    whereHelpernull_Int64
-	IDBanner    whereHelpernull_Int64
 	Description whereHelpernull_String
-	FullAddress whereHelperstring
 	Email       whereHelperstring
 	Phone       whereHelpernull_String
-	IDOwner     whereHelperint64
 	CreatedAt   whereHelpertime_Time
+	IDAvatar    whereHelpernull_Int64
+	Name        whereHelperstring
+	Username    whereHelperstring
+	FullAddress whereHelperstring
+	IDOwner     whereHelperint64
+	IDBanner    whereHelpernull_Int64
 }{
 	ID:          whereHelperint64{field: "\"studios\".\"id\""},
-	Name:        whereHelperstring{field: "\"studios\".\"name\""},
-	Username:    whereHelperstring{field: "\"studios\".\"username\""},
-	IDAvatar:    whereHelpernull_Int64{field: "\"studios\".\"id_avatar\""},
-	IDBanner:    whereHelpernull_Int64{field: "\"studios\".\"id_banner\""},
 	Description: whereHelpernull_String{field: "\"studios\".\"description\""},
-	FullAddress: whereHelperstring{field: "\"studios\".\"full_address\""},
 	Email:       whereHelperstring{field: "\"studios\".\"email\""},
 	Phone:       whereHelpernull_String{field: "\"studios\".\"phone\""},
-	IDOwner:     whereHelperint64{field: "\"studios\".\"id_owner\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"studios\".\"created_at\""},
+	IDAvatar:    whereHelpernull_Int64{field: "\"studios\".\"id_avatar\""},
+	Name:        whereHelperstring{field: "\"studios\".\"name\""},
+	Username:    whereHelperstring{field: "\"studios\".\"username\""},
+	FullAddress: whereHelperstring{field: "\"studios\".\"full_address\""},
+	IDOwner:     whereHelperint64{field: "\"studios\".\"id_owner\""},
+	IDBanner:    whereHelpernull_Int64{field: "\"studios\".\"id_banner\""},
 }
 
 // StudioRels is where relationship names are stored.
@@ -131,6 +131,7 @@ var StudioRels = struct {
 	IDStudioPosts        string
 	IDStudioStudioUsers  string
 	IDStudioTattoos      string
+	IDStudioViews        string
 }{
 	IDAvatarImage:        "IDAvatarImage",
 	IDBannerImage:        "IDBannerImage",
@@ -141,6 +142,7 @@ var StudioRels = struct {
 	IDStudioPosts:        "IDStudioPosts",
 	IDStudioStudioUsers:  "IDStudioStudioUsers",
 	IDStudioTattoos:      "IDStudioTattoos",
+	IDStudioViews:        "IDStudioViews",
 }
 
 // studioR is where relationships are stored.
@@ -154,6 +156,7 @@ type studioR struct {
 	IDStudioPosts        PostSlice        `boil:"IDStudioPosts" json:"IDStudioPosts" toml:"IDStudioPosts" yaml:"IDStudioPosts"`
 	IDStudioStudioUsers  StudioUserSlice  `boil:"IDStudioStudioUsers" json:"IDStudioStudioUsers" toml:"IDStudioStudioUsers" yaml:"IDStudioStudioUsers"`
 	IDStudioTattoos      TattooSlice      `boil:"IDStudioTattoos" json:"IDStudioTattoos" toml:"IDStudioTattoos" yaml:"IDStudioTattoos"`
+	IDStudioViews        ViewSlice        `boil:"IDStudioViews" json:"IDStudioViews" toml:"IDStudioViews" yaml:"IDStudioViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -305,13 +308,29 @@ func (r *studioR) GetIDStudioTattoos() TattooSlice {
 	return r.IDStudioTattoos
 }
 
+func (o *Studio) GetIDStudioViews() ViewSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDStudioViews()
+}
+
+func (r *studioR) GetIDStudioViews() ViewSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDStudioViews
+}
+
 // studioL is where Load methods for each relationship are stored.
 type studioL struct{}
 
 var (
-	studioAllColumns            = []string{"id", "name", "username", "id_avatar", "id_banner", "description", "full_address", "email", "phone", "id_owner", "created_at"}
-	studioColumnsWithoutDefault = []string{"name", "username", "full_address", "email", "id_owner"}
-	studioColumnsWithDefault    = []string{"id", "id_avatar", "id_banner", "description", "phone", "created_at"}
+	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner"}
+	studioColumnsWithoutDefault = []string{"email", "name", "username", "full_address", "id_owner"}
+	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner"}
 	studioPrimaryKeyColumns     = []string{"id"}
 	studioGeneratedColumns      = []string{}
 )
@@ -736,6 +755,20 @@ func (o *Studio) IDStudioTattoos(mods ...qm.QueryMod) tattooQuery {
 	)
 
 	return Tattoos(queryMods...)
+}
+
+// IDStudioViews retrieves all the view's Views with an executor via id_studio column.
+func (o *Studio) IDStudioViews(mods ...qm.QueryMod) viewQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"views\".\"id_studio\"=?", o.ID),
+	)
+
+	return Views(queryMods...)
 }
 
 // LoadIDAvatarImage allows an eager lookup of values, cached into the
@@ -1784,6 +1817,119 @@ func (studioL) LoadIDStudioTattoos(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
+// LoadIDStudioViews allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (studioL) LoadIDStudioViews(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStudio interface{}, mods queries.Applicator) error {
+	var slice []*Studio
+	var object *Studio
+
+	if singular {
+		var ok bool
+		object, ok = maybeStudio.(*Studio)
+		if !ok {
+			object = new(Studio)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeStudio))
+			}
+		}
+	} else {
+		s, ok := maybeStudio.(*[]*Studio)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeStudio))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &studioR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &studioR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`views`),
+		qm.WhereIn(`views.id_studio in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load views")
+	}
+
+	var resultSlice []*View
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice views")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on views")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for views")
+	}
+
+	if len(viewAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDStudioViews = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &viewR{}
+			}
+			foreign.R.IDStudioStudio = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDStudio) {
+				local.R.IDStudioViews = append(local.R.IDStudioViews, foreign)
+				if foreign.R == nil {
+					foreign.R = &viewR{}
+				}
+				foreign.R.IDStudioStudio = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDAvatarImage of the studio to the related item.
 // Sets o.R.IDAvatarImage to related.
 // Adds o to related.R.IDAvatarStudio.
@@ -2650,6 +2796,133 @@ func (o *Studio) RemoveIDStudioTattoos(ctx context.Context, exec boil.ContextExe
 				o.R.IDStudioTattoos[i] = o.R.IDStudioTattoos[ln-1]
 			}
 			o.R.IDStudioTattoos = o.R.IDStudioTattoos[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddIDStudioViews adds the given related objects to the existing relationships
+// of the studio, optionally inserting them as new records.
+// Appends related to o.R.IDStudioViews.
+// Sets related.R.IDStudioStudio appropriately.
+func (o *Studio) AddIDStudioViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDStudio, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"views\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_studio"}),
+				strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDStudio, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &studioR{
+			IDStudioViews: related,
+		}
+	} else {
+		o.R.IDStudioViews = append(o.R.IDStudioViews, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &viewR{
+				IDStudioStudio: o,
+			}
+		} else {
+			rel.R.IDStudioStudio = o
+		}
+	}
+	return nil
+}
+
+// SetIDStudioViews removes all previously related items of the
+// studio replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDStudioStudio's IDStudioViews accordingly.
+// Replaces o.R.IDStudioViews with related.
+// Sets related.R.IDStudioStudio's IDStudioViews accordingly.
+func (o *Studio) SetIDStudioViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	query := "update \"views\" set \"id_studio\" = null where \"id_studio\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDStudioViews {
+			queries.SetScanner(&rel.IDStudio, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDStudioStudio = nil
+		}
+		o.R.IDStudioViews = nil
+	}
+
+	return o.AddIDStudioViews(ctx, exec, insert, related...)
+}
+
+// RemoveIDStudioViews relationships from objects passed in.
+// Removes related items from R.IDStudioViews (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDStudioStudio.
+func (o *Studio) RemoveIDStudioViews(ctx context.Context, exec boil.ContextExecutor, related ...*View) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDStudio, nil)
+		if rel.R != nil {
+			rel.R.IDStudioStudio = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_studio")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDStudioViews {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDStudioViews)
+			if ln > 1 && i < ln-1 {
+				o.R.IDStudioViews[i] = o.R.IDStudioViews[ln-1]
+			}
+			o.R.IDStudioViews = o.R.IDStudioViews[:ln-1]
 			break
 		}
 	}

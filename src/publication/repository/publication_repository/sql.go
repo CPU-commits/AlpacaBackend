@@ -232,6 +232,9 @@ func (sqlPublicationRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
 	if selectOpts.ID != nil && *selectOpts.ID {
 		mod = append(mod, Select(models.PostColumns.ID))
 	}
+	if selectOpts.IDStudio != nil && *selectOpts.IDStudio {
+		mod = append(mod, Select(models.PostColumns.IDStudio))
+	}
 	return mod
 }
 
@@ -514,6 +517,10 @@ func (sqlPR sqlPublicationRepository) UpdateOne(criteria *Criteria, data UpdateD
 	if data.SumViews != 0 {
 		sqlPublication.Views += data.SumViews
 		cols = append(cols, models.PostColumns.Views)
+	}
+	if data.SumShares != 0 {
+		sqlPublication.Shares += data.SumShares
+		cols = append(cols, models.PostColumns.Shares)
 	}
 
 	_, err = sqlPublication.Update(context.Background(), sqlPR.db, boil.Whitelist(cols...))

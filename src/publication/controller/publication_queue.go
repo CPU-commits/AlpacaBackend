@@ -24,6 +24,8 @@ func NewPublicationQueueController(
 			*fileService,
 			followRepository,
 			publicationRDRepository,
+			*viewService,
+			service.SinglentonFollowService(),
 		),
 	}
 }
@@ -58,37 +60,40 @@ func (queueController *QueuePublicationController) UpdateRatings(c bus.Context) 
 		return err
 	}
 
-	err = utils.ConcurrentForEach(rPublication, func(rPublication model.RedisPublication) error {
+	err = utils.ConcurrentForEach(rPublication, func(rPublication model.RedisPublication, setError func(err error)) {
 		publication, err := publicationRepository.FindOne(&publication_repository.Criteria{
 			ID: rPublication.IDPublication,
 		}, nil)
 		if err != nil {
-			return err
+			setError(err)
+			return
 		}
 		if publication == nil {
-			return nil
+			return
 		}
 		follows, err := queueController.profileService.GetFollows(rPublication.IDProfile)
 		if err != nil {
-			return err
+			setError(err)
+			return
 		}
 		daysSincePublish, err := utils.DaysSinceCreation(rPublication.CreatedAt)
 		if err != nil {
-			return err
+			setError(err)
+			return
 		}
 
 		err = publicationTSRepository.UpdatePublication(publication, daysSincePublish, int(follows))
 		if err != nil {
 
-			return err
+			setError(err)
+			return
 		}
 		err = publicationRDRepository.DeleteRedisPublications(&rPublication)
 		if err != nil {
 
-			return err
+			setError(err)
+			return
 		}
-
-		return nil
 	}, &utils.OptionsConcurrentForEach{
 		MaxConcurrency: BatchSize,
 	})

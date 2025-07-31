@@ -650,6 +650,84 @@ func testPostToManyIDPostPostImages(t *testing.T) {
 	}
 }
 
+func testPostToManyIDPostShares(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c Share
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, true, postColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Post struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, shareDBTypes, false, shareColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, shareDBTypes, false, shareColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.IDPost = a.ID
+	c.IDPost = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDPostShares().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.IDPost == b.IDPost {
+			bFound = true
+		}
+		if v.IDPost == c.IDPost {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := PostSlice{&a}
+	if err = a.L.LoadIDPostShares(ctx, tx, false, (*[]*Post)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDPostShares); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDPostShares = nil
+	if err = a.L.LoadIDPostShares(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDPostShares); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testPostToManyIDPostTattoos(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -719,6 +797,83 @@ func testPostToManyIDPostTattoos(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := len(a.R.IDPostTattoos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testPostToManyIDPostViews(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, true, postColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Post struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, viewDBTypes, false, viewColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, viewDBTypes, false, viewColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&b.IDPost, a.ID)
+	queries.Assign(&c.IDPost, a.ID)
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDPostViews().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if queries.Equal(v.IDPost, b.IDPost) {
+			bFound = true
+		}
+		if queries.Equal(v.IDPost, c.IDPost) {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := PostSlice{&a}
+	if err = a.L.LoadIDPostViews(ctx, tx, false, (*[]*Post)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDPostViews); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDPostViews = nil
+	if err = a.L.LoadIDPostViews(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDPostViews); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -869,6 +1024,81 @@ func testPostToManyAddOpIDPostPostImages(t *testing.T) {
 		}
 
 		count, err := a.IDPostPostImages().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testPostToManyAddOpIDPostShares(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c, d, e Share
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Share{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, shareDBTypes, false, strmangle.SetComplement(sharePrimaryKeyColumns, shareColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*Share{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDPostShares(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.IDPost {
+			t.Error("foreign key was wrong value", a.ID, first.IDPost)
+		}
+		if a.ID != second.IDPost {
+			t.Error("foreign key was wrong value", a.ID, second.IDPost)
+		}
+
+		if first.R.IDPostPost != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDPostPost != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDPostShares[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDPostShares[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDPostShares().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1124,6 +1354,257 @@ func testPostToManyRemoveOpIDPostTattoos(t *testing.T) {
 		t.Error("relationship to d should have been preserved")
 	}
 	if a.R.IDPostTattoos[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
+func testPostToManyAddOpIDPostViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*View{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDPostViews(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if !queries.Equal(a.ID, first.IDPost) {
+			t.Error("foreign key was wrong value", a.ID, first.IDPost)
+		}
+		if !queries.Equal(a.ID, second.IDPost) {
+			t.Error("foreign key was wrong value", a.ID, second.IDPost)
+		}
+
+		if first.R.IDPostPost != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDPostPost != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDPostViews[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDPostViews[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDPostViews().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testPostToManySetOpIDPostViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetIDPostViews(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDPostViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetIDPostViews(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDPostViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDPost) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDPost) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.IDPost) {
+		t.Error("foreign key was wrong value", a.ID, d.IDPost)
+	}
+	if !queries.Equal(a.ID, e.IDPost) {
+		t.Error("foreign key was wrong value", a.ID, e.IDPost)
+	}
+
+	if b.R.IDPostPost != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDPostPost != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDPostPost != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.IDPostPost != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.IDPostViews[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.IDPostViews[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testPostToManyRemoveOpIDPostViews(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Post
+	var b, c, d, e View
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, postDBTypes, false, strmangle.SetComplement(postPrimaryKeyColumns, postColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*View{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddIDPostViews(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.IDPostViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveIDPostViews(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.IDPostViews().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.IDPost) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.IDPost) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.IDPostPost != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.IDPostPost != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.IDPostPost != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.IDPostPost != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.IDPostViews) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.IDPostViews[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.IDPostViews[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -1490,7 +1971,7 @@ func testPostsSelect(t *testing.T) {
 }
 
 var (
-	postDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDStudio`: `bigint`, `IsStudioPost`: `boolean`, `Content`: `text`, `Likes`: `integer`, `Categories`: `ARRAY_text`, `Mentions`: `ARRAY_int4`, `Views`: `integer`, `CreatedAt`: `timestamp without time zone`}
+	postDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Likes`: `integer`, `CreatedAt`: `timestamp without time zone`, `Categories`: `ARRAY_text`, `Mentions`: `ARRAY_int4`, `Views`: `integer`, `IDStudio`: `bigint`, `IsStudioPost`: `boolean`, `Shares`: `integer`}
 	_           = bytes.MinRead
 )
 

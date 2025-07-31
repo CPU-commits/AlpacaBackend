@@ -70,6 +70,8 @@ model users {
 	tokens tokens[]
 	ownStudios studios[]
 	links links[]
+	views views[]
+	shares shares[]
 }
 
 model token_passwords {
@@ -111,6 +113,7 @@ model profiles {
 	posts posts[]
 	like likes[]
 	designs designs[]
+	views views[]
 }
 
 model follows {
@@ -198,6 +201,7 @@ model studios {
 	media links[]
 	tattoos tattoos[]
 	follows follows[]
+	views views[]
 }
 
 model links {
@@ -210,6 +214,7 @@ model links {
 	studio studios? @relation(fields: [id_studio], references: [id])
 	user users? @relation(fields: [id_user], references: [id])
 	created_at DateTime @default(now()) @db.Timestamp(6)
+	views views[]
 }
 
 model reviews {
@@ -244,12 +249,44 @@ model posts {
 	categories String[]
 	mentions Int[]
 	views Int @default(0)
+	shares Int @default(0)
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	profile profiles @relation(fields: [id_profile], references: [id])
 	studio studios? @relation(fields: [id_studio], references: [id])
 	tattoos tattoos[]
 	images post_images[]
 	like likes[]
+	viewss views[]
+	sharess shares[]
+}
+
+model views {
+	id BigInt @id @default(sequence())
+	id_post BigInt?
+	id_profile BigInt?
+	id_link BigInt?
+	id_studio BigInt?
+	id_user BigInt?
+	country String?
+	city String?
+	continent String?
+	timezone String?
+	region String?
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	post posts? @relation(fields: [id_post], references: [id])
+	profile profiles? @relation(fields: [id_profile], references: [id])
+	user users? @relation(fields: [id_user], references: [id])
+	link links? @relation(fields: [id_link], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
+}
+
+model shares {
+	id BigInt @id @default(sequence())
+	id_post BigInt
+	id_user BigInt
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	post posts @relation(fields: [id_post], references: [id])
+	user users @relation(fields: [id_user], references: [id])
 }
 
 model likes {
@@ -280,7 +317,7 @@ model appointments {
   id_calendar String?
   phone String?
   has_idea Boolean
-  has_design Boolean
+  has_design Boolean @default(false)
   area tattoo_area?
   height Float?
   width Float?

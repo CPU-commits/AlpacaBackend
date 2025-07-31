@@ -84,11 +84,108 @@ func (appointmentService *AppointmentService) hasAccessToAppointment(
 	return nil
 }
 
+func (appointmentService *AppointmentService) GetMetricsAppointments(
+	idUser int64,
+	isArtist bool,
+	params AppointmentParams,
+) ([]AppointmentMetric, error) {
+	if params.IDStudio != 0 {
+		if err := appointmentService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			params.IDStudio,
+		); err != nil {
+			return nil, err
+		}
+	}
+
+	criteria := &appointment_repository.Criteria{
+		IDStudio: params.IDStudio,
+	}
+	if isArtist && params.IDStudio == 0 {
+		criteria.IDTattooArtist = idUser
+	} else if params.IDStudio == 0 {
+		criteria.IDUser = idUser
+	}
+	if !params.FromDate.IsZero() {
+		criteria.ScheduledAtGTE = params.FromDate
+	}
+	if !params.ToDate.IsZero() {
+		criteria.FinishedAt = &repository.CriteriaTime{
+			LTE: params.ToDate,
+		}
+	}
+	if params.Statuses != nil {
+		or := []appointment_repository.Criteria{}
+
+		for _, status := range params.Statuses {
+			if params.AllAppointments && isArtist {
+				or = append(or, appointment_repository.Criteria{
+					Status: model.AppointmentStatus(status),
+					IDUser: idUser,
+				})
+				or = append(or, appointment_repository.Criteria{
+					Status:         model.AppointmentStatus(status),
+					IDTattooArtist: idUser,
+				})
+			} else {
+				or = append(or, appointment_repository.Criteria{
+					Status: model.AppointmentStatus(status),
+				})
+			}
+		}
+		criteria.Or = or
+	} else if params.AllAppointments && isArtist {
+		or := []appointment_repository.Criteria{}
+
+		or = append(or, appointment_repository.Criteria{
+			IDUser: idUser,
+		})
+		or = append(or, appointment_repository.Criteria{
+			IDTattooArtist: idUser,
+		})
+		criteria.Or = or
+	}
+
+	result, err := appointmentService.appointmentRepository.CountGroupByStatus(
+		criteria,
+	)
+	if err != nil {
+		return nil, err
+	}
+	prevResult := utils.MapNoError(result, func(result appointment_repository.CountGroupByStatusResult) AppointmentMetric {
+		return AppointmentMetric{
+			Count:  result.Count,
+			Status: result.Status,
+		}
+	})
+	statuses := utils.MapNoError(prevResult, func(result AppointmentMetric) model.AppointmentStatus {
+		return result.Status
+	})
+	for _, status := range model.ALL_STATUSES {
+		if !utils.Includes(statuses, status) {
+			prevResult = append(prevResult, AppointmentMetric{
+				Status: status,
+			})
+		}
+	}
+
+	return prevResult, nil
+}
+
 func (appointmentService *AppointmentService) GetAppointments(
 	idUser int64,
 	isArtist bool,
 	params AppointmentParams,
 ) ([]model.Appointment, int64, error) {
+	if params.IDStudio != 0 {
+		if err := appointmentService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			params.IDStudio,
+		); err != nil {
+			return nil, 0, err
+		}
+	}
+
 	criteria := &appointment_repository.Criteria{
 		IDStudio: params.IDStudio,
 	}
@@ -108,7 +205,7 @@ func (appointmentService *AppointmentService) GetAppointments(
 		},
 		Design: true,
 	}
-	if params.AllAppointments && isArtist {
+	if (params.AllAppointments && isArtist) || params.IDStudio != 0 {
 		load.User = &user_repository.SelectOpts{
 			Name:     utils.Bool(true),
 			Username: utils.Bool(true),
@@ -120,7 +217,7 @@ func (appointmentService *AppointmentService) GetAppointments(
 			Username: utils.Bool(true),
 			ID:       utils.Bool(true),
 		}
-	} else if isArtist {
+	} else if isArtist && params.IDStudio == 0 {
 		criteria.IDTattooArtist = idUser
 		load.User = &user_repository.SelectOpts{
 			Name:     utils.Bool(true),
@@ -128,7 +225,7 @@ func (appointmentService *AppointmentService) GetAppointments(
 			ID:       utils.Bool(true),
 			Email:    utils.Bool(true),
 		}
-	} else {
+	} else if params.IDStudio == 0 {
 		criteria.IDUser = idUser
 		load.TattooArtist = &user_repository.SelectOpts{
 			Name:     utils.Bool(true),

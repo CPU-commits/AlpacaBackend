@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"time"
 
 	authModel "github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
@@ -16,6 +17,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/like_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/share_repository"
 	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
@@ -23,6 +25,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	viewService "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 )
 
 var publicationService *PublicationService
@@ -38,6 +41,8 @@ type PublicationService struct {
 	bus                   bus.Bus
 	userRepository        user_repository.UserRepository
 	adminStudioService    studioService.AdminStudioService
+	viewService           viewService.ViewService
+	shareRepository       share_repository.ShareRepository
 }
 
 type PublicationsMetadata struct {
@@ -46,9 +51,154 @@ type PublicationsMetadata struct {
 }
 
 func (publicationService *PublicationService) GetPublicationMetrics(
-	idPublication int64,
-) {
+	idPublication,
+	idUser int64,
+	fromDate time.Time,
+	toDate time.Time,
+) (*Metrics, error) {
+	publication, err := publicationService.publicationRepository.FindOne(
+		&publication_repository.Criteria{
+			ID: idPublication,
+		},
+		publication_repository.NewFindOneOptions().
+			Select(publication_repository.SelectOpts{
+				ID:        utils.Bool(true),
+				IDStudio:  utils.Bool(true),
+				IDProfile: utils.Bool(true),
+			}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if publication.IDStudio != 0 {
+		if err := publicationService.adminStudioService.ThrowAccessInStudio(
+			idUser,
+			publication.IDStudio,
+			studioModel.SHOW_METRICS_PERMISSION,
+		); err != nil {
+			return nil, err
+		}
+	} else {
+		idProfile, err := publicationService.profileService.GetProfileIDFromIDUser(idUser)
+		if err != nil {
+			return nil, err
+		}
+		if idProfile != publication.IDProfile {
+			return nil, ErrPublicationNotAccess
+		}
+	}
 
+	var viewStats []viewService.StatView
+	var viewCount int64
+	var likesCount int64
+	var likesStats []Stat
+	var sharesCount int64
+	var sharesStats []Stat
+
+	err = utils.Concurrency(3, 3, func(index int, setError func(err error)) {
+		var err error
+		switch index {
+		case 0:
+			viewStats, viewCount, err = publicationService.viewService.StatsViews(
+				viewService.ToView{
+					IDPost: idPublication,
+				},
+				fromDate,
+				toDate,
+			)
+		case 1:
+			likesStatsC, err := publicationService.likeRepository.CountGroupByDay(
+				&like_repository.Criteria{
+					IDPost: idPublication,
+					CreatedAt: &repository.CriteriaTime{
+						GTE: fromDate,
+						LTE: toDate,
+					},
+				},
+			)
+			if err != nil {
+				setError(err)
+				return
+			}
+
+			likesStats = utils.IterateDates(fromDate.Truncate(24*time.Hour), toDate.Truncate(24*time.Hour), func(d time.Time) Stat {
+				like := utils.FindNoError(likesStatsC, func(like like_repository.CountGroupByDayResult) bool {
+					return like.Day.Equal(d)
+				})
+				if like != nil {
+					likesCount += like.Likes
+					return Stat{
+						Count: like.Likes,
+						Day:   like.Day,
+					}
+				}
+
+				return Stat{
+					Day: d,
+				}
+			})
+		case 2:
+			sharesStatsC, err := publicationService.shareRepository.CountGroupByDay(
+				&share_repository.Criteria{
+					IDPost: idPublication,
+					CreatedAt: &repository.CriteriaTime{
+						GTE: fromDate,
+						LTE: toDate,
+					},
+				},
+			)
+			if err != nil {
+				setError(err)
+				return
+			}
+
+			sharesStats = utils.IterateDates(fromDate.Truncate(24*time.Hour), toDate.Truncate(24*time.Hour), func(d time.Time) Stat {
+				share := utils.FindNoError(sharesStatsC, func(share share_repository.CountGroupByDayResult) bool {
+					return share.Day.Equal(d)
+				})
+				if share != nil {
+					sharesCount += share.Shares
+					return Stat{
+						Count: share.Shares,
+						Day:   share.Day,
+					}
+				}
+
+				return Stat{
+					Day: d,
+				}
+			})
+		}
+		if err != nil {
+			setError(err)
+			return
+		}
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	metrics := &Metrics{
+		Views: Metric{
+			Count: viewCount,
+			Stats: utils.MapNoError(viewStats, func(stat viewService.StatView) Stat {
+				return Stat{
+					Count: stat.Views,
+					Day:   stat.Day,
+				}
+			}),
+		},
+		Likes: Metric{
+			Count: likesCount,
+			Stats: likesStats,
+		},
+		Shares: Metric{
+			Count: sharesCount,
+			Stats: sharesStats,
+		},
+	}
+
+	return metrics, nil
 }
 
 func (publicationService *PublicationService) GetPublications(
@@ -232,6 +382,65 @@ func (publicationService *PublicationService) GetMyLike(
 			IDPost: idPost,
 		},
 	)
+}
+
+func (publicationService *PublicationService) Share(
+	idPost int64,
+	idUser int64,
+) error {
+	opts := publication_repository.NewFindOneOptions().
+		Select(publication_repository.SelectOpts{
+			ID: utils.Bool(true),
+		})
+
+	publication, err := publicationService.publicationRepository.FindOne(
+		&publication_repository.Criteria{
+			ID: idPost,
+		},
+		opts,
+	)
+	if err != nil {
+		return err
+	}
+	if publication == nil {
+		return ErrPublicationNotExists
+	}
+	// Exists share
+	existsShare, err := publicationService.shareRepository.Exists(
+		&share_repository.Criteria{
+			IDUser: idUser,
+			IDPost: idPost,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if !existsShare {
+		err = publicationService.shareRepository.Insert(model.Share{
+			IDUser: idUser,
+			IDPost: idPost,
+		})
+		if err != nil {
+			return err
+		}
+		if err := publicationService.publicationRepository.UpdateOne(
+			&publication_repository.Criteria{
+				ID: publication.ID,
+			},
+			publication_repository.UpdateData{
+				SumShares: 1,
+			},
+		); err != nil {
+			return err
+		}
+		err = publicationService.interactionEvent(publication.ID)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return nil
 }
 
 func (publicationService *PublicationService) HandleLike(
@@ -574,7 +783,7 @@ func (publicationService *PublicationService) DeletePublication(
 	return nil
 }
 
-func (publicationService *PublicationService) AddView(idPublication int64, identifier dto.ViewIdentifier) error {
+func (publicationService *PublicationService) AddView(idPublication int64, identifier dto.ViewIdentifier, ip string) error {
 
 	publication, err := publicationService.publicationRepository.FindOne(
 		&publication_repository.Criteria{
@@ -589,6 +798,15 @@ func (publicationService *PublicationService) AddView(idPublication int64, ident
 		return ErrPublicationNotExists
 	}
 
+	if err := publicationService.viewService.AddPermanentView(
+		0,
+		viewService.ToView{
+			IDPost: idPublication,
+		},
+		utils.String(ip),
+	); err != nil {
+		return err
+	}
 	err = publicationService.publicationRepository.UpdateOne(&publication_repository.Criteria{
 		ID: idPublication,
 	}, publication_repository.UpdateData{
@@ -644,6 +862,8 @@ func NewPublicationService(
 	userRepository user_repository.UserRepository,
 	fileService file_service.FileService,
 	adminStudioService studioService.AdminStudioService,
+	viewService viewService.ViewService,
+	shareRepository share_repository.ShareRepository,
 	bus bus.Bus,
 ) *PublicationService {
 	if publicationService == nil {
@@ -658,6 +878,8 @@ func NewPublicationService(
 			bus:                   bus,
 			fileService:           fileService,
 			adminStudioService:    adminStudioService,
+			viewService:           viewService,
+			shareRepository:       shareRepository,
 		}
 	}
 

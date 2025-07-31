@@ -26,7 +26,6 @@ func Concurrency(
 	count int,
 	do func(index int, setError func(err error)),
 ) error {
-	// Check if exists all users
 	var wg sync.WaitGroup
 	sem := semaphore.NewWeighted(semWight)
 	// Ctx with cancel if error
@@ -36,7 +35,7 @@ func Concurrency(
 	ctx = context.WithValue(ctx, keyPrincipalID, nil)
 
 	wg.Add(count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		if err := sem.Acquire(ctx, 1); err != nil {
 			wg.Done()
 			// Close go routines

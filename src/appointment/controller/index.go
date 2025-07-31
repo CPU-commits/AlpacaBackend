@@ -8,11 +8,15 @@ import (
 	fileServices "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/calendar/googlecalendar"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
+	ipipinfo "github.com/CPU-commits/Template_Go-EventDriven/src/package/ip/ip_ipinfo"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/temporal_view_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/view_repository"
+	viewServices "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/repository/follow_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
@@ -29,6 +33,8 @@ var (
 	publicationRDRepository = publication_repository.NewRdPublicationRepository()
 	peopleStudioRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
 	studioRepository        = studio_repository.NewSqlStudioRepository()
+	viewRepository          = view_repository.NewSqlViewRepository()
+	temporalViewRepository  = temporal_view_repository.NewRdTemportalViewRepository()
 )
 
 // UID Generator
@@ -37,6 +43,9 @@ var uidGenerator = nanoid.NewNanoIDGenerator()
 // calendar
 var googleCalendar = googlecalendar.NewGoogleCalendar()
 
+// IP
+var ipInfo = ipipinfo.NewIPIpInfo()
+
 // Store
 var fileStore = cloudinary_store.NewCloudinaryImageStore()
 
@@ -44,5 +53,10 @@ var fileStore = cloudinary_store.NewCloudinaryImageStore()
 var (
 	fileService = fileServices.NewFileService(
 		fileStore,
+	)
+	viewService = viewServices.NewViewService(
+		viewRepository,
+		temporalViewRepository,
+		ipInfo,
 	)
 )

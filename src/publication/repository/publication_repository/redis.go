@@ -127,7 +127,7 @@ func (rdPublicationRepository *RdPublicationRepository) AddInteraction(publicati
 		IDProfile:     publication.IDProfile,
 		Likes:         publication.Likes,
 		Views:         publication.Views,
-		Shares:        0,
+		Shares:        publication.Shares,
 		CreatedAt:     publication.CreatedAt,
 	}
 	_, err := rdPublicationRepository.rd.JSONSet(context.Background(), fmt.Sprintf("publication:%d", publication.ID), "$", post).Result()

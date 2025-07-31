@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/follow/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
@@ -67,6 +68,23 @@ func (sqlFR sqlFollowRepository) criteriaToWhere(criteria *Criteria) []QueryMod 
 	if criteria.IDStudio != 0 {
 		where = append(where, models.FollowWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
+	if criteria.CreatedAt != nil {
+		if !criteria.CreatedAt.LTE.IsZero() {
+			where = append(where, models.FollowWhere.CreatedAt.LTE(criteria.CreatedAt.LTE))
+		}
+		if !criteria.CreatedAt.LT.IsZero() {
+			where = append(where, models.FollowWhere.CreatedAt.LT(criteria.CreatedAt.LT))
+		}
+		if !criteria.CreatedAt.GTE.IsZero() {
+			where = append(where, models.FollowWhere.CreatedAt.GTE(criteria.CreatedAt.GTE))
+		}
+		if !criteria.CreatedAt.GT.IsZero() {
+			where = append(where, models.FollowWhere.CreatedAt.GT(criteria.CreatedAt.GT))
+		}
+		if !criteria.CreatedAt.EQ.IsZero() {
+			where = append(where, models.FollowWhere.CreatedAt.EQ(criteria.CreatedAt.EQ))
+		}
+	}
 
 	return where
 }
@@ -80,6 +98,35 @@ func (sqlFR sqlFollowRepository) Exists(criteria *Criteria) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+func (sqlFR sqlFollowRepository) CountGroupByDay(criteria *Criteria) ([]CountGroupByDayResult, error) {
+	where := sqlFR.criteriaToWhere(criteria)
+
+	type SqlFollowResult struct {
+		Day     time.Time `boil:"day"`
+		Follows int64     `boil:"follows"`
+	}
+	var follows []SqlFollowResult
+
+	err := models.NewQuery(
+		append([]QueryMod{
+			From(models.TableNames.Follows),
+			Select("DATE(created_at) as day"),
+			Select("COUNT(*) as follows"),
+			GroupBy("day"),
+		}, where...)...,
+	).Bind(context.Background(), sqlFR.db, &follows)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.MapNoError(follows, func(follow SqlFollowResult) CountGroupByDayResult {
+		return CountGroupByDayResult{
+			Follows: follow.Follows,
+			Day:     follow.Day,
+		}
+	}), nil
 }
 
 func NewSqlFollowRepository() FollowRepository {

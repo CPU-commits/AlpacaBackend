@@ -28,6 +28,7 @@ func TestParent(t *testing.T) {
 	t.Run("Reviews", testReviews)
 	t.Run("RolesUsers", testRolesUsers)
 	t.Run("Sessions", testSessions)
+	t.Run("Shares", testShares)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissions)
 	t.Run("StudioUsers", testStudioUsers)
 	t.Run("Studios", testStudios)
@@ -35,6 +36,7 @@ func TestParent(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswords)
 	t.Run("Tokens", testTokens)
 	t.Run("Users", testUsers)
+	t.Run("Views", testViews)
 }
 
 func TestDelete(t *testing.T) {
@@ -54,6 +56,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Reviews", testReviewsDelete)
 	t.Run("RolesUsers", testRolesUsersDelete)
 	t.Run("Sessions", testSessionsDelete)
+	t.Run("Shares", testSharesDelete)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsDelete)
 	t.Run("StudioUsers", testStudioUsersDelete)
 	t.Run("Studios", testStudiosDelete)
@@ -61,6 +64,7 @@ func TestDelete(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsDelete)
 	t.Run("Tokens", testTokensDelete)
 	t.Run("Users", testUsersDelete)
+	t.Run("Views", testViewsDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
@@ -80,6 +84,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Reviews", testReviewsQueryDeleteAll)
 	t.Run("RolesUsers", testRolesUsersQueryDeleteAll)
 	t.Run("Sessions", testSessionsQueryDeleteAll)
+	t.Run("Shares", testSharesQueryDeleteAll)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsQueryDeleteAll)
 	t.Run("StudioUsers", testStudioUsersQueryDeleteAll)
 	t.Run("Studios", testStudiosQueryDeleteAll)
@@ -87,6 +92,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsQueryDeleteAll)
 	t.Run("Tokens", testTokensQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
+	t.Run("Views", testViewsQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
@@ -106,6 +112,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Reviews", testReviewsSliceDeleteAll)
 	t.Run("RolesUsers", testRolesUsersSliceDeleteAll)
 	t.Run("Sessions", testSessionsSliceDeleteAll)
+	t.Run("Shares", testSharesSliceDeleteAll)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsSliceDeleteAll)
 	t.Run("StudioUsers", testStudioUsersSliceDeleteAll)
 	t.Run("Studios", testStudiosSliceDeleteAll)
@@ -113,6 +120,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsSliceDeleteAll)
 	t.Run("Tokens", testTokensSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
+	t.Run("Views", testViewsSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
@@ -132,6 +140,7 @@ func TestExists(t *testing.T) {
 	t.Run("Reviews", testReviewsExists)
 	t.Run("RolesUsers", testRolesUsersExists)
 	t.Run("Sessions", testSessionsExists)
+	t.Run("Shares", testSharesExists)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsExists)
 	t.Run("StudioUsers", testStudioUsersExists)
 	t.Run("Studios", testStudiosExists)
@@ -139,6 +148,7 @@ func TestExists(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsExists)
 	t.Run("Tokens", testTokensExists)
 	t.Run("Users", testUsersExists)
+	t.Run("Views", testViewsExists)
 }
 
 func TestFind(t *testing.T) {
@@ -158,6 +168,7 @@ func TestFind(t *testing.T) {
 	t.Run("Reviews", testReviewsFind)
 	t.Run("RolesUsers", testRolesUsersFind)
 	t.Run("Sessions", testSessionsFind)
+	t.Run("Shares", testSharesFind)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsFind)
 	t.Run("StudioUsers", testStudioUsersFind)
 	t.Run("Studios", testStudiosFind)
@@ -165,6 +176,7 @@ func TestFind(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsFind)
 	t.Run("Tokens", testTokensFind)
 	t.Run("Users", testUsersFind)
+	t.Run("Views", testViewsFind)
 }
 
 func TestBind(t *testing.T) {
@@ -184,6 +196,7 @@ func TestBind(t *testing.T) {
 	t.Run("Reviews", testReviewsBind)
 	t.Run("RolesUsers", testRolesUsersBind)
 	t.Run("Sessions", testSessionsBind)
+	t.Run("Shares", testSharesBind)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsBind)
 	t.Run("StudioUsers", testStudioUsersBind)
 	t.Run("Studios", testStudiosBind)
@@ -191,6 +204,7 @@ func TestBind(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsBind)
 	t.Run("Tokens", testTokensBind)
 	t.Run("Users", testUsersBind)
+	t.Run("Views", testViewsBind)
 }
 
 func TestOne(t *testing.T) {
@@ -210,6 +224,7 @@ func TestOne(t *testing.T) {
 	t.Run("Reviews", testReviewsOne)
 	t.Run("RolesUsers", testRolesUsersOne)
 	t.Run("Sessions", testSessionsOne)
+	t.Run("Shares", testSharesOne)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsOne)
 	t.Run("StudioUsers", testStudioUsersOne)
 	t.Run("Studios", testStudiosOne)
@@ -217,6 +232,7 @@ func TestOne(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsOne)
 	t.Run("Tokens", testTokensOne)
 	t.Run("Users", testUsersOne)
+	t.Run("Views", testViewsOne)
 }
 
 func TestAll(t *testing.T) {
@@ -236,6 +252,7 @@ func TestAll(t *testing.T) {
 	t.Run("Reviews", testReviewsAll)
 	t.Run("RolesUsers", testRolesUsersAll)
 	t.Run("Sessions", testSessionsAll)
+	t.Run("Shares", testSharesAll)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsAll)
 	t.Run("StudioUsers", testStudioUsersAll)
 	t.Run("Studios", testStudiosAll)
@@ -243,6 +260,7 @@ func TestAll(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsAll)
 	t.Run("Tokens", testTokensAll)
 	t.Run("Users", testUsersAll)
+	t.Run("Views", testViewsAll)
 }
 
 func TestCount(t *testing.T) {
@@ -262,6 +280,7 @@ func TestCount(t *testing.T) {
 	t.Run("Reviews", testReviewsCount)
 	t.Run("RolesUsers", testRolesUsersCount)
 	t.Run("Sessions", testSessionsCount)
+	t.Run("Shares", testSharesCount)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsCount)
 	t.Run("StudioUsers", testStudioUsersCount)
 	t.Run("Studios", testStudiosCount)
@@ -269,6 +288,7 @@ func TestCount(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsCount)
 	t.Run("Tokens", testTokensCount)
 	t.Run("Users", testUsersCount)
+	t.Run("Views", testViewsCount)
 }
 
 func TestHooks(t *testing.T) {
@@ -288,6 +308,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Reviews", testReviewsHooks)
 	t.Run("RolesUsers", testRolesUsersHooks)
 	t.Run("Sessions", testSessionsHooks)
+	t.Run("Shares", testSharesHooks)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsHooks)
 	t.Run("StudioUsers", testStudioUsersHooks)
 	t.Run("Studios", testStudiosHooks)
@@ -295,6 +316,7 @@ func TestHooks(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsHooks)
 	t.Run("Tokens", testTokensHooks)
 	t.Run("Users", testUsersHooks)
+	t.Run("Views", testViewsHooks)
 }
 
 func TestInsert(t *testing.T) {
@@ -330,6 +352,8 @@ func TestInsert(t *testing.T) {
 	t.Run("RolesUsers", testRolesUsersInsertWhitelist)
 	t.Run("Sessions", testSessionsInsert)
 	t.Run("Sessions", testSessionsInsertWhitelist)
+	t.Run("Shares", testSharesInsert)
+	t.Run("Shares", testSharesInsertWhitelist)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsInsert)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsInsertWhitelist)
 	t.Run("StudioUsers", testStudioUsersInsert)
@@ -344,6 +368,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Tokens", testTokensInsertWhitelist)
 	t.Run("Users", testUsersInsert)
 	t.Run("Users", testUsersInsertWhitelist)
+	t.Run("Views", testViewsInsert)
+	t.Run("Views", testViewsInsertWhitelist)
 }
 
 func TestReload(t *testing.T) {
@@ -363,6 +389,7 @@ func TestReload(t *testing.T) {
 	t.Run("Reviews", testReviewsReload)
 	t.Run("RolesUsers", testRolesUsersReload)
 	t.Run("Sessions", testSessionsReload)
+	t.Run("Shares", testSharesReload)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsReload)
 	t.Run("StudioUsers", testStudioUsersReload)
 	t.Run("Studios", testStudiosReload)
@@ -370,6 +397,7 @@ func TestReload(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsReload)
 	t.Run("Tokens", testTokensReload)
 	t.Run("Users", testUsersReload)
+	t.Run("Views", testViewsReload)
 }
 
 func TestReloadAll(t *testing.T) {
@@ -389,6 +417,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Reviews", testReviewsReloadAll)
 	t.Run("RolesUsers", testRolesUsersReloadAll)
 	t.Run("Sessions", testSessionsReloadAll)
+	t.Run("Shares", testSharesReloadAll)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsReloadAll)
 	t.Run("StudioUsers", testStudioUsersReloadAll)
 	t.Run("Studios", testStudiosReloadAll)
@@ -396,6 +425,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsReloadAll)
 	t.Run("Tokens", testTokensReloadAll)
 	t.Run("Users", testUsersReloadAll)
+	t.Run("Views", testViewsReloadAll)
 }
 
 func TestSelect(t *testing.T) {
@@ -415,6 +445,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Reviews", testReviewsSelect)
 	t.Run("RolesUsers", testRolesUsersSelect)
 	t.Run("Sessions", testSessionsSelect)
+	t.Run("Shares", testSharesSelect)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsSelect)
 	t.Run("StudioUsers", testStudioUsersSelect)
 	t.Run("Studios", testStudiosSelect)
@@ -422,6 +453,7 @@ func TestSelect(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsSelect)
 	t.Run("Tokens", testTokensSelect)
 	t.Run("Users", testUsersSelect)
+	t.Run("Views", testViewsSelect)
 }
 
 func TestUpdate(t *testing.T) {
@@ -441,6 +473,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Reviews", testReviewsUpdate)
 	t.Run("RolesUsers", testRolesUsersUpdate)
 	t.Run("Sessions", testSessionsUpdate)
+	t.Run("Shares", testSharesUpdate)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsUpdate)
 	t.Run("StudioUsers", testStudioUsersUpdate)
 	t.Run("Studios", testStudiosUpdate)
@@ -448,6 +481,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsUpdate)
 	t.Run("Tokens", testTokensUpdate)
 	t.Run("Users", testUsersUpdate)
+	t.Run("Views", testViewsUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
@@ -467,6 +501,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Reviews", testReviewsSliceUpdateAll)
 	t.Run("RolesUsers", testRolesUsersSliceUpdateAll)
 	t.Run("Sessions", testSessionsSliceUpdateAll)
+	t.Run("Shares", testSharesSliceUpdateAll)
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsSliceUpdateAll)
 	t.Run("StudioUsers", testStudioUsersSliceUpdateAll)
 	t.Run("Studios", testStudiosSliceUpdateAll)
@@ -474,4 +509,5 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("TokenPasswords", testTokenPasswordsSliceUpdateAll)
 	t.Run("Tokens", testTokensSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
+	t.Run("Views", testViewsSliceUpdateAll)
 }

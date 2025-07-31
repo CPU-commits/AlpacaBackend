@@ -138,6 +138,52 @@ func (httpPC *HttpPublicationController) GetPublication(c *gin.Context) {
 	c.JSON(http.StatusOK, publications)
 }
 
+func (httpPC *HttpPublicationController) GetMetricsPublication(c *gin.Context) {
+	idPostStr := c.Param("idPost")
+	idPost, err := strconv.Atoi(idPostStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	fromDateStr := c.Query("from")
+	now := time.Now()
+	var fromDate time.Time = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	if fromDateStr != "" {
+		var err error
+
+		fromDate, err = time.Parse(time.RFC3339, fromDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toDateStr := c.Query("to")
+	var toDate time.Time = fromDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	if toDateStr != "" {
+		var err error
+
+		toDate, err = time.Parse(time.RFC3339, toDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+	metrics, err := httpPC.publicationService.GetPublicationMetrics(
+		int64(idPost),
+		claims.ID,
+		fromDate,
+		toDate,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, metrics)
+}
+
 func (httpPC *HttpPublicationController) Search(c *gin.Context) {
 	q := c.Query("q")
 	categories := domainUtils.FilterNoError(strings.Split(c.Query("categories"), ","), func(category string) bool {
@@ -226,6 +272,27 @@ func (httpPC *HttpPublicationController) Like(c *gin.Context) {
 	c.JSON(http.StatusNoContent, gin.H{
 		"isLike": isLike,
 	})
+}
+
+func (httpPC *HttpPublicationController) Share(c *gin.Context) {
+	idPostStr := c.Param("idPost")
+	idPost, err := strconv.Atoi(idPostStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+	err = httpPC.publicationService.Share(
+		int64(idPost),
+		claims.ID,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }
 
 // Post godoc
@@ -337,8 +404,6 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 		utils.ResErrValidators(c, err)
 		return
 	}
-	ip := c.ClientIP()
-	fmt.Printf("c.ClientIP(): %v\n", ip)
 	claims, _ := utils.NewClaimsFromContext(c)
 	identifierInt, err := strconv.ParseInt(identifier.Identifier, 10, 64)
 	if err != nil {
@@ -346,7 +411,8 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 
 		return
 	}
-	if identifier.IdentifierType == "ip" && identifier.Identifier != c.ClientIP() {
+	ip := utils.GetIP(c)
+	if identifier.IdentifierType == "ip" && identifier.Identifier != ip {
 		utils.ResFromErr(c, service.ErrInvalidIdentifier)
 		return
 	} else if identifierInt != claims.ID {
@@ -358,6 +424,7 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 	if err := httpPC.publicationService.AddView(
 		int64(idPublication),
 		*identifier,
+		utils.GetIP(c),
 	); err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -379,6 +446,8 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		*fileService,
 		followRepository,
 		publicationRDRepository,
+		*viewService,
+		userServices.SinglentonFollowService(),
 	)
 	userService := authService.NewUserService(
 		userRepository,
@@ -410,6 +479,8 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 			userRepository,
 			*fileService,
 			*adminStudioService,
+			*viewService,
+			shareRepository,
 			bus,
 		),
 	}

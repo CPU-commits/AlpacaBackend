@@ -27,9 +27,9 @@ type User struct {
 	ID        int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email     string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Name      string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Phone     null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Location  null.String `boil:"location" json:"location,omitempty" toml:"location" yaml:"location,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,17 +40,17 @@ var UserColumns = struct {
 	ID        string
 	Email     string
 	Name      string
-	Username  string
 	Phone     string
 	CreatedAt string
+	Username  string
 	Location  string
 }{
 	ID:        "id",
 	Email:     "email",
 	Name:      "name",
-	Username:  "username",
 	Phone:     "phone",
 	CreatedAt: "created_at",
+	Username:  "username",
 	Location:  "location",
 }
 
@@ -58,17 +58,17 @@ var UserTableColumns = struct {
 	ID        string
 	Email     string
 	Name      string
-	Username  string
 	Phone     string
 	CreatedAt string
+	Username  string
 	Location  string
 }{
 	ID:        "users.id",
 	Email:     "users.email",
 	Name:      "users.name",
-	Username:  "users.username",
 	Phone:     "users.phone",
 	CreatedAt: "users.created_at",
+	Username:  "users.username",
 	Location:  "users.location",
 }
 
@@ -78,17 +78,17 @@ var UserWhere = struct {
 	ID        whereHelperint64
 	Email     whereHelperstring
 	Name      whereHelperstring
-	Username  whereHelperstring
 	Phone     whereHelpernull_String
 	CreatedAt whereHelpertime_Time
+	Username  whereHelperstring
 	Location  whereHelpernull_String
 }{
 	ID:        whereHelperint64{field: "\"users\".\"id\""},
 	Email:     whereHelperstring{field: "\"users\".\"email\""},
 	Name:      whereHelperstring{field: "\"users\".\"name\""},
-	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Phone:     whereHelpernull_String{field: "\"users\".\"phone\""},
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
+	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Location:  whereHelpernull_String{field: "\"users\".\"location\""},
 }
 
@@ -105,9 +105,11 @@ var UserRels = struct {
 	IDUserLinks                string
 	IDUserReviews              string
 	IDUserRolesUsers           string
+	IDUserShares               string
 	IDUserStudioUsers          string
 	IDOwnerStudios             string
 	IDUserTokens               string
+	IDUserViews                string
 }{
 	IDUserAuth:                 "IDUserAuth",
 	IDUserProfile:              "IDUserProfile",
@@ -120,9 +122,11 @@ var UserRels = struct {
 	IDUserLinks:                "IDUserLinks",
 	IDUserReviews:              "IDUserReviews",
 	IDUserRolesUsers:           "IDUserRolesUsers",
+	IDUserShares:               "IDUserShares",
 	IDUserStudioUsers:          "IDUserStudioUsers",
 	IDOwnerStudios:             "IDOwnerStudios",
 	IDUserTokens:               "IDUserTokens",
+	IDUserViews:                "IDUserViews",
 }
 
 // userR is where relationships are stored.
@@ -138,9 +142,11 @@ type userR struct {
 	IDUserLinks                LinkSlice        `boil:"IDUserLinks" json:"IDUserLinks" toml:"IDUserLinks" yaml:"IDUserLinks"`
 	IDUserReviews              ReviewSlice      `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
 	IDUserRolesUsers           RolesUserSlice   `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
+	IDUserShares               ShareSlice       `boil:"IDUserShares" json:"IDUserShares" toml:"IDUserShares" yaml:"IDUserShares"`
 	IDUserStudioUsers          StudioUserSlice  `boil:"IDUserStudioUsers" json:"IDUserStudioUsers" toml:"IDUserStudioUsers" yaml:"IDUserStudioUsers"`
 	IDOwnerStudios             StudioSlice      `boil:"IDOwnerStudios" json:"IDOwnerStudios" toml:"IDOwnerStudios" yaml:"IDOwnerStudios"`
 	IDUserTokens               TokenSlice       `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
+	IDUserViews                ViewSlice        `boil:"IDUserViews" json:"IDUserViews" toml:"IDUserViews" yaml:"IDUserViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -324,6 +330,22 @@ func (r *userR) GetIDUserRolesUsers() RolesUserSlice {
 	return r.IDUserRolesUsers
 }
 
+func (o *User) GetIDUserShares() ShareSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDUserShares()
+}
+
+func (r *userR) GetIDUserShares() ShareSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDUserShares
+}
+
 func (o *User) GetIDUserStudioUsers() StudioUserSlice {
 	if o == nil {
 		return nil
@@ -372,11 +394,27 @@ func (r *userR) GetIDUserTokens() TokenSlice {
 	return r.IDUserTokens
 }
 
+func (o *User) GetIDUserViews() ViewSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDUserViews()
+}
+
+func (r *userR) GetIDUserViews() ViewSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDUserViews
+}
+
 // userL is where Load methods for each relationship are stored.
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "name", "username", "phone", "created_at", "location"}
+	userAllColumns            = []string{"id", "email", "name", "phone", "created_at", "username", "location"}
 	userColumnsWithoutDefault = []string{"email", "name", "username"}
 	userColumnsWithDefault    = []string{"id", "phone", "created_at", "location"}
 	userPrimaryKeyColumns     = []string{"id"}
@@ -833,6 +871,20 @@ func (o *User) IDUserRolesUsers(mods ...qm.QueryMod) rolesUserQuery {
 	return RolesUsers(queryMods...)
 }
 
+// IDUserShares retrieves all the share's Shares with an executor via id_user column.
+func (o *User) IDUserShares(mods ...qm.QueryMod) shareQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"shares\".\"id_user\"=?", o.ID),
+	)
+
+	return Shares(queryMods...)
+}
+
 // IDUserStudioUsers retrieves all the studio_user's StudioUsers with an executor via id_user column.
 func (o *User) IDUserStudioUsers(mods ...qm.QueryMod) studioUserQuery {
 	var queryMods []qm.QueryMod
@@ -873,6 +925,20 @@ func (o *User) IDUserTokens(mods ...qm.QueryMod) tokenQuery {
 	)
 
 	return Tokens(queryMods...)
+}
+
+// IDUserViews retrieves all the view's Views with an executor via id_user column.
+func (o *User) IDUserViews(mods ...qm.QueryMod) viewQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"views\".\"id_user\"=?", o.ID),
+	)
+
+	return Views(queryMods...)
 }
 
 // LoadIDUserAuth allows an eager lookup of values, cached into the
@@ -2130,6 +2196,119 @@ func (userL) LoadIDUserRolesUsers(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
+// LoadIDUserShares allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserShares(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shares`),
+		qm.WhereIn(`shares.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load shares")
+	}
+
+	var resultSlice []*Share
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice shares")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on shares")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shares")
+	}
+
+	if len(shareAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserShares = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &shareR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDUser {
+				local.R.IDUserShares = append(local.R.IDUserShares, foreign)
+				if foreign.R == nil {
+					foreign.R = &shareR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDUserStudioUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (userL) LoadIDUserStudioUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
@@ -2459,6 +2638,119 @@ func (userL) LoadIDUserTokens(ctx context.Context, e boil.ContextExecutor, singu
 				local.R.IDUserTokens = append(local.R.IDUserTokens, foreign)
 				if foreign.R == nil {
 					foreign.R = &tokenR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDUserViews allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserViews(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`views`),
+		qm.WhereIn(`views.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load views")
+	}
+
+	var resultSlice []*View
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice views")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on views")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for views")
+	}
+
+	if len(viewAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserViews = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &viewR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDUser) {
+				local.R.IDUserViews = append(local.R.IDUserViews, foreign)
+				if foreign.R == nil {
+					foreign.R = &viewR{}
 				}
 				foreign.R.IDUserUser = local
 				break
@@ -3191,6 +3483,59 @@ func (o *User) AddIDUserRolesUsers(ctx context.Context, exec boil.ContextExecuto
 	return nil
 }
 
+// AddIDUserShares adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserShares.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserShares(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Share) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDUser = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"shares\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, sharePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDUser = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserShares: related,
+		}
+	} else {
+		o.R.IDUserShares = append(o.R.IDUserShares, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &shareR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
+		}
+	}
+	return nil
+}
+
 // AddIDUserStudioUsers adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.IDUserStudioUsers.
@@ -3347,6 +3692,133 @@ func (o *User) AddIDUserTokens(ctx context.Context, exec boil.ContextExecutor, i
 			rel.R.IDUserUser = o
 		}
 	}
+	return nil
+}
+
+// AddIDUserViews adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserViews.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDUser, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"views\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDUser, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserViews: related,
+		}
+	} else {
+		o.R.IDUserViews = append(o.R.IDUserViews, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &viewR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
+		}
+	}
+	return nil
+}
+
+// SetIDUserViews removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDUserUser's IDUserViews accordingly.
+// Replaces o.R.IDUserViews with related.
+// Sets related.R.IDUserUser's IDUserViews accordingly.
+func (o *User) SetIDUserViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	query := "update \"views\" set \"id_user\" = null where \"id_user\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDUserViews {
+			queries.SetScanner(&rel.IDUser, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDUserUser = nil
+		}
+		o.R.IDUserViews = nil
+	}
+
+	return o.AddIDUserViews(ctx, exec, insert, related...)
+}
+
+// RemoveIDUserViews relationships from objects passed in.
+// Removes related items from R.IDUserViews (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDUserUser.
+func (o *User) RemoveIDUserViews(ctx context.Context, exec boil.ContextExecutor, related ...*View) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDUser, nil)
+		if rel.R != nil {
+			rel.R.IDUserUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_user")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDUserViews {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDUserViews)
+			if ln > 1 && i < ln-1 {
+				o.R.IDUserViews[i] = o.R.IDUserViews[ln-1]
+			}
+			o.R.IDUserViews = o.R.IDUserViews[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

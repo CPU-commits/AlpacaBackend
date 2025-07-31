@@ -13,7 +13,9 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	viewServices "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 )
 
 type StudioService struct {
@@ -23,6 +25,8 @@ type StudioService struct {
 	imageStore         store.ImageStore
 	fileService        fileService.FileService
 	uidGenerator       uid.UIDGenerator
+	viewService        viewServices.ViewService
+	followService      userService.FollowService
 }
 
 var studioService *StudioService
@@ -43,6 +47,8 @@ func (studioService *StudioService) GetPermissions() []model.Permission {
 
 func (studioService *StudioService) GetStudio(
 	idStudio int64,
+	identifier,
+	ip string,
 ) (*model.Studio, error) {
 	opts := studio_repository.NewFindOneOptions().
 		Include(studio_repository.Include{
@@ -60,6 +66,14 @@ func (studioService *StudioService) GetStudio(
 	if err != nil {
 		return nil, err
 	}
+	go studioService.viewService.AddPermanentViewIfTemporalViewNotExists(
+		identifier,
+		viewServices.ToView{
+			IDStudio: idStudio,
+		},
+		utils.String(ip),
+	)
+
 	studio.Media = studioService.toShortLinksMedia(studio.Media)
 
 	return studio, nil
@@ -85,6 +99,105 @@ func (studioService *StudioService) GetStudioUsername(
 	}
 
 	return studio.Username, nil
+}
+
+func (studioService *StudioService) GetStudioMetrics(
+	idStudio,
+	idUser int64,
+	params MetricsParams,
+) (*Metrics, error) {
+	if err := studioService.adminStudioService.ThrowAccessInStudio(
+		idUser,
+		idStudio,
+		model.SHOW_METRICS_PERMISSION,
+	); err != nil {
+		return nil, err
+	}
+
+	statsLocation, countLocation, err := studioService.viewService.StatsViewsByLocation(
+		viewServices.ToView{
+			IDStudio: idStudio,
+		},
+		params.From,
+		params.To,
+		utils.GetTagsGeo(utils.SANTIAGO)...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	stats, countViews, err := studioService.viewService.StatsViews(
+		viewServices.ToView{
+			IDStudio: idStudio,
+		},
+		params.From,
+		params.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsComparative, countViewsComparative, err := studioService.viewService.StatsViews(
+		viewServices.ToView{
+			IDStudio: idStudio,
+		},
+		params.FromComparative,
+		params.ToComparative,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsFollows, countFollows, err := studioService.followService.StatsFollows(
+		0,
+		idStudio,
+		params.From,
+		params.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	statsFollowsComparative, countFollowsComparative, err := studioService.followService.StatsFollows(
+		0,
+		idStudio,
+		params.FromComparative,
+		params.ToComparative,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var metrics []LocationMetric
+	for k, v := range statsLocation {
+		metrics = append(metrics, LocationMetric{
+			Location: k,
+			Value:    v,
+		})
+	}
+
+	return &Metrics{
+		Views: MetricsViews{
+			ByLocation: MetricsLocation{
+				Locations: metrics,
+				Count:     countLocation,
+			},
+			Timeline: MetricsTimeline{
+				Stats: stats,
+				Count: countViews,
+			},
+			TimelineComparative: MetricsTimeline{
+				Stats: statsComparative,
+				Count: countViewsComparative,
+			},
+		},
+		Follows: MetricsFollows{
+			Timeline: MetricsFollowsTimeline{
+				Stats: statsFollows,
+				Count: countFollows,
+			},
+			TimelineComparative: MetricsFollowsTimeline{
+				Stats: statsFollowsComparative,
+				Count: countFollowsComparative,
+			},
+		},
+	}, nil
 }
 
 func (studioService *StudioService) GetMyStudios(
@@ -316,6 +429,8 @@ func NewStudioService(
 	adminStudioService AdminStudioService,
 	imageStore store.ImageStore,
 	uidGenerator uid.UIDGenerator,
+	viewService viewServices.ViewService,
+	followService userService.FollowService,
 ) *StudioService {
 	if studioService == nil {
 		studioService = &StudioService{
@@ -325,6 +440,8 @@ func NewStudioService(
 			imageStore:         imageStore,
 			adminStudioService: adminStudioService,
 			uidGenerator:       uidGenerator,
+			viewService:        viewService,
+			followService:      followService,
 		}
 	}
 

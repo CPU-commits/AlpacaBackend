@@ -33,6 +33,7 @@ type settings struct {
 	REPLICATE_KEY    string
 	BACKEND_URL      string
 	CLIENT_URL       string
+	IPINFO_TOKEN     string
 }
 
 func validateSettings(settings *settings) {
@@ -95,6 +96,9 @@ func validateSettings(settings *settings) {
 	if settings.CLIENT_URL == "" {
 		missing = append(missing, "CLIENT_URL")
 	}
+	if settings.IPINFO_TOKEN == "" {
+		missing = append(missing, "IPINFO_TOKEN")
+	}
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
 	}
@@ -121,6 +125,7 @@ func newSettings() *settings {
 		SMTPPORT:         os.Getenv("SMTPPORT"),
 		BACKEND_URL:      os.Getenv("BACKEND_URL"),
 		CLIENT_URL:       os.Getenv("CLIENT_URL"),
+		IPINFO_TOKEN:     os.Getenv("IPINFO_TOKEN"),
 	}
 	validateSettings(settings)
 

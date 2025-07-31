@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db/models"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
@@ -31,8 +32,54 @@ func (sqlLikeRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IDUser != 0 {
 		mod = append(mod, models.LikeWhere.IDUser.EQ(criteria.IDUser))
 	}
+	if criteria.CreatedAt != nil {
+		if !criteria.CreatedAt.LTE.IsZero() {
+			mod = append(mod, models.LikeWhere.CreatedAt.LTE(criteria.CreatedAt.LTE))
+		}
+		if !criteria.CreatedAt.LT.IsZero() {
+			mod = append(mod, models.LikeWhere.CreatedAt.LT(criteria.CreatedAt.LT))
+		}
+		if !criteria.CreatedAt.GTE.IsZero() {
+			mod = append(mod, models.LikeWhere.CreatedAt.GTE(criteria.CreatedAt.GTE))
+		}
+		if !criteria.CreatedAt.GT.IsZero() {
+			mod = append(mod, models.LikeWhere.CreatedAt.GT(criteria.CreatedAt.GT))
+		}
+		if !criteria.CreatedAt.EQ.IsZero() {
+			mod = append(mod, models.LikeWhere.CreatedAt.EQ(criteria.CreatedAt.EQ))
+		}
+	}
 
 	return mod
+}
+
+func (sqlLR sqlLikeRepository) CountGroupByDay(criteria *Criteria) ([]CountGroupByDayResult, error) {
+	where := sqlLR.criteriaToWhere(criteria)
+
+	type SqlLikeResult struct {
+		Day   time.Time `boil:"day"`
+		Likes int64     `boil:"likes"`
+	}
+	var likes []SqlLikeResult
+
+	err := models.NewQuery(
+		append([]QueryMod{
+			From(models.TableNames.Likes),
+			Select("DATE(created_at) as day"),
+			Select("COUNT(*) as likes"),
+			GroupBy("day"),
+		}, where...)...,
+	).Bind(context.Background(), sqlLR.db, &likes)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.MapNoError(likes, func(view SqlLikeResult) CountGroupByDayResult {
+		return CountGroupByDayResult{
+			Likes: view.Likes,
+			Day:   view.Day,
+		}
+	}), nil
 }
 
 func (sqlLR sqlLikeRepository) Delete(criteria *Criteria) error {

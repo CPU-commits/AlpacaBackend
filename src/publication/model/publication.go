@@ -17,6 +17,7 @@ type Publication struct {
 	Images     []model.Image        `json:"images,omitempty"`
 	Tattoos    []tattooModel.Tattoo `json:"tattoos,omitempty"`
 	Categories []string             `json:"categories,omitempty"`
+	Shares     int64                `json:"shares,omitempty"`
 	Mentions   []int64              `json:"mentions,omitempty"`
 	CreatedAt  time.Time            `json:"createdAt"`
 	Profile    *userModel.Profile   `json:"profile,omitempty"`

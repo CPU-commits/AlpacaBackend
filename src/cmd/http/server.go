@@ -151,7 +151,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Controllers
 		profileController := userController.NewHTTProfileController()
 		// Define routes
-		profile.GET("/:username", profileController.GetProfile)
+		profile.GET("/:username", middleware.OptionalJWTMiddleware(), profileController.GetProfile)
+		profile.GET("/:username/metrics", middleware.JWTMiddleware(), middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}), profileController.GetMetricsProfile)
 		profile.GET("/search", profileController.SearchProfiles)
 		profile.GET("/views/:identifier", profileController.GetAllUserViews) // Se debe cambiar username por Identificador IP o algo asi
 		profile.GET("/user/:idUser/avatar", profileController.GetAvatar)
@@ -168,7 +169,9 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		publication.GET("/:idPost", publicationController.GetPublication)
 		publication.GET("/:idPost/like", publicationController.GetMyLike)
 		publication.GET("/search", publicationController.Search)
+		publication.GET("/:idPost/metrics", middleware.JWTMiddleware(), publicationController.GetMetricsPublication)
 		publication.POST("", middleware.JWTMiddleware(), publicationController.Publish)
+		publication.POST("/:idPost/share", middleware.JWTMiddleware(), publicationController.Share)
 		publication.POST("/:idPost/like", middleware.JWTMiddleware(), publicationController.Like)
 		publication.POST("/:idPost/view", middleware.OptionalJWTMiddleware(), publicationController.AddViewPublication)
 		publication.DELETE("/:idPublication", middleware.JWTMiddleware(), publicationController.DeletePublication)
@@ -183,6 +186,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 			"/pendingCount",
 			appointmentController.GetAppointmentsPending,
 		)
+		appointment.GET("/metrics", middleware.JWTMiddleware(), appointmentController.GetMetricsAppointments)
 		appointment.POST("", appointmentController.RequestAppointment)
 		appointment.POST(":idAppointment/review", appointmentController.ReviewAppointment)
 		appointment.PATCH(
@@ -205,7 +209,8 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		adminStudioController := studioController.NewHttpAdminStudioController(bus)
 		studioController := studioController.NewHttpStudioController(bus)
 
-		studio.GET("/:idStudio", studioController.GetStudio)
+		studio.GET("/:idStudio", middleware.OptionalJWTMiddleware(), studioController.GetStudio)
+		studio.GET("/:idStudio/metrics", middleware.JWTMiddleware(), studioController.GetStudioMetrics)
 		studio.GET("/:idStudio/username", studioController.GetStudioUsername)
 		studio.GET("/search", studioController.SearchStudios)
 		studio.GET("/permissions", studioController.GetPermissions)
@@ -232,9 +237,15 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 	}
 	s := router.Group("s")
 	{
-		shorterController := shorterController.NewHttpAdminStudioController()
+		shorterController := shorterController.NewHttpAdminStudioController(bus)
 
 		s.GET("/:shortCode", shorterController.Relink)
+	}
+	links := router.Group("api/links")
+	{
+		shorterController := shorterController.NewHttpAdminStudioController(bus)
+
+		links.GET("/:idLink/metrics", shorterController.GetLinkMetrics)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

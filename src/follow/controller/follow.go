@@ -79,6 +79,8 @@ func NewFollowController(bus bus.Bus) httpFollowController {
 		*fileService,
 		followRepository,
 		publicationRepository,
+		*viewService,
+		userService.SinglentonFollowService(),
 	)
 	followService := service.NewFollowService(
 		followRepository,

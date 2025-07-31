@@ -16,13 +16,14 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
+	github.com/ipinfo/go/v2 v2.11.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.9
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/nats-io/nats.go v1.37.0
 	github.com/openai/openai-go v1.2.0
-	github.com/redis/go-redis/v9 v9.9.0
+	github.com/redis/go-redis/v9 v9.11.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/spf13/viper v1.19.0
@@ -67,6 +68,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect

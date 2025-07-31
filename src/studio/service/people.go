@@ -347,8 +347,8 @@ func (adminStudioService *AdminStudioService) SetPermission(
 
 	return utils.ConcurrentForEach(
 		allPermissionsToSet,
-		func(p model.StudioPermission) error {
-			return adminStudioService.peopleStudioRepository.Update(
+		func(p model.StudioPermission, setError func(err error)) {
+			err := adminStudioService.peopleStudioRepository.Update(
 				&people_studio_repository.Criteria{
 					IDStudio: idStudio,
 					IDUser:   idUser,
@@ -360,6 +360,9 @@ func (adminStudioService *AdminStudioService) SetPermission(
 					},
 				},
 			)
+			if err != nil {
+				setError(err)
+			}
 		},
 		nil,
 	)

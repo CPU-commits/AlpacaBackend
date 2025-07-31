@@ -38,6 +38,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Sessions", testSessionsUpsert)
 
+	t.Run("Shares", testSharesUpsert)
+
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsUpsert)
 
 	t.Run("StudioUsers", testStudioUsersUpsert)
@@ -51,4 +53,6 @@ func TestUpsert(t *testing.T) {
 	t.Run("Tokens", testTokensUpsert)
 
 	t.Run("Users", testUsersUpsert)
+
+	t.Run("Views", testViewsUpsert)
 }

@@ -12,6 +12,7 @@ import (
 	followService "github.com/CPU-commits/Template_Go-EventDriven/src/follow/service"
 	generatorService "github.com/CPU-commits/Template_Go-EventDriven/src/generator/services"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
+	shorterService "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -70,6 +71,10 @@ func init() {
 	errorsService[userService.ErrUserNoHasProfile] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "user.no_profile",
+	}
+	errorsService[userService.ErrUnauthorizedProfile] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "user.unauthorized",
 	}
 	errorsService[tattooService.ErrCategoriesNotExists] = errRes{
 		StatusCode: http.StatusConflict,
@@ -230,5 +235,9 @@ func init() {
 	errorsService[publicationService.ErrInvalidIdentifier] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "publication.invalid_identifier",
+	}
+	errorsService[shorterService.ErrNoAccessToLink] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "shorter.no_access",
 	}
 }

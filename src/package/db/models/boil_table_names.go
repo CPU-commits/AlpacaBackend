@@ -20,6 +20,7 @@ var TableNames = struct {
 	Reviews                 string
 	RolesUsers              string
 	Sessions                string
+	Shares                  string
 	StudioAdminsPermissions string
 	StudioUsers             string
 	Studios                 string
@@ -27,6 +28,7 @@ var TableNames = struct {
 	TokenPasswords          string
 	Tokens                  string
 	Users                   string
+	Views                   string
 }{
 	Accesses:                "accesses",
 	AppointmentImages:       "appointment_images",
@@ -44,6 +46,7 @@ var TableNames = struct {
 	Reviews:                 "reviews",
 	RolesUsers:              "roles_users",
 	Sessions:                "sessions",
+	Shares:                  "shares",
 	StudioAdminsPermissions: "studio_admins_permissions",
 	StudioUsers:             "studio_users",
 	Studios:                 "studios",
@@ -51,4 +54,5 @@ var TableNames = struct {
 	TokenPasswords:          "token_passwords",
 	Tokens:                  "tokens",
 	Users:                   "users",
+	Views:                   "views",
 }

@@ -1144,7 +1144,7 @@ func testTattoosSelect(t *testing.T) {
 }
 
 var (
-	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Likes`: `integer`, `Description`: `text`, `Categories`: `ARRAY_text`, `CreatedAt`: `timestamp without time zone`, `Popularity`: `integer`, `IDPost`: `bigint`, `Views`: `integer`, `Coordinate`: `geometry`, `IDStudio`: `bigint`}
+	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Likes`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDPost`: `bigint`, `Description`: `text`, `Popularity`: `integer`, `Views`: `integer`, `Coordinate`: `geometry`, `Categories`: `ARRAY_text`, `IDStudio`: `bigint`}
 	_             = bytes.MinRead
 )
 

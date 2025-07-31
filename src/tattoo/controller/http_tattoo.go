@@ -257,6 +257,8 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 				*fileService,
 				followRepository,
 				publicationRDRepository,
+				*viewService,
+				userServices.SinglentonFollowService(),
 			),
 			tattooRepository,
 			*fileService,

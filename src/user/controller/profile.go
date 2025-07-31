@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
@@ -30,14 +31,105 @@ type HttpProfileController struct {
 //	@Router		/api/profiles/{username} [Get]
 func (httpProfile *HttpProfileController) GetProfile(c *gin.Context) {
 	username := c.Param("username")
+	var identifier string
+	claims, exists := utils.NewClaimsFromContext(c)
+	if exists {
+		identifier = strconv.Itoa(int(claims.ID))
+	} else {
+		identifier = utils.GetIP(c)
+	}
 
-	profile, err := httpProfile.profileService.GetProfile(username)
+	profile, err := httpProfile.profileService.GetProfile(username, identifier, utils.GetIP(c))
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, profile)
+}
+
+func (httpProfile *HttpProfileController) GetMetricsProfile(c *gin.Context) {
+	username := c.Param("username")
+	fromDateStr := c.Query("from")
+	now := time.Now()
+	var fromDate time.Time = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	if fromDateStr != "" {
+		var err error
+
+		fromDate, err = time.Parse(time.RFC3339, fromDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toDateStr := c.Query("to")
+	var toDate time.Time = fromDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	if toDateStr != "" {
+		var err error
+
+		toDate, err = time.Parse(time.RFC3339, toDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	fromComparativeDateStr := c.Query("fromComparative")
+	var fromComparativeDate time.Time
+
+	if fromComparativeDateStr != "" {
+		var err error
+
+		fromComparativeDate, err = time.Parse(time.RFC3339, fromComparativeDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toComparativeDateStr := c.Query("toComparative")
+	var toComparativeDate time.Time
+
+	if toComparativeDateStr != "" {
+		var err error
+
+		toComparativeDate, err = time.Parse(time.RFC3339, toComparativeDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	if fromComparativeDateStr == "" && toComparativeDateStr == "" {
+		fromComparativeDate = fromDate.AddDate(0, -1, 0)
+	} else if fromComparativeDateStr == "" {
+		fromComparativeDate = toComparativeDate.Add(
+			-fromDate.Sub(toDate),
+		)
+	}
+	if fromComparativeDateStr == "" && toComparativeDateStr == "" {
+		toComparativeDate = toDate.AddDate(0, -1, 0)
+	} else if fromComparativeDateStr == "" {
+		toComparativeDate = fromComparativeDate.Add(
+			-fromDate.Sub(toDate),
+		)
+	}
+
+	claims, _ := utils.NewClaimsFromContext(c)
+	metrics, err := httpProfile.profileService.GetProfileMetrics(
+		username,
+		claims.ID,
+		service.MetricsParams{
+			To:              toDate,
+			From:            fromDate,
+			FromComparative: fromComparativeDate,
+			ToComparative:   toComparativeDate,
+		},
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, metrics)
 }
 
 func (httpProfile *HttpProfileController) SearchProfiles(c *gin.Context) {
@@ -168,6 +260,8 @@ func NewHTTProfileController() HttpProfileController {
 			*fileService,
 			followRepository,
 			publicationRDRepository,
+			*viewService,
+			followService,
 		),
 	}
 }

@@ -95,6 +95,60 @@ func (appointmentController *HttpAppointmentController) GetAppointments(c *gin.C
 	c.JSON(http.StatusOK, appointments)
 }
 
+func (appointmentController *HttpAppointmentController) GetMetricsAppointments(c *gin.Context) {
+	claims, _ := utils.NewClaimsFromContext(c)
+	// Params
+	idStudioStr := c.DefaultQuery("idStudio", "0")
+	idStudio, err := strconv.Atoi(idStudioStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	fromDateStr := c.Query("from")
+	now := time.Now()
+	var fromDate time.Time = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	if fromDateStr != "" {
+		var err error
+
+		fromDate, err = time.Parse(time.RFC3339, fromDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+	toDateStr := c.Query("to")
+	var toDate time.Time = fromDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	if toDateStr != "" {
+		var err error
+
+		toDate, err = time.Parse(time.RFC3339, toDateStr)
+		if err != nil {
+			utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	params := service.AppointmentParams{
+		FromDate: fromDate,
+		ToDate:   toDate,
+		IDStudio: int64(idStudio),
+	}
+
+	metrics, err := appointmentController.appointmentService.GetMetricsAppointments(
+		claims.ID,
+		domainUtils.Includes(claims.Roles, model.TATTOO_ARTIST_ROLE),
+		params,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, metrics)
+}
+
 func (appointmentController *HttpAppointmentController) AssignTattooArtist(c *gin.Context) {
 	idAppointmentStr := c.Param("idAppointment")
 	idAppointment, err := strconv.Atoi(idAppointmentStr)
@@ -279,6 +333,8 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 		*fileService,
 		followRepository,
 		publicationRDRepository,
+		*viewService,
+		userServices.SinglentonFollowService(),
 	)
 	peopleStudioService := studioServices.NewPeopleStudioService(
 		peopleStudioRepository,
