@@ -12,19 +12,14 @@ type RegisterDto struct {
 	Username string `json:"username" binding:"required,max=100,username" validate:"required"`
 	Email    string `json:"email" binding:"required,email" validate:"required"`
 	Password string `json:"password" binding:"required,min=6" validate:"required"`
-	Role     string `json:"role" binding:"required"`
 }
 
 func (registerDto *RegisterDto) ToModel() (*model.User, error) {
-	if registerDto.Role != string(model.TATTOO_ARTIST_ROLE) && registerDto.Role != string(model.USER_ROLE) {
-		return nil, ErrUnableToRegisterRole
-	}
-
 	return &model.User{
 		Name:     registerDto.Name,
 		Email:    registerDto.Email,
 		Username: registerDto.Username,
-		Roles:    []model.Role{model.Role(registerDto.Role)},
+		Roles:    []model.Role{model.USER_ROLE},
 	}, nil
 }
 
