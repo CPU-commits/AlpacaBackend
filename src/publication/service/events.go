@@ -8,6 +8,7 @@ const (
 	PUBLICATION_UPDATE_RATING bus.EventName = "publication.update_rating"
 	ADD_TEMPORAL_VIEW         bus.EventName = "publication.add_temporal_view"
 	DELETE_PUBLICATION        bus.EventName = "publication.delete_publication"
+	VERIFY_TEMPORAL_VIEW      bus.EventName = "publications.verify_temporal_view"
 
 	NEW_TATTOO bus.EventName = "tattoo.new_tattoo"
 )

@@ -240,4 +240,8 @@ func init() {
 		StatusCode: http.StatusUnauthorized,
 		MessageId:  "shorter.no_access",
 	}
+	errorsService[publicationService.ErrTemporalViewExists] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "publication.temporal_view_exists",
+	}
 }

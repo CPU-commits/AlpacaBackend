@@ -114,6 +114,23 @@ func (*QueuePublicationController) AddTemporalView(c bus.Context) error {
 		data.IDPublication, data.Identifier,
 	)
 }
+func (queueController *QueuePublicationController) ExistsTemporalView(c bus.Context) (*bus.BusResponse, error) {
+	var data model.TemporalViewPublication
+	if err := c.BindData(&data); err != nil {
+		return nil, c.Kill(err.Error())
+	}
+	views, err := publicationRDRepository.GetAllUserView(data.Identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	exists := utils.Includes(views, data.IDPublication)
+
+	return &bus.BusResponse{
+		Success: true,
+		Data:    exists,
+	}, nil
+}
 func (*QueuePublicationController) DeletePublication(c bus.Context) error {
 	var publication model.Publication
 

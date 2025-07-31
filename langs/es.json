@@ -40,7 +40,8 @@
 		"not_have_access": "No tienes accesso a la publicación",
 		"too_images": "Cada publicación puede tener máximo 5 imágenes",
 		"not_have_access_publish": "No tienes permiso para publicar",
-		"invalid_identifier": "Identificador invalido"
+		"invalid_identifier": "Identificador invalido",
+		"temporal_view_exists": "La temporal view ya esta almacenada"
 	},
 	"file": {
 		"invalid_mime_type": "El tipo de archivo es incorrecto"

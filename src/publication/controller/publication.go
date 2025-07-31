@@ -404,6 +404,7 @@ func (httpPC *HttpPublicationController) AddViewPublication(c *gin.Context) {
 		utils.ResErrValidators(c, err)
 		return
 	}
+
 	claims, _ := utils.NewClaimsFromContext(c)
 	identifierInt, err := strconv.ParseInt(identifier.Identifier, 10, 64)
 	if err != nil {
