@@ -12,6 +12,7 @@ type DesignsDto struct {
 
 type DesignFindDto struct {
 	Username string `uri:"username"`
+	ID       int64  `form:"id"`
 
 	Page          int    `form:"page,default=0" binding:"min=0"`
 	Category      string `form:"category"`

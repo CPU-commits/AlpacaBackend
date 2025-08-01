@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"mime"
 	"mime/multipart"
 	"net/http"
@@ -255,6 +256,7 @@ func (appointmentController *HttpAppointmentController) CancelAppointment(c *gin
 		int64(idAppointment),
 		claims.ID,
 	); err != nil {
+		fmt.Printf("err: %v\n", err)
 		utils.ResFromErr(c, err)
 		return
 	}

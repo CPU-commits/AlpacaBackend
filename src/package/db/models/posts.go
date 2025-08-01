@@ -27,14 +27,14 @@ import (
 type Post struct {
 	ID           int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDProfile    int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	IDStudio     null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	IsStudioPost bool              `boil:"is_studio_post" json:"is_studio_post" toml:"is_studio_post" yaml:"is_studio_post"`
 	Content      string            `boil:"content" json:"content" toml:"content" yaml:"content"`
 	Likes        int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	CreatedAt    time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Categories   types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Mentions     types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
 	Views        int               `boil:"views" json:"views" toml:"views" yaml:"views"`
-	IDStudio     null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
-	IsStudioPost bool              `boil:"is_studio_post" json:"is_studio_post" toml:"is_studio_post" yaml:"is_studio_post"`
+	CreatedAt    time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Shares       int               `boil:"shares" json:"shares" toml:"shares" yaml:"shares"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,52 +44,52 @@ type Post struct {
 var PostColumns = struct {
 	ID           string
 	IDProfile    string
+	IDStudio     string
+	IsStudioPost string
 	Content      string
 	Likes        string
-	CreatedAt    string
 	Categories   string
 	Mentions     string
 	Views        string
-	IDStudio     string
-	IsStudioPost string
+	CreatedAt    string
 	Shares       string
 }{
 	ID:           "id",
 	IDProfile:    "id_profile",
+	IDStudio:     "id_studio",
+	IsStudioPost: "is_studio_post",
 	Content:      "content",
 	Likes:        "likes",
-	CreatedAt:    "created_at",
 	Categories:   "categories",
 	Mentions:     "mentions",
 	Views:        "views",
-	IDStudio:     "id_studio",
-	IsStudioPost: "is_studio_post",
+	CreatedAt:    "created_at",
 	Shares:       "shares",
 }
 
 var PostTableColumns = struct {
 	ID           string
 	IDProfile    string
+	IDStudio     string
+	IsStudioPost string
 	Content      string
 	Likes        string
-	CreatedAt    string
 	Categories   string
 	Mentions     string
 	Views        string
-	IDStudio     string
-	IsStudioPost string
+	CreatedAt    string
 	Shares       string
 }{
 	ID:           "posts.id",
 	IDProfile:    "posts.id_profile",
+	IDStudio:     "posts.id_studio",
+	IsStudioPost: "posts.is_studio_post",
 	Content:      "posts.content",
 	Likes:        "posts.likes",
-	CreatedAt:    "posts.created_at",
 	Categories:   "posts.categories",
 	Mentions:     "posts.mentions",
 	Views:        "posts.views",
-	IDStudio:     "posts.id_studio",
-	IsStudioPost: "posts.is_studio_post",
+	CreatedAt:    "posts.created_at",
 	Shares:       "posts.shares",
 }
 
@@ -145,26 +145,26 @@ func (w whereHelpertypes_Int64Array) IsNotNull() qm.QueryMod { return qmhelper.W
 var PostWhere = struct {
 	ID           whereHelperint64
 	IDProfile    whereHelperint64
+	IDStudio     whereHelpernull_Int64
+	IsStudioPost whereHelperbool
 	Content      whereHelperstring
 	Likes        whereHelperint
-	CreatedAt    whereHelpertime_Time
 	Categories   whereHelpertypes_StringArray
 	Mentions     whereHelpertypes_Int64Array
 	Views        whereHelperint
-	IDStudio     whereHelpernull_Int64
-	IsStudioPost whereHelperbool
+	CreatedAt    whereHelpertime_Time
 	Shares       whereHelperint
 }{
 	ID:           whereHelperint64{field: "\"posts\".\"id\""},
 	IDProfile:    whereHelperint64{field: "\"posts\".\"id_profile\""},
+	IDStudio:     whereHelpernull_Int64{field: "\"posts\".\"id_studio\""},
+	IsStudioPost: whereHelperbool{field: "\"posts\".\"is_studio_post\""},
 	Content:      whereHelperstring{field: "\"posts\".\"content\""},
 	Likes:        whereHelperint{field: "\"posts\".\"likes\""},
-	CreatedAt:    whereHelpertime_Time{field: "\"posts\".\"created_at\""},
 	Categories:   whereHelpertypes_StringArray{field: "\"posts\".\"categories\""},
 	Mentions:     whereHelpertypes_Int64Array{field: "\"posts\".\"mentions\""},
 	Views:        whereHelperint{field: "\"posts\".\"views\""},
-	IDStudio:     whereHelpernull_Int64{field: "\"posts\".\"id_studio\""},
-	IsStudioPost: whereHelperbool{field: "\"posts\".\"is_studio_post\""},
+	CreatedAt:    whereHelpertime_Time{field: "\"posts\".\"created_at\""},
 	Shares:       whereHelperint{field: "\"posts\".\"shares\""},
 }
 
@@ -319,9 +319,9 @@ func (r *postR) GetIDPostViews() ViewSlice {
 type postL struct{}
 
 var (
-	postAllColumns            = []string{"id", "id_profile", "content", "likes", "created_at", "categories", "mentions", "views", "id_studio", "is_studio_post", "shares"}
+	postAllColumns            = []string{"id", "id_profile", "id_studio", "is_studio_post", "content", "likes", "categories", "mentions", "views", "created_at", "shares"}
 	postColumnsWithoutDefault = []string{"id_profile", "content", "likes"}
-	postColumnsWithDefault    = []string{"id", "created_at", "categories", "mentions", "views", "id_studio", "is_studio_post", "shares"}
+	postColumnsWithDefault    = []string{"id", "id_studio", "is_studio_post", "categories", "mentions", "views", "created_at", "shares"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )

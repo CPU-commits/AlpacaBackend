@@ -1418,7 +1418,7 @@ func testViewsSelect(t *testing.T) {
 }
 
 var (
-	viewDBTypes = map[string]string{`ID`: `bigint`, `IDPost`: `bigint`, `IDUser`: `bigint`, `CreatedAt`: `timestamp without time zone`, `IDProfile`: `bigint`, `City`: `text`, `Continent`: `text`, `Country`: `text`, `Region`: `text`, `Timezone`: `text`, `IDLink`: `bigint`, `IDStudio`: `bigint`}
+	viewDBTypes = map[string]string{`ID`: `bigint`, `IDPost`: `bigint`, `IDProfile`: `bigint`, `IDLink`: `bigint`, `IDStudio`: `bigint`, `IDUser`: `bigint`, `Country`: `text`, `City`: `text`, `Continent`: `text`, `Timezone`: `text`, `Region`: `text`, `CreatedAt`: `timestamp without time zone`}
 	_           = bytes.MinRead
 )
 

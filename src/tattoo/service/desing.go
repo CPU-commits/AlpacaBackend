@@ -54,6 +54,22 @@ func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, u
 	}
 	return modelDesigns, nil
 }
+func (designService *DesignService) GetDesign(idDesign int64, username string) (*model.Design, error) {
+	opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
+		Image:         true,
+		ProfileAvatar: true,
+		ProfileUser:   true,
+	})
+	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return designService.designRepository.FindOne(&design_repository.Criteria{
+		ID:        idDesign,
+		IDProfile: profileId,
+	}, opts)
+}
 
 func (designService *DesignService) GetDesigns(username string, params dto.DesignFindDto) ([]model.Design, *DesignsMetadata, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
@@ -87,7 +103,6 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 		IDProfile: profileId,
 		Category:  params.Category,
 	}, opts)
-	fmt.Printf("desings: %v\n", desings)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -136,6 +151,20 @@ func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataU
 func (designService *DesignService) DeleteDesign(idUser int64, designId int64) error {
 	idProfile, err := designService.profileService.GetProfileIDFromIDUser(idUser)
 	if err != nil {
+		return err
+	}
+	opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
+		Image: true,
+	})
+	design, err := designService.designRepository.FindOne(&design_repository.Criteria{
+		ID:        designId,
+		IDProfile: idProfile,
+	}, opts)
+	if err != nil {
+		return err
+	}
+
+	if err := designService.fileService.DeleteImg(design.Image.Key); err != nil {
 		return err
 	}
 

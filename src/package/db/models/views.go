@@ -26,16 +26,16 @@ import (
 type View struct {
 	ID        int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDPost    null.Int64  `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
-	IDUser    null.Int64  `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
-	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	IDProfile null.Int64  `boil:"id_profile" json:"id_profile,omitempty" toml:"id_profile" yaml:"id_profile,omitempty"`
-	City      null.String `boil:"city" json:"city,omitempty" toml:"city" yaml:"city,omitempty"`
-	Continent null.String `boil:"continent" json:"continent,omitempty" toml:"continent" yaml:"continent,omitempty"`
-	Country   null.String `boil:"country" json:"country,omitempty" toml:"country" yaml:"country,omitempty"`
-	Region    null.String `boil:"region" json:"region,omitempty" toml:"region" yaml:"region,omitempty"`
-	Timezone  null.String `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
 	IDLink    null.Int64  `boil:"id_link" json:"id_link,omitempty" toml:"id_link" yaml:"id_link,omitempty"`
 	IDStudio  null.Int64  `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	IDUser    null.Int64  `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
+	Country   null.String `boil:"country" json:"country,omitempty" toml:"country" yaml:"country,omitempty"`
+	City      null.String `boil:"city" json:"city,omitempty" toml:"city" yaml:"city,omitempty"`
+	Continent null.String `boil:"continent" json:"continent,omitempty" toml:"continent" yaml:"continent,omitempty"`
+	Timezone  null.String `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
+	Region    null.String `boil:"region" json:"region,omitempty" toml:"region" yaml:"region,omitempty"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *viewR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L viewL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,57 +44,57 @@ type View struct {
 var ViewColumns = struct {
 	ID        string
 	IDPost    string
-	IDUser    string
-	CreatedAt string
 	IDProfile string
-	City      string
-	Continent string
-	Country   string
-	Region    string
-	Timezone  string
 	IDLink    string
 	IDStudio  string
+	IDUser    string
+	Country   string
+	City      string
+	Continent string
+	Timezone  string
+	Region    string
+	CreatedAt string
 }{
 	ID:        "id",
 	IDPost:    "id_post",
-	IDUser:    "id_user",
-	CreatedAt: "created_at",
 	IDProfile: "id_profile",
-	City:      "city",
-	Continent: "continent",
-	Country:   "country",
-	Region:    "region",
-	Timezone:  "timezone",
 	IDLink:    "id_link",
 	IDStudio:  "id_studio",
+	IDUser:    "id_user",
+	Country:   "country",
+	City:      "city",
+	Continent: "continent",
+	Timezone:  "timezone",
+	Region:    "region",
+	CreatedAt: "created_at",
 }
 
 var ViewTableColumns = struct {
 	ID        string
 	IDPost    string
-	IDUser    string
-	CreatedAt string
 	IDProfile string
-	City      string
-	Continent string
-	Country   string
-	Region    string
-	Timezone  string
 	IDLink    string
 	IDStudio  string
+	IDUser    string
+	Country   string
+	City      string
+	Continent string
+	Timezone  string
+	Region    string
+	CreatedAt string
 }{
 	ID:        "views.id",
 	IDPost:    "views.id_post",
-	IDUser:    "views.id_user",
-	CreatedAt: "views.created_at",
 	IDProfile: "views.id_profile",
-	City:      "views.city",
-	Continent: "views.continent",
-	Country:   "views.country",
-	Region:    "views.region",
-	Timezone:  "views.timezone",
 	IDLink:    "views.id_link",
 	IDStudio:  "views.id_studio",
+	IDUser:    "views.id_user",
+	Country:   "views.country",
+	City:      "views.city",
+	Continent: "views.continent",
+	Timezone:  "views.timezone",
+	Region:    "views.region",
+	CreatedAt: "views.created_at",
 }
 
 // Generated where
@@ -102,29 +102,29 @@ var ViewTableColumns = struct {
 var ViewWhere = struct {
 	ID        whereHelperint64
 	IDPost    whereHelpernull_Int64
-	IDUser    whereHelpernull_Int64
-	CreatedAt whereHelpertime_Time
 	IDProfile whereHelpernull_Int64
-	City      whereHelpernull_String
-	Continent whereHelpernull_String
-	Country   whereHelpernull_String
-	Region    whereHelpernull_String
-	Timezone  whereHelpernull_String
 	IDLink    whereHelpernull_Int64
 	IDStudio  whereHelpernull_Int64
+	IDUser    whereHelpernull_Int64
+	Country   whereHelpernull_String
+	City      whereHelpernull_String
+	Continent whereHelpernull_String
+	Timezone  whereHelpernull_String
+	Region    whereHelpernull_String
+	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"views\".\"id\""},
 	IDPost:    whereHelpernull_Int64{field: "\"views\".\"id_post\""},
-	IDUser:    whereHelpernull_Int64{field: "\"views\".\"id_user\""},
-	CreatedAt: whereHelpertime_Time{field: "\"views\".\"created_at\""},
 	IDProfile: whereHelpernull_Int64{field: "\"views\".\"id_profile\""},
-	City:      whereHelpernull_String{field: "\"views\".\"city\""},
-	Continent: whereHelpernull_String{field: "\"views\".\"continent\""},
-	Country:   whereHelpernull_String{field: "\"views\".\"country\""},
-	Region:    whereHelpernull_String{field: "\"views\".\"region\""},
-	Timezone:  whereHelpernull_String{field: "\"views\".\"timezone\""},
 	IDLink:    whereHelpernull_Int64{field: "\"views\".\"id_link\""},
 	IDStudio:  whereHelpernull_Int64{field: "\"views\".\"id_studio\""},
+	IDUser:    whereHelpernull_Int64{field: "\"views\".\"id_user\""},
+	Country:   whereHelpernull_String{field: "\"views\".\"country\""},
+	City:      whereHelpernull_String{field: "\"views\".\"city\""},
+	Continent: whereHelpernull_String{field: "\"views\".\"continent\""},
+	Timezone:  whereHelpernull_String{field: "\"views\".\"timezone\""},
+	Region:    whereHelpernull_String{field: "\"views\".\"region\""},
+	CreatedAt: whereHelpertime_Time{field: "\"views\".\"created_at\""},
 }
 
 // ViewRels is where relationship names are stored.
@@ -240,9 +240,9 @@ func (r *viewR) GetIDUserUser() *User {
 type viewL struct{}
 
 var (
-	viewAllColumns            = []string{"id", "id_post", "id_user", "created_at", "id_profile", "city", "continent", "country", "region", "timezone", "id_link", "id_studio"}
+	viewAllColumns            = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at"}
 	viewColumnsWithoutDefault = []string{}
-	viewColumnsWithDefault    = []string{"id", "id_post", "id_user", "created_at", "id_profile", "city", "continent", "country", "region", "timezone", "id_link", "id_studio"}
+	viewColumnsWithDefault    = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at"}
 	viewPrimaryKeyColumns     = []string{"id"}
 	viewGeneratedColumns      = []string{}
 )

@@ -140,11 +140,12 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		designController := tattooController.NewDesignHttpController(bus)
 
 		design.POST("", middleware.JWTMiddleware(), designController.UploadDesigns)
-		design.GET("/:username", middleware.JWTMiddleware(), designController.GetDesigns)
-		design.GET("/latest/:username", middleware.JWTMiddleware(), designController.GetLatestDesigns)
+		design.GET("/:username", designController.GetDesigns)
+		design.GET("/:username/design", designController.GetDesign)
+		design.GET("/latest/:username", designController.GetLatestDesigns)
 		design.DELETE("/:id", middleware.JWTMiddleware(), designController.DeleteDesign)
 		design.PATCH("/:id", middleware.JWTMiddleware(), designController.UpdateDesign)
-		design.GET("/categories/:username", middleware.JWTMiddleware(), designController.GetCategories)
+		design.GET("/categories/:username", designController.GetCategories)
 	}
 	profile := router.Group("api/profiles")
 	{

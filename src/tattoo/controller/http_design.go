@@ -130,6 +130,38 @@ func (httpDesign *HttpDesignController) GetDesigns(c *gin.Context) {
 	c.JSON(http.StatusOK, designs)
 }
 
+// Get doc
+//
+//	@Summary	Recibir los diseños de un usuario
+//	@Tags		designs
+//	@Success	200			{object}	controller.GetDesignsResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		id		query		int						true	"id de diseño"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/design/{username} [Get]
+func (httpDesign *HttpDesignController) GetDesign(c *gin.Context) {
+	var designFind *dto.DesignFindDto
+
+	if err := c.ShouldBindUri(&designFind); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	if err := c.ShouldBindQuery(&designFind); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	design, err := httpDesign.designService.GetDesign(
+		designFind.ID,
+		designFind.Username,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, design)
+}
+
 // Get godoc
 //
 //	@Summary	Recibir los ultimos diseños de un usuario

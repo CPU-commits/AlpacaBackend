@@ -477,6 +477,8 @@ func (sqlAR appointmentRepositorySql) Insert(
 		Phone:          null.StringFrom(appointment.Phone),
 		IDStudio:       null.NewInt64(appointment.IDStudio, appointment.IDStudio != 0),
 	}
+	fmt.Printf("appointment.HasIdea: %v\n", sqlAppointment.HasIdea)
+	fmt.Printf("sqlAppointment.HasDesign: %v\n", sqlAppointment.HasDesign)
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
 		fmt.Printf("err: %v\n", err)

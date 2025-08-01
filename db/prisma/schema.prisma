@@ -317,7 +317,7 @@ model appointments {
   id_calendar String?
   phone String?
   has_idea Boolean
-  has_design Boolean @default(false)
+  has_design Boolean
   area tattoo_area?
   height Float?
   width Float?

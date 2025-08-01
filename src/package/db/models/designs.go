@@ -30,9 +30,9 @@ type Design struct {
 	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
 	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
 	Price       null.Int64        `boil:"price" json:"price,omitempty" toml:"price" yaml:"price,omitempty"`
-	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *designR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L designL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,18 +44,18 @@ var DesignColumns = struct {
 	IDImage     string
 	Description string
 	Categories  string
+	CreatedAt   string
 	Coordinate  string
 	Price       string
-	CreatedAt   string
 }{
 	ID:          "id",
 	IDProfile:   "id_profile",
 	IDImage:     "id_image",
 	Description: "description",
 	Categories:  "categories",
+	CreatedAt:   "created_at",
 	Coordinate:  "coordinate",
 	Price:       "price",
-	CreatedAt:   "created_at",
 }
 
 var DesignTableColumns = struct {
@@ -64,18 +64,18 @@ var DesignTableColumns = struct {
 	IDImage     string
 	Description string
 	Categories  string
+	CreatedAt   string
 	Coordinate  string
 	Price       string
-	CreatedAt   string
 }{
 	ID:          "designs.id",
 	IDProfile:   "designs.id_profile",
 	IDImage:     "designs.id_image",
 	Description: "designs.description",
 	Categories:  "designs.categories",
+	CreatedAt:   "designs.created_at",
 	Coordinate:  "designs.coordinate",
 	Price:       "designs.price",
-	CreatedAt:   "designs.created_at",
 }
 
 // Generated where
@@ -112,18 +112,18 @@ var DesignWhere = struct {
 	IDImage     whereHelperint64
 	Description whereHelpernull_String
 	Categories  whereHelpertypes_StringArray
+	CreatedAt   whereHelpertime_Time
 	Coordinate  whereHelpernull_String
 	Price       whereHelpernull_Int64
-	CreatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperint64{field: "\"designs\".\"id\""},
 	IDProfile:   whereHelperint64{field: "\"designs\".\"id_profile\""},
 	IDImage:     whereHelperint64{field: "\"designs\".\"id_image\""},
 	Description: whereHelpernull_String{field: "\"designs\".\"description\""},
 	Categories:  whereHelpertypes_StringArray{field: "\"designs\".\"categories\""},
+	CreatedAt:   whereHelpertime_Time{field: "\"designs\".\"created_at\""},
 	Coordinate:  whereHelpernull_String{field: "\"designs\".\"coordinate\""},
 	Price:       whereHelpernull_Int64{field: "\"designs\".\"price\""},
-	CreatedAt:   whereHelpertime_Time{field: "\"designs\".\"created_at\""},
 }
 
 // DesignRels is where relationship names are stored.
@@ -201,9 +201,9 @@ func (r *designR) GetIDDesignAppointments() AppointmentSlice {
 type designL struct{}
 
 var (
-	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "categories", "coordinate", "price", "created_at"}
+	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "categories", "created_at", "coordinate", "price"}
 	designColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	designColumnsWithDefault    = []string{"id", "description", "categories", "coordinate", "price", "created_at"}
+	designColumnsWithDefault    = []string{"id", "description", "categories", "created_at", "coordinate", "price"}
 	designPrimaryKeyColumns     = []string{"id"}
 	designGeneratedColumns      = []string{}
 )
