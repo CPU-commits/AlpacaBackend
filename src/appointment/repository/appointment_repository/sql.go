@@ -180,6 +180,9 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 	if criteria.IDStudio != 0 {
 		where = append(where, models.AppointmentWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
+	if criteria.IDDesign != 0 {
+		where = append(where, models.AppointmentWhere.IDDesign.EQ(null.Int64From(criteria.IDDesign)))
+	}
 	if criteria.FinishedAt != nil {
 		where = append(where, models.AppointmentWhere.FinishedAt.IsNotNull())
 		if !criteria.FinishedAt.LTE.IsZero() {

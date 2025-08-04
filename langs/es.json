@@ -103,7 +103,8 @@
 		"cant_follow_you": "No puedes seguirte a ti mismo"
 	},
 	"design": {
-		"not_params": "No tiene los parametros correspondientes o parametros incorrectos"
+		"not_params": "No tiene los parametros correspondientes o parametros incorrectos",
+		"design.design_not_exists": "El diseño no existe"
 	},
 	"shorter": {
 		"no_access": "No tienes acceso al link"

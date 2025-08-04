@@ -738,6 +738,9 @@ func (appointmentService *AppointmentService) RequestAppointment(
 
 	return err
 }
+func (appointmentService *AppointmentService) Exists(criteria appointment_repository.Criteria) (bool, error) {
+	return appointmentService.appointmentRepository.Exists(&criteria)
+}
 
 func NewAppointmentService(
 	fileService fileService.FileService,

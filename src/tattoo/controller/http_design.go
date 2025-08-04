@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"strings"
 
+	appointmentService "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
@@ -273,27 +275,44 @@ func (httpDesign *HttpDesignController) GetCategories(c *gin.Context) {
 }
 
 func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
+	userService := *authService.NewUserService(
+		userRepository,
+		roleRepository,
+		uidGenerator,
+		bus,
+	)
+	profileService := *userServices.NewProfileService(
+		profileRepository,
+		userService,
+		cloudinary_store.NewCloudinaryImageStore(),
+		*fileService,
+		followRepository,
+		publicationRDRepository,
+		*viewService,
+		userServices.SinglentonFollowService(),
+	)
+	peopleStudioService := *studioService.NewPeopleStudioService(
+		peopleStudioRepository,
+		studioRepository,
+		userService,
+	)
 	return &HttpDesignController{
 		bus: bus,
 		designService: *service.NewDesignService(
 			imageStore,
-			*userServices.NewProfileService(
-				profileRepository,
-				*authService.NewUserService(
-					userRepository,
-					roleRepository,
-					uidGenerator,
-					bus,
-				),
-				cloudinary_store.NewCloudinaryImageStore(),
-				*fileService,
-				followRepository,
-				publicationRDRepository,
-				*viewService,
-				userServices.SinglentonFollowService(),
-			),
+			profileService,
 			designRepository,
 			*fileService,
+			*appointmentService.NewAppointmentService(
+				*fileService,
+				appointmentRepository,
+				userService,
+				googleCalendar,
+				reviewRepository,
+				profileService,
+				peopleStudioService,
+				studioRepository,
+			),
 		),
 	}
 }

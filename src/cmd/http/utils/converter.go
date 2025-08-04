@@ -244,4 +244,8 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "publication.temporal_view_exists",
 	}
+	errorsService[tattooService.ErrDesignNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "design.design_not_exists",
+	}
 }
