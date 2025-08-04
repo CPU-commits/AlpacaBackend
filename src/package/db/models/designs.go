@@ -33,6 +33,7 @@ type Design struct {
 	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
 	Price       null.Int64        `boil:"price" json:"price,omitempty" toml:"price" yaml:"price,omitempty"`
+	IsDeleted   bool              `boil:"is_deleted" json:"is_deleted" toml:"is_deleted" yaml:"is_deleted"`
 
 	R *designR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L designL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,6 +48,7 @@ var DesignColumns = struct {
 	CreatedAt   string
 	Coordinate  string
 	Price       string
+	IsDeleted   string
 }{
 	ID:          "id",
 	IDProfile:   "id_profile",
@@ -56,6 +58,7 @@ var DesignColumns = struct {
 	CreatedAt:   "created_at",
 	Coordinate:  "coordinate",
 	Price:       "price",
+	IsDeleted:   "is_deleted",
 }
 
 var DesignTableColumns = struct {
@@ -67,6 +70,7 @@ var DesignTableColumns = struct {
 	CreatedAt   string
 	Coordinate  string
 	Price       string
+	IsDeleted   string
 }{
 	ID:          "designs.id",
 	IDProfile:   "designs.id_profile",
@@ -76,6 +80,7 @@ var DesignTableColumns = struct {
 	CreatedAt:   "designs.created_at",
 	Coordinate:  "designs.coordinate",
 	Price:       "designs.price",
+	IsDeleted:   "designs.is_deleted",
 }
 
 // Generated where
@@ -115,6 +120,7 @@ var DesignWhere = struct {
 	CreatedAt   whereHelpertime_Time
 	Coordinate  whereHelpernull_String
 	Price       whereHelpernull_Int64
+	IsDeleted   whereHelperbool
 }{
 	ID:          whereHelperint64{field: "\"designs\".\"id\""},
 	IDProfile:   whereHelperint64{field: "\"designs\".\"id_profile\""},
@@ -124,6 +130,7 @@ var DesignWhere = struct {
 	CreatedAt:   whereHelpertime_Time{field: "\"designs\".\"created_at\""},
 	Coordinate:  whereHelpernull_String{field: "\"designs\".\"coordinate\""},
 	Price:       whereHelpernull_Int64{field: "\"designs\".\"price\""},
+	IsDeleted:   whereHelperbool{field: "\"designs\".\"is_deleted\""},
 }
 
 // DesignRels is where relationship names are stored.
@@ -201,9 +208,9 @@ func (r *designR) GetIDDesignAppointments() AppointmentSlice {
 type designL struct{}
 
 var (
-	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "categories", "created_at", "coordinate", "price"}
+	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "categories", "created_at", "coordinate", "price", "is_deleted"}
 	designColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	designColumnsWithDefault    = []string{"id", "description", "categories", "created_at", "coordinate", "price"}
+	designColumnsWithDefault    = []string{"id", "description", "categories", "created_at", "coordinate", "price", "is_deleted"}
 	designPrimaryKeyColumns     = []string{"id"}
 	designGeneratedColumns      = []string{}
 )

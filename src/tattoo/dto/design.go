@@ -30,7 +30,7 @@ type DesignDto struct {
 type DataUpdate struct {
 	ID          int64  `uri:"id" binding:"required"`
 	Description string `json:"description" binding:"omitempty"`
-	Price       int64  `json:"price" bindin:"omitempty"`
+	Price       int64  `json:"price" bindingh:"omitempty"`
 }
 
 type DesignParam struct {

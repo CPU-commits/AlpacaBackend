@@ -68,9 +68,9 @@ func (designService *DesignService) GetDesign(idDesign int64, username string) (
 	return designService.designRepository.FindOne(&design_repository.Criteria{
 		ID:        idDesign,
 		IDProfile: profileId,
+		IsDeleted: utils.Bool(false),
 	}, opts)
 }
-
 func (designService *DesignService) GetDesigns(username string, params dto.DesignFindDto) ([]model.Design, *DesignsMetadata, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
@@ -102,6 +102,7 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 	desings, err := designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
 		Category:  params.Category,
+		IsDeleted: utils.Bool(false),
 	}, opts)
 	if err != nil {
 		return nil, nil, err
@@ -117,7 +118,6 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 		Total: int(count),
 	}, nil
 }
-
 func (designService *DesignService) GetLatestDesigns(username string) ([]model.Design, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
@@ -131,9 +131,9 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 
 	return designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
+		IsDeleted: utils.Bool(false),
 	}, opts)
 }
-
 func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataUpdate) error {
 	if data.Description == "" && data.Price == 0 {
 		return ErrNotParams
@@ -153,24 +153,26 @@ func (designService *DesignService) DeleteDesign(idUser int64, designId int64) e
 	if err != nil {
 		return err
 	}
-	opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
-		Image: true,
-	})
-	design, err := designService.designRepository.FindOne(&design_repository.Criteria{
+	// No mas
+	// opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
+	// 	Image: true,
+	// })
+	// design, err := designService.designRepository.FindOne(&design_repository.Criteria{
+	// 	ID:        designId,
+	// 	IDProfile: idProfile,
+	// }, opts)
+	// if err != nil {
+	// 	return err
+	// }
+	// if err := designService.fileService.DeleteImg(design.Image.Key); err != nil {
+	// 	return err
+	// }
+
+	return designService.designRepository.Update(&design_repository.Criteria{
 		ID:        designId,
 		IDProfile: idProfile,
-	}, opts)
-	if err != nil {
-		return err
-	}
-
-	if err := designService.fileService.DeleteImg(design.Image.Key); err != nil {
-		return err
-	}
-
-	return designService.designRepository.Delete(&design_repository.Criteria{
-		ID:        designId,
-		IDProfile: idProfile,
+	}, design_repository.UpdateData{
+		IsDeleted: utils.Bool(true),
 	})
 }
 

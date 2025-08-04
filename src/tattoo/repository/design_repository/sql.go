@@ -34,6 +34,7 @@ func (sqlDS *sqlDesignRepository) sqlDesignToDesign(sqlDR *models.Design) *model
 		CreatedAt:   sqlDR.CreatedAt,
 		Categories:  sqlDR.Categories,
 		Price:       sqlDR.Price.Int64,
+		IsDeleted:   sqlDR.IsDeleted,
 		Description: sqlDR.Description.String,
 	}
 	if sqlDR.R != nil && sqlDR.R.IDImageImage != nil {
@@ -91,6 +92,9 @@ func (*sqlDesignRepository) criteriaToWhere(c *Criteria) []QueryMod {
 	}
 	if c.IDProfile != 0 {
 		mods = append(mods, models.DesignWhere.IDProfile.EQ(c.IDProfile))
+	}
+	if c.IsDeleted != nil {
+		mods = append(mods, models.DesignWhere.IsDeleted.EQ(*c.IsDeleted))
 	}
 	if c.Category != "" {
 		mods = append(mods, Where("categories && ARRAY[?]::text[]", c.Category))
@@ -183,7 +187,6 @@ func (sqlDS *sqlDesignRepository) Find(c *Criteria, o *FindOpts) ([]model.Design
 	mods := append(sqlDS.findOptionsToMod(o), sqlDS.criteriaToWhere(c)...)
 	sqlRes, err := models.Designs(mods...).All(context.Background(), sqlDS.db)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 	return utils.MapNoError(sqlRes, func(d *models.Design) model.Design {
@@ -264,6 +267,10 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 	if data.Price != nil {
 		sd.Price = null.Int64FromPtr(data.Price)
 		cols = append(cols, models.DesignColumns.Price)
+	}
+	if data.IsDeleted != nil {
+		sd.IsDeleted = true
+		cols = append(cols, models.DesignColumns.IsDeleted)
 	}
 	if len(cols) == 0 {
 		return nil

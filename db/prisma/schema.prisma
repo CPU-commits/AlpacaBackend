@@ -155,6 +155,7 @@ model designs{
 	categories String[]
 	coordinate Unsupported("GEOMETRY")?
 	created_at DateTime @default(now()) @db.Timestamp(6)
+	is_deleted Boolean @default(false)
 
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])

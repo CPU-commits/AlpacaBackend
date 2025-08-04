@@ -15,6 +15,7 @@ type Design struct {
 	Description string      `json:"description,omitempty"`
 	Price       int64       `json:"price" binding:"omitempty"`
 	Categories  []string    `json:"categories,omitempty"`
+	IsDeleted   bool        `json:"isDeleted"`
 	CreatedAt   time.Time   `json:"createdAt"`
 
 	Profile *userModel.Profile `json:"profile,omitempty"`
