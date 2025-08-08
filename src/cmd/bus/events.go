@@ -22,4 +22,7 @@ const (
 
 	SEND_EMAIL_PASSWORD_RESET bus.EventName = "code.send_email_password_reset"
 	SEND_EMAIL_RESET          bus.EventName = "code.send_email_reset"
+
+	HANDLE_PAYMENTS_EVENTS         bus.EventName = "payment.event"
+	REMOVE_BENEFITS_USER_FROM_PLAN bus.EventName = "payment.remove_benefits"
 )

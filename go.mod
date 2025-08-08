@@ -3,6 +3,7 @@ module github.com/CPU-commits/Template_Go-EventDriven
 go 1.23.1
 
 require (
+	github.com/NdoleStudio/lemonsqueezy-go v1.2.4
 	github.com/aarondl/null/v8 v8.1.3
 	github.com/aarondl/randomize v0.0.2
 	github.com/aarondl/sqlboiler/v4 v4.19.5
@@ -56,6 +57,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-resty/resty/v2 v2.16.5 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect

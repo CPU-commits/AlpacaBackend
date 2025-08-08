@@ -84,6 +84,7 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 		IDAvatar:    sqlStudio.IDAvatar.Int64,
 		IDBanner:    sqlStudio.IDBanner.Int64,
 		Media:       media,
+		IsActive:    sqlStudio.IsActive,
 	}
 }
 
@@ -94,6 +95,9 @@ func (sqlSR sqlStudioRepository) criteriaToWhere(criteria *Criteria) []QueryMod 
 	}
 	if criteria.ID != 0 {
 		where = append(where, models.StudioWhere.ID.EQ(criteria.ID))
+	}
+	if criteria.IsActive != nil {
+		where = append(where, models.StudioWhere.IsActive.EQ(*criteria.IsActive))
 	}
 	if criteria.IDOwner != 0 {
 		where = append(where, models.StudioWhere.IDOwner.EQ(criteria.IDOwner))
@@ -201,6 +205,9 @@ func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod 
 	}
 	if selectOpts.IDBanner != nil && *selectOpts.IDBanner {
 		mod = append(mod, Select(models.StudioColumns.IDBanner))
+	}
+	if selectOpts.IsActive != nil && *selectOpts.IsActive {
+		mod = append(mod, Select(models.StudioColumns.IsActive))
 	}
 
 	return mod
@@ -342,6 +349,13 @@ func (sqlSR sqlStudioRepository) Update(criteria *Criteria, data UpdateData) err
 	} else if data.Phone != nil {
 		cols[models.StudioColumns.Phone] = nil
 	}
+	if data.IsActive != nil {
+		cols[models.StudioColumns.IsActive] = *data.IsActive
+	}
+	if data.IsLimited != nil {
+		cols[models.StudioColumns.IsLimit] = *data.IsLimited
+	}
+
 	tx, err := sqlSR.db.Begin()
 	if err != nil {
 		return utils.ErrRepositoryFailed

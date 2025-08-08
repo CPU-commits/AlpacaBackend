@@ -112,6 +112,49 @@ func AllTattooColor() []string {
 	}
 }
 
+// Enum values for PaymentStatus
+const (
+	PaymentStatusPending  string = "pending"
+	PaymentStatusPaid     string = "paid"
+	PaymentStatusRefused  string = "refused"
+	PaymentStatusRefunded string = "refunded"
+)
+
+func AllPaymentStatus() []string {
+	return []string{
+		PaymentStatusPending,
+		PaymentStatusPaid,
+		PaymentStatusRefused,
+		PaymentStatusRefunded,
+	}
+}
+
+// Enum values for BillingCycle
+const (
+	BillingCycleMonthly string = "monthly"
+	BillingCycleYearly  string = "yearly"
+)
+
+func AllBillingCycle() []string {
+	return []string{
+		BillingCycleMonthly,
+		BillingCycleYearly,
+	}
+}
+
+// Enum values for PricingModel
+const (
+	PricingModelVolume   string = "volume"
+	PricingModelStandard string = "standard"
+)
+
+func AllPricingModel() []string {
+	return []string{
+		PricingModelVolume,
+		PricingModelStandard,
+	}
+}
+
 // Enum values for RoleName
 const (
 	RoleNameAdmin        string = "admin"
@@ -124,5 +167,24 @@ func AllRoleName() []string {
 		RoleNameAdmin,
 		RoleNameUser,
 		RoleNameTattooArtist,
+	}
+}
+
+// Enum values for SubscriptionStatus
+const (
+	SubscriptionStatusTrialing string = "trialing"
+	SubscriptionStatusActive   string = "active"
+	SubscriptionStatusPastDue  string = "past_due"
+	SubscriptionStatusCanceled string = "canceled"
+	SubscriptionStatusPaused   string = "paused"
+)
+
+func AllSubscriptionStatus() []string {
+	return []string{
+		SubscriptionStatusTrialing,
+		SubscriptionStatusActive,
+		SubscriptionStatusPastDue,
+		SubscriptionStatusCanceled,
+		SubscriptionStatusPaused,
 	}
 }

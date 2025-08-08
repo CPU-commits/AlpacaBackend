@@ -47,7 +47,7 @@ func newConnectionNatsCore() *nats.Conn {
 
 func (natsClient *NatsClient) addStreams() {
 	natsClient.streams = make(map[string]jetstream.Stream)
-	streams := []string{"PUBLICATION", "TATTOO", "TOKEN", "USER", "CODE", "EMAIL"}
+	streams := []string{"PUBLICATION", "TATTOO", "TOKEN", "USER", "CODE", "EMAIL", "PAYMENT"}
 	// Exists stream
 	contextList, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

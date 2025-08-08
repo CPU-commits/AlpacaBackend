@@ -5,6 +5,7 @@ import (
 	generatorCon "github.com/CPU-commits/Template_Go-EventDriven/src/generator/controller"
 	notificationsCon "github.com/CPU-commits/Template_Go-EventDriven/src/notifications/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
+	paymentCon "github.com/CPU-commits/Template_Go-EventDriven/src/payment/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	tattooCon "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/controller"
 )
@@ -16,6 +17,7 @@ func Init(logger logger.Logger) {
 	tattooController := tattooCon.NewTattooQueueController()
 	tokenController := generatorCon.NewTokenQueueController()
 	emailController := notificationsCon.NewEmailQueueController(queueBus)
+	paymentController := paymentCon.NewBusPaymentsController(queueBus)
 
 	queueBus.Subscribe(
 		NEW_PUBLICATION,
@@ -74,5 +76,13 @@ func Init(logger logger.Logger) {
 	queueBus.SubscribeAndRespond(
 		VERIFY_TEMPORAL_VIEW,
 		publicationController.ExistsTemporalView,
+	)
+	queueBus.Subscribe(
+		HANDLE_PAYMENTS_EVENTS,
+		paymentController.HandleEvent,
+	)
+	queueBus.Subscribe(
+		REMOVE_BENEFITS_USER_FROM_PLAN,
+		paymentController.HandleRemoveBenefits,
 	)
 }

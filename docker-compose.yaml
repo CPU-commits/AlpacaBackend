@@ -54,6 +54,12 @@ services:
       - alpaca_network
     volumes:
       - redis:/data
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: tunnel
+    command: tunnel --no-autoupdate run --token ${TOKEN_TUNNEL}
+    networks:
+      - alpaca_network
 
 networks:
   alpaca_network:

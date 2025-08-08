@@ -707,6 +707,11 @@ func (appointmentService *AppointmentService) RequestAppointment(
 			return ErrUserIsNotTattooArtists
 		}
 	} else if appointmentDto.IDTattooArtist != 0 && appointmentDto.IDStudio != 0 {
+		if err := appointmentService.adminStudioService.ThrowIfStudioIsNotActive(
+			appointmentDto.IDStudio,
+		); err != nil {
+			return err
+		}
 		roles, err := appointmentService.adminStudioService.GetRolesInStudio(
 			appointmentDto.IDTattooArtist,
 			appointmentDto.IDStudio,

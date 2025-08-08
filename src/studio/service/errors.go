@@ -9,6 +9,7 @@ var (
 	ErrTheUserIsNotAdmin     = errors.New("err: the user is not studio admin")
 	ErrNoHasPermission       = errors.New("err: no permission")
 	ErrNoExistStudio         = errors.New("err: no exists studio")
+	ErrStudioIsNotActive     = errors.New("err: studio is not active")
 	ErrCantCreateOwner       = errors.New("err: cant create owner")
 	ErrUserNotInStudio       = errors.New("err: user not in studio")
 )

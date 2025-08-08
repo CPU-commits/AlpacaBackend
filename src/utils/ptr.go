@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 )
 
+func Float64(number float64) *float64 {
+	return &number
+}
+
 func Bool(v bool) *bool {
 	return &v
 }

@@ -72,6 +72,8 @@ model users {
 	links links[]
 	views views[]
 	shares shares[]
+	subscription subscriptions[]
+	payments payments[]
 }
 
 model token_passwords {
@@ -191,6 +193,8 @@ model studios {
 	email String @unique
 	phone String?
 	id_owner BigInt
+	is_active Boolean @default(true)
+	is_limit Boolean @default(true)
 	created_at DateTime @default(now()) @db.Timestamp(6)
 	avatar images? @relation(name: "StudioAvatar", fields: [id_avatar], references: [id], map: "studio_avatar_fkey")
 	banner images? @relation(name: "StudioBanner", fields: [id_banner], references: [id], map: "studio_banner_fkey")
@@ -202,6 +206,8 @@ model studios {
 	tattoos tattoos[]
 	follows follows[]
 	views views[]
+	subscriptions subscriptions[]
+	payments payments[]
 }
 
 model links {
@@ -273,11 +279,11 @@ model views {
 	timezone String?
 	region String?
 	created_at DateTime @default(now()) @db.Timestamp(6)
-	post posts? @relation(fields: [id_post], references: [id])
+	post posts? @relation(fields: [id_post], references: [id], onDelete: Cascade)
 	profile profiles? @relation(fields: [id_profile], references: [id])
 	user users? @relation(fields: [id_user], references: [id])
-	link links? @relation(fields: [id_link], references: [id])
-	studio studios? @relation(fields: [id_studio], references: [id])
+	link links? @relation(fields: [id_link], references: [id], onDelete: Cascade)
+	studio studios? @relation(fields: [id_studio], references: [id], onDelete: Cascade)
 }
 
 model shares {
@@ -362,6 +368,93 @@ model tokens{
 	users      users    @relation(fields: [id_user], references: [id], onDelete: Cascade)
 }
 
+model plans {
+	id BigInt @id @default(sequence())
+	name String
+	description String?
+	price Float
+	pricing_model pricing_model @default(standard)
+	currency String
+	features Json?
+	billing_cycle billing_cycle
+	code String @unique
+	trial_days Int
+	is_active Boolean
+	identifier String @unique
+	banner_url String?
+	for_studios Boolean @default(false)
+
+	created_at DateTime @db.Timestamp(6) @default(now())
+	updated_at DateTime @db.Timestamp(6) @updatedAt @default(now())
+	subscriptions subscriptions[]
+}
+
+enum pricing_model {
+	volume
+	standard
+}
+
+model subscriptions {
+	id BigInt @id @default(sequence())
+	id_user BigInt?
+	id_studio BigInt?
+	id_plan BigInt
+	start_date DateTime @db.Timestamp(6)
+	card_brand String?
+	card_last_four String?
+	billing_anchor Int?
+	end_date DateTime @db.Timestamp(6)
+	status subscription_status @default(trialing)
+	canceled_at DateTime? @db.Timestamp(6)
+	next_billing_date DateTime? @db.Timestamp(6)
+	identifier String @unique
+
+	created_at DateTime @db.Timestamp(6) @default(now())
+	user users? @relation(fields: [id_user], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
+	plan plans @relation(fields: [id_plan], references: [id])
+	payments payments[]
+}
+
+model payments {
+	id BigInt @id @default(sequence())
+	id_user BigInt?
+	id_studio BigInt?
+	id_subscription BigInt?
+	status payment_status @default(pending)
+	text String?
+	price Float
+	currency String
+	items Json?
+	identifier String @unique
+	total_formated String
+
+	created_at DateTime @db.Timestamp(6) @default(now())
+	updated_at DateTime @db.Timestamp(6) @default(now()) @updatedAt
+	user users? @relation(fields: [id_user], references: [id])
+	studio studios? @relation(fields: [id_studio], references: [id])
+	subscription subscriptions? @relation(fields: [id_subscription], references: [id])
+}
+
+enum payment_status {
+	pending
+	paid
+	refused
+	refunded
+}
+
+enum subscription_status {
+	trialing
+	paused
+	active
+	past_due
+	canceled
+}
+
+enum billing_cycle {
+	monthly
+	yearly
+}
 
 enum tattoo_color {
 	black

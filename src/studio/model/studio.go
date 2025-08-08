@@ -21,6 +21,7 @@ type Studio struct {
 	Email       string               `json:"email,omitempty"`
 	Phone       string               `json:"phone,omitempty"`
 	Owner       *authModel.User      `json:"owner,omitempty"`
+	IsActive    bool                 `json:"isActive"`
 	CreatedAt   time.Time            `json:"createdAt,omitempty"`
 	Admins      []authModel.User     `json:"admins,omitempty"`
 	Media       []shorterModel.Media `json:"media,omitempty"`

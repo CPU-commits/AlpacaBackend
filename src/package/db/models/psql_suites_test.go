@@ -26,6 +26,10 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Links", testLinksUpsert)
 
+	t.Run("Payments", testPaymentsUpsert)
+
+	t.Run("Plans", testPlansUpsert)
+
 	t.Run("PostImages", testPostImagesUpsert)
 
 	t.Run("Posts", testPostsUpsert)
@@ -45,6 +49,8 @@ func TestUpsert(t *testing.T) {
 	t.Run("StudioUsers", testStudioUsersUpsert)
 
 	t.Run("Studios", testStudiosUpsert)
+
+	t.Run("Subscriptions", testSubscriptionsUpsert)
 
 	t.Run("Tattoos", testTattoosUpsert)
 

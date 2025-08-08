@@ -9,4 +9,6 @@ type Criteria struct {
 
 type RoleRepository interface {
 	Exists(criteria *Criteria) (bool, error)
+	InsertOne(idUser int64, role model.Role) error
+	Delete(criteria *Criteria) error
 }

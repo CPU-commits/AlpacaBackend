@@ -34,6 +34,23 @@ func (adminStudioService *AdminStudioService) userIsAdminInStudio(
 	return isAdmin, nil
 }
 
+func (adminStudioService *AdminStudioService) ThrowIfStudioIsNotActive(
+	idStudio int64,
+) error {
+	isActive, err := adminStudioService.studioRepository.Exists(&studio_repository.Criteria{
+		ID:       idStudio,
+		IsActive: utils.Bool(true),
+	})
+	if err != nil {
+		return err
+	}
+	if !isActive {
+		return ErrStudioIsNotActive
+	}
+
+	return nil
+}
+
 func (adminStudioService *AdminStudioService) GetRolesInStudio(
 	idUser,
 	idStudio int64,
@@ -65,11 +82,68 @@ func (adminStudioService *AdminStudioService) GetRolesInStudio(
 	return person.Roles, nil
 }
 
+func (adminStudioService *AdminStudioService) ThrowAccessInStudioIfIsNotOwner(
+	idUser,
+	idStudio int64,
+) error {
+	studio, err := adminStudioService.studioRepository.FindOne(
+		&studio_repository.Criteria{
+			ID: idStudio,
+		},
+		studio_repository.NewFindOneOptions().
+			Select(studio_repository.SelectOpts{
+				IsActive: utils.Bool(true),
+				ID:       *utils.Bool(true),
+			}),
+	)
+	if err != nil {
+		return err
+	}
+	if studio == nil {
+		return ErrNoExistStudio
+	}
+	if !studio.IsActive {
+		return ErrStudioIsNotActive
+	}
+	isOwner, err := adminStudioService.studioRepository.Exists(&studio_repository.Criteria{
+		IDOwner: idUser,
+		ID:      idStudio,
+	})
+	if err != nil {
+		return err
+	}
+	if !isOwner {
+		return ErrNoHasPermission
+	}
+
+	return nil
+}
+
 func (adminStudioService *AdminStudioService) ThrowAccessInStudio(
 	idUser,
 	idStudio int64,
 	permissions ...model.StudioPermission,
 ) error {
+	studio, err := adminStudioService.studioRepository.FindOne(
+		&studio_repository.Criteria{
+			ID: idStudio,
+		},
+		studio_repository.NewFindOneOptions().
+			Select(studio_repository.SelectOpts{
+				IsActive: utils.Bool(true),
+				ID:       *utils.Bool(true),
+			}),
+	)
+	if err != nil {
+		return err
+	}
+	if studio == nil {
+		return ErrNoExistStudio
+	}
+	if !studio.IsActive {
+		return ErrStudioIsNotActive
+	}
+
 	isOwner, err := adminStudioService.studioRepository.Exists(&studio_repository.Criteria{
 		IDOwner: idUser,
 		ID:      idStudio,

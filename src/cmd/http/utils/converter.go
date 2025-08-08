@@ -11,6 +11,7 @@ import (
 	followDto "github.com/CPU-commits/Template_Go-EventDriven/src/follow/dto"
 	followService "github.com/CPU-commits/Template_Go-EventDriven/src/follow/service"
 	generatorService "github.com/CPU-commits/Template_Go-EventDriven/src/generator/services"
+	paymentService "github.com/CPU-commits/Template_Go-EventDriven/src/payment/service"
 	publicationService "github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	shorterService "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
@@ -216,6 +217,10 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "studio.user_not_in_studio",
 	}
+	errorsService[studioService.ErrStudioIsNotActive] = errRes{
+		StatusCode: http.StatusUnauthorized,
+		MessageId:  "studio.is_not_active",
+	}
 	errorsService[appointmentDto.ErrIDTattooArtistOrStudioMissing] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "appointment.tattoo_artist_or_studio_missing",
@@ -243,5 +248,21 @@ func init() {
 	errorsService[publicationService.ErrTemporalViewExists] = errRes{
 		StatusCode: http.StatusConflict,
 		MessageId:  "publication.temporal_view_exists",
+	}
+	errorsService[paymentService.ErrSubscriptionIsCancelled] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "subscription.cancelled",
+	}
+	errorsService[paymentService.ErrPlanNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "subscription.plan_not_exists",
+	}
+	errorsService[paymentService.ErrHasSubscriptionActiveWithPlan] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "subscription.has_subscription_active_with_plan",
+	}
+	errorsService[paymentService.ErrPlanNeedStudio] = errRes{
+		StatusCode: http.StatusBadRequest,
+		MessageId:  "subscription.need_studio",
 	}
 }

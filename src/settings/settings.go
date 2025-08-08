@@ -14,26 +14,29 @@ var lock = &sync.Mutex{}
 var singleSettingsInstace *settings
 
 type settings struct {
-	JWT_SECRET_KEY   string
-	CLIENT_DOMAIN    string
-	CORS_DOMAINS     string
-	GO_ENV           string
-	NATS_HOSTS       string
-	DB_CONNECTION    string
-	CLOUDINARY_URL   string
-	TYPESENSE_HOSTS  string
-	TYPESENS_API_KEY string
-	REDIS_CONNECTION string
-	REDIS_PASS       string
-	OPENAI_KEY       string
-	SMTPHOST         string
-	SMTPFROM         string
-	SMTPPASS         string
-	SMTPPORT         string
-	REPLICATE_KEY    string
-	BACKEND_URL      string
-	CLIENT_URL       string
-	IPINFO_TOKEN     string
+	JWT_SECRET_KEY              string
+	CLIENT_DOMAIN               string
+	CORS_DOMAINS                string
+	GO_ENV                      string
+	NATS_HOSTS                  string
+	DB_CONNECTION               string
+	CLOUDINARY_URL              string
+	TYPESENSE_HOSTS             string
+	TYPESENS_API_KEY            string
+	REDIS_CONNECTION            string
+	REDIS_PASS                  string
+	OPENAI_KEY                  string
+	SMTPHOST                    string
+	SMTPFROM                    string
+	SMTPPASS                    string
+	SMTPPORT                    string
+	REPLICATE_KEY               string
+	BACKEND_URL                 string
+	CLIENT_URL                  string
+	IPINFO_TOKEN                string
+	LEMONSQUEEZY_TOKEN          string
+	LEMONSQUEEZY_SIGNING_SECRET string
+	LEMONSQUEEZY_STORE          string
 }
 
 func validateSettings(settings *settings) {
@@ -99,6 +102,15 @@ func validateSettings(settings *settings) {
 	if settings.IPINFO_TOKEN == "" {
 		missing = append(missing, "IPINFO_TOKEN")
 	}
+	if settings.LEMONSQUEEZY_TOKEN == "" {
+		missing = append(missing, "LEMONSQUEEZY_TOKEN")
+	}
+	if settings.LEMONSQUEEZY_SIGNING_SECRET == "" {
+		missing = append(missing, "LEMONSQUEEZY_SIGNING_SECRET")
+	}
+	if settings.LEMONSQUEEZY_STORE == "" {
+		missing = append(missing, "LEMONSQUEEZY_STORE")
+	}
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
 	}
@@ -106,26 +118,29 @@ func validateSettings(settings *settings) {
 
 func newSettings() *settings {
 	settings := &settings{
-		JWT_SECRET_KEY:   os.Getenv("JWT_SECRET_KEY"),
-		CLIENT_DOMAIN:    os.Getenv("CLIENT_DOMAIN"),
-		GO_ENV:           os.Getenv("GO_ENV"),
-		CORS_DOMAINS:     os.Getenv("CORS_DOMAINS"),
-		NATS_HOSTS:       os.Getenv("NATS_HOSTS"),
-		DB_CONNECTION:    os.Getenv("DB_CONNECTION"),
-		CLOUDINARY_URL:   os.Getenv("CLOUDINARY_URL"),
-		TYPESENSE_HOSTS:  os.Getenv("TYPESENSE_HOSTS"),
-		TYPESENS_API_KEY: os.Getenv("TYPESENS_API_KEY"),
-		REDIS_CONNECTION: os.Getenv("REDIS_CONNECTION"),
-		REDIS_PASS:       os.Getenv("REDIS_PASS"),
-		OPENAI_KEY:       os.Getenv("OPENAI_KEY"),
-		REPLICATE_KEY:    os.Getenv("REPLICATE_KEY"),
-		SMTPHOST:         os.Getenv("SMTPHOST"),
-		SMTPFROM:         os.Getenv("SMTPFROM"),
-		SMTPPASS:         os.Getenv("SMTPPASS"),
-		SMTPPORT:         os.Getenv("SMTPPORT"),
-		BACKEND_URL:      os.Getenv("BACKEND_URL"),
-		CLIENT_URL:       os.Getenv("CLIENT_URL"),
-		IPINFO_TOKEN:     os.Getenv("IPINFO_TOKEN"),
+		JWT_SECRET_KEY:              os.Getenv("JWT_SECRET_KEY"),
+		CLIENT_DOMAIN:               os.Getenv("CLIENT_DOMAIN"),
+		GO_ENV:                      os.Getenv("GO_ENV"),
+		CORS_DOMAINS:                os.Getenv("CORS_DOMAINS"),
+		NATS_HOSTS:                  os.Getenv("NATS_HOSTS"),
+		DB_CONNECTION:               os.Getenv("DB_CONNECTION"),
+		CLOUDINARY_URL:              os.Getenv("CLOUDINARY_URL"),
+		TYPESENSE_HOSTS:             os.Getenv("TYPESENSE_HOSTS"),
+		TYPESENS_API_KEY:            os.Getenv("TYPESENS_API_KEY"),
+		REDIS_CONNECTION:            os.Getenv("REDIS_CONNECTION"),
+		REDIS_PASS:                  os.Getenv("REDIS_PASS"),
+		OPENAI_KEY:                  os.Getenv("OPENAI_KEY"),
+		REPLICATE_KEY:               os.Getenv("REPLICATE_KEY"),
+		SMTPHOST:                    os.Getenv("SMTPHOST"),
+		SMTPFROM:                    os.Getenv("SMTPFROM"),
+		SMTPPASS:                    os.Getenv("SMTPPASS"),
+		SMTPPORT:                    os.Getenv("SMTPPORT"),
+		BACKEND_URL:                 os.Getenv("BACKEND_URL"),
+		CLIENT_URL:                  os.Getenv("CLIENT_URL"),
+		IPINFO_TOKEN:                os.Getenv("IPINFO_TOKEN"),
+		LEMONSQUEEZY_TOKEN:          os.Getenv("LEMONSQUEEZY_TOKEN"),
+		LEMONSQUEEZY_SIGNING_SECRET: os.Getenv("LEMONSQUEEZY_SIGNING_SECRET"),
+		LEMONSQUEEZY_STORE:          os.Getenv("LEMONSQUEEZY_STORE"),
 	}
 	validateSettings(settings)
 

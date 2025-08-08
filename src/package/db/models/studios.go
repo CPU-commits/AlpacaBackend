@@ -35,6 +35,8 @@ type Studio struct {
 	FullAddress string      `boil:"full_address" json:"full_address" toml:"full_address" yaml:"full_address"`
 	IDOwner     int64       `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
 	IDBanner    null.Int64  `boil:"id_banner" json:"id_banner,omitempty" toml:"id_banner" yaml:"id_banner,omitempty"`
+	IsActive    bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
+	IsLimit     bool        `boil:"is_limit" json:"is_limit" toml:"is_limit" yaml:"is_limit"`
 
 	R *studioR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -52,6 +54,8 @@ var StudioColumns = struct {
 	FullAddress string
 	IDOwner     string
 	IDBanner    string
+	IsActive    string
+	IsLimit     string
 }{
 	ID:          "id",
 	Description: "description",
@@ -64,6 +68,8 @@ var StudioColumns = struct {
 	FullAddress: "full_address",
 	IDOwner:     "id_owner",
 	IDBanner:    "id_banner",
+	IsActive:    "is_active",
+	IsLimit:     "is_limit",
 }
 
 var StudioTableColumns = struct {
@@ -78,6 +84,8 @@ var StudioTableColumns = struct {
 	FullAddress string
 	IDOwner     string
 	IDBanner    string
+	IsActive    string
+	IsLimit     string
 }{
 	ID:          "studios.id",
 	Description: "studios.description",
@@ -90,6 +98,8 @@ var StudioTableColumns = struct {
 	FullAddress: "studios.full_address",
 	IDOwner:     "studios.id_owner",
 	IDBanner:    "studios.id_banner",
+	IsActive:    "studios.is_active",
+	IsLimit:     "studios.is_limit",
 }
 
 // Generated where
@@ -106,6 +116,8 @@ var StudioWhere = struct {
 	FullAddress whereHelperstring
 	IDOwner     whereHelperint64
 	IDBanner    whereHelpernull_Int64
+	IsActive    whereHelperbool
+	IsLimit     whereHelperbool
 }{
 	ID:          whereHelperint64{field: "\"studios\".\"id\""},
 	Description: whereHelpernull_String{field: "\"studios\".\"description\""},
@@ -118,45 +130,53 @@ var StudioWhere = struct {
 	FullAddress: whereHelperstring{field: "\"studios\".\"full_address\""},
 	IDOwner:     whereHelperint64{field: "\"studios\".\"id_owner\""},
 	IDBanner:    whereHelpernull_Int64{field: "\"studios\".\"id_banner\""},
+	IsActive:    whereHelperbool{field: "\"studios\".\"is_active\""},
+	IsLimit:     whereHelperbool{field: "\"studios\".\"is_limit\""},
 }
 
 // StudioRels is where relationship names are stored.
 var StudioRels = struct {
-	IDAvatarImage        string
-	IDBannerImage        string
-	IDOwnerUser          string
-	IDStudioAppointments string
-	IDStudioFollows      string
-	IDStudioLinks        string
-	IDStudioPosts        string
-	IDStudioStudioUsers  string
-	IDStudioTattoos      string
-	IDStudioViews        string
+	IDAvatarImage         string
+	IDBannerImage         string
+	IDOwnerUser           string
+	IDStudioAppointments  string
+	IDStudioFollows       string
+	IDStudioLinks         string
+	IDStudioPayments      string
+	IDStudioPosts         string
+	IDStudioStudioUsers   string
+	IDStudioSubscriptions string
+	IDStudioTattoos       string
+	IDStudioViews         string
 }{
-	IDAvatarImage:        "IDAvatarImage",
-	IDBannerImage:        "IDBannerImage",
-	IDOwnerUser:          "IDOwnerUser",
-	IDStudioAppointments: "IDStudioAppointments",
-	IDStudioFollows:      "IDStudioFollows",
-	IDStudioLinks:        "IDStudioLinks",
-	IDStudioPosts:        "IDStudioPosts",
-	IDStudioStudioUsers:  "IDStudioStudioUsers",
-	IDStudioTattoos:      "IDStudioTattoos",
-	IDStudioViews:        "IDStudioViews",
+	IDAvatarImage:         "IDAvatarImage",
+	IDBannerImage:         "IDBannerImage",
+	IDOwnerUser:           "IDOwnerUser",
+	IDStudioAppointments:  "IDStudioAppointments",
+	IDStudioFollows:       "IDStudioFollows",
+	IDStudioLinks:         "IDStudioLinks",
+	IDStudioPayments:      "IDStudioPayments",
+	IDStudioPosts:         "IDStudioPosts",
+	IDStudioStudioUsers:   "IDStudioStudioUsers",
+	IDStudioSubscriptions: "IDStudioSubscriptions",
+	IDStudioTattoos:       "IDStudioTattoos",
+	IDStudioViews:         "IDStudioViews",
 }
 
 // studioR is where relationships are stored.
 type studioR struct {
-	IDAvatarImage        *Image           `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
-	IDBannerImage        *Image           `boil:"IDBannerImage" json:"IDBannerImage" toml:"IDBannerImage" yaml:"IDBannerImage"`
-	IDOwnerUser          *User            `boil:"IDOwnerUser" json:"IDOwnerUser" toml:"IDOwnerUser" yaml:"IDOwnerUser"`
-	IDStudioAppointments AppointmentSlice `boil:"IDStudioAppointments" json:"IDStudioAppointments" toml:"IDStudioAppointments" yaml:"IDStudioAppointments"`
-	IDStudioFollows      FollowSlice      `boil:"IDStudioFollows" json:"IDStudioFollows" toml:"IDStudioFollows" yaml:"IDStudioFollows"`
-	IDStudioLinks        LinkSlice        `boil:"IDStudioLinks" json:"IDStudioLinks" toml:"IDStudioLinks" yaml:"IDStudioLinks"`
-	IDStudioPosts        PostSlice        `boil:"IDStudioPosts" json:"IDStudioPosts" toml:"IDStudioPosts" yaml:"IDStudioPosts"`
-	IDStudioStudioUsers  StudioUserSlice  `boil:"IDStudioStudioUsers" json:"IDStudioStudioUsers" toml:"IDStudioStudioUsers" yaml:"IDStudioStudioUsers"`
-	IDStudioTattoos      TattooSlice      `boil:"IDStudioTattoos" json:"IDStudioTattoos" toml:"IDStudioTattoos" yaml:"IDStudioTattoos"`
-	IDStudioViews        ViewSlice        `boil:"IDStudioViews" json:"IDStudioViews" toml:"IDStudioViews" yaml:"IDStudioViews"`
+	IDAvatarImage         *Image            `boil:"IDAvatarImage" json:"IDAvatarImage" toml:"IDAvatarImage" yaml:"IDAvatarImage"`
+	IDBannerImage         *Image            `boil:"IDBannerImage" json:"IDBannerImage" toml:"IDBannerImage" yaml:"IDBannerImage"`
+	IDOwnerUser           *User             `boil:"IDOwnerUser" json:"IDOwnerUser" toml:"IDOwnerUser" yaml:"IDOwnerUser"`
+	IDStudioAppointments  AppointmentSlice  `boil:"IDStudioAppointments" json:"IDStudioAppointments" toml:"IDStudioAppointments" yaml:"IDStudioAppointments"`
+	IDStudioFollows       FollowSlice       `boil:"IDStudioFollows" json:"IDStudioFollows" toml:"IDStudioFollows" yaml:"IDStudioFollows"`
+	IDStudioLinks         LinkSlice         `boil:"IDStudioLinks" json:"IDStudioLinks" toml:"IDStudioLinks" yaml:"IDStudioLinks"`
+	IDStudioPayments      PaymentSlice      `boil:"IDStudioPayments" json:"IDStudioPayments" toml:"IDStudioPayments" yaml:"IDStudioPayments"`
+	IDStudioPosts         PostSlice         `boil:"IDStudioPosts" json:"IDStudioPosts" toml:"IDStudioPosts" yaml:"IDStudioPosts"`
+	IDStudioStudioUsers   StudioUserSlice   `boil:"IDStudioStudioUsers" json:"IDStudioStudioUsers" toml:"IDStudioStudioUsers" yaml:"IDStudioStudioUsers"`
+	IDStudioSubscriptions SubscriptionSlice `boil:"IDStudioSubscriptions" json:"IDStudioSubscriptions" toml:"IDStudioSubscriptions" yaml:"IDStudioSubscriptions"`
+	IDStudioTattoos       TattooSlice       `boil:"IDStudioTattoos" json:"IDStudioTattoos" toml:"IDStudioTattoos" yaml:"IDStudioTattoos"`
+	IDStudioViews         ViewSlice         `boil:"IDStudioViews" json:"IDStudioViews" toml:"IDStudioViews" yaml:"IDStudioViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -260,6 +280,22 @@ func (r *studioR) GetIDStudioLinks() LinkSlice {
 	return r.IDStudioLinks
 }
 
+func (o *Studio) GetIDStudioPayments() PaymentSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDStudioPayments()
+}
+
+func (r *studioR) GetIDStudioPayments() PaymentSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDStudioPayments
+}
+
 func (o *Studio) GetIDStudioPosts() PostSlice {
 	if o == nil {
 		return nil
@@ -290,6 +326,22 @@ func (r *studioR) GetIDStudioStudioUsers() StudioUserSlice {
 	}
 
 	return r.IDStudioStudioUsers
+}
+
+func (o *Studio) GetIDStudioSubscriptions() SubscriptionSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDStudioSubscriptions()
+}
+
+func (r *studioR) GetIDStudioSubscriptions() SubscriptionSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDStudioSubscriptions
 }
 
 func (o *Studio) GetIDStudioTattoos() TattooSlice {
@@ -328,9 +380,9 @@ func (r *studioR) GetIDStudioViews() ViewSlice {
 type studioL struct{}
 
 var (
-	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner"}
+	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner", "is_active", "is_limit"}
 	studioColumnsWithoutDefault = []string{"email", "name", "username", "full_address", "id_owner"}
-	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner"}
+	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner", "is_active", "is_limit"}
 	studioPrimaryKeyColumns     = []string{"id"}
 	studioGeneratedColumns      = []string{}
 )
@@ -715,6 +767,20 @@ func (o *Studio) IDStudioLinks(mods ...qm.QueryMod) linkQuery {
 	return Links(queryMods...)
 }
 
+// IDStudioPayments retrieves all the payment's Payments with an executor via id_studio column.
+func (o *Studio) IDStudioPayments(mods ...qm.QueryMod) paymentQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"payments\".\"id_studio\"=?", o.ID),
+	)
+
+	return Payments(queryMods...)
+}
+
 // IDStudioPosts retrieves all the post's Posts with an executor via id_studio column.
 func (o *Studio) IDStudioPosts(mods ...qm.QueryMod) postQuery {
 	var queryMods []qm.QueryMod
@@ -741,6 +807,20 @@ func (o *Studio) IDStudioStudioUsers(mods ...qm.QueryMod) studioUserQuery {
 	)
 
 	return StudioUsers(queryMods...)
+}
+
+// IDStudioSubscriptions retrieves all the subscription's Subscriptions with an executor via id_studio column.
+func (o *Studio) IDStudioSubscriptions(mods ...qm.QueryMod) subscriptionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"subscriptions\".\"id_studio\"=?", o.ID),
+	)
+
+	return Subscriptions(queryMods...)
 }
 
 // IDStudioTattoos retrieves all the tattoo's Tattoos with an executor via id_studio column.
@@ -1478,6 +1558,119 @@ func (studioL) LoadIDStudioLinks(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
+// LoadIDStudioPayments allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (studioL) LoadIDStudioPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStudio interface{}, mods queries.Applicator) error {
+	var slice []*Studio
+	var object *Studio
+
+	if singular {
+		var ok bool
+		object, ok = maybeStudio.(*Studio)
+		if !ok {
+			object = new(Studio)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeStudio))
+			}
+		}
+	} else {
+		s, ok := maybeStudio.(*[]*Studio)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeStudio))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &studioR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &studioR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`payments`),
+		qm.WhereIn(`payments.id_studio in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load payments")
+	}
+
+	var resultSlice []*Payment
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice payments")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on payments")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payments")
+	}
+
+	if len(paymentAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDStudioPayments = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &paymentR{}
+			}
+			foreign.R.IDStudioStudio = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDStudio) {
+				local.R.IDStudioPayments = append(local.R.IDStudioPayments, foreign)
+				if foreign.R == nil {
+					foreign.R = &paymentR{}
+				}
+				foreign.R.IDStudioStudio = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDStudioPosts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (studioL) LoadIDStudioPosts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStudio interface{}, mods queries.Applicator) error {
@@ -1694,6 +1887,119 @@ func (studioL) LoadIDStudioStudioUsers(ctx context.Context, e boil.ContextExecut
 				local.R.IDStudioStudioUsers = append(local.R.IDStudioStudioUsers, foreign)
 				if foreign.R == nil {
 					foreign.R = &studioUserR{}
+				}
+				foreign.R.IDStudioStudio = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadIDStudioSubscriptions allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (studioL) LoadIDStudioSubscriptions(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStudio interface{}, mods queries.Applicator) error {
+	var slice []*Studio
+	var object *Studio
+
+	if singular {
+		var ok bool
+		object, ok = maybeStudio.(*Studio)
+		if !ok {
+			object = new(Studio)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeStudio))
+			}
+		}
+	} else {
+		s, ok := maybeStudio.(*[]*Studio)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeStudio)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeStudio))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &studioR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &studioR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`subscriptions`),
+		qm.WhereIn(`subscriptions.id_studio in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load subscriptions")
+	}
+
+	var resultSlice []*Subscription
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice subscriptions")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on subscriptions")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for subscriptions")
+	}
+
+	if len(subscriptionAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDStudioSubscriptions = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &subscriptionR{}
+			}
+			foreign.R.IDStudioStudio = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDStudio) {
+				local.R.IDStudioSubscriptions = append(local.R.IDStudioSubscriptions, foreign)
+				if foreign.R == nil {
+					foreign.R = &subscriptionR{}
 				}
 				foreign.R.IDStudioStudio = local
 				break
@@ -2496,6 +2802,133 @@ func (o *Studio) RemoveIDStudioLinks(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
+// AddIDStudioPayments adds the given related objects to the existing relationships
+// of the studio, optionally inserting them as new records.
+// Appends related to o.R.IDStudioPayments.
+// Sets related.R.IDStudioStudio appropriately.
+func (o *Studio) AddIDStudioPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDStudio, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"payments\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_studio"}),
+				strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDStudio, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &studioR{
+			IDStudioPayments: related,
+		}
+	} else {
+		o.R.IDStudioPayments = append(o.R.IDStudioPayments, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &paymentR{
+				IDStudioStudio: o,
+			}
+		} else {
+			rel.R.IDStudioStudio = o
+		}
+	}
+	return nil
+}
+
+// SetIDStudioPayments removes all previously related items of the
+// studio replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDStudioStudio's IDStudioPayments accordingly.
+// Replaces o.R.IDStudioPayments with related.
+// Sets related.R.IDStudioStudio's IDStudioPayments accordingly.
+func (o *Studio) SetIDStudioPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+	query := "update \"payments\" set \"id_studio\" = null where \"id_studio\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDStudioPayments {
+			queries.SetScanner(&rel.IDStudio, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDStudioStudio = nil
+		}
+		o.R.IDStudioPayments = nil
+	}
+
+	return o.AddIDStudioPayments(ctx, exec, insert, related...)
+}
+
+// RemoveIDStudioPayments relationships from objects passed in.
+// Removes related items from R.IDStudioPayments (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDStudioStudio.
+func (o *Studio) RemoveIDStudioPayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDStudio, nil)
+		if rel.R != nil {
+			rel.R.IDStudioStudio = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_studio")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDStudioPayments {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDStudioPayments)
+			if ln > 1 && i < ln-1 {
+				o.R.IDStudioPayments[i] = o.R.IDStudioPayments[ln-1]
+			}
+			o.R.IDStudioPayments = o.R.IDStudioPayments[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
 // AddIDStudioPosts adds the given related objects to the existing relationships
 // of the studio, optionally inserting them as new records.
 // Appends related to o.R.IDStudioPosts.
@@ -2673,6 +3106,133 @@ func (o *Studio) AddIDStudioStudioUsers(ctx context.Context, exec boil.ContextEx
 			rel.R.IDStudioStudio = o
 		}
 	}
+	return nil
+}
+
+// AddIDStudioSubscriptions adds the given related objects to the existing relationships
+// of the studio, optionally inserting them as new records.
+// Appends related to o.R.IDStudioSubscriptions.
+// Sets related.R.IDStudioStudio appropriately.
+func (o *Studio) AddIDStudioSubscriptions(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Subscription) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDStudio, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"subscriptions\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_studio"}),
+				strmangle.WhereClause("\"", "\"", 2, subscriptionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDStudio, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &studioR{
+			IDStudioSubscriptions: related,
+		}
+	} else {
+		o.R.IDStudioSubscriptions = append(o.R.IDStudioSubscriptions, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &subscriptionR{
+				IDStudioStudio: o,
+			}
+		} else {
+			rel.R.IDStudioStudio = o
+		}
+	}
+	return nil
+}
+
+// SetIDStudioSubscriptions removes all previously related items of the
+// studio replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDStudioStudio's IDStudioSubscriptions accordingly.
+// Replaces o.R.IDStudioSubscriptions with related.
+// Sets related.R.IDStudioStudio's IDStudioSubscriptions accordingly.
+func (o *Studio) SetIDStudioSubscriptions(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Subscription) error {
+	query := "update \"subscriptions\" set \"id_studio\" = null where \"id_studio\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDStudioSubscriptions {
+			queries.SetScanner(&rel.IDStudio, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDStudioStudio = nil
+		}
+		o.R.IDStudioSubscriptions = nil
+	}
+
+	return o.AddIDStudioSubscriptions(ctx, exec, insert, related...)
+}
+
+// RemoveIDStudioSubscriptions relationships from objects passed in.
+// Removes related items from R.IDStudioSubscriptions (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDStudioStudio.
+func (o *Studio) RemoveIDStudioSubscriptions(ctx context.Context, exec boil.ContextExecutor, related ...*Subscription) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDStudio, nil)
+		if rel.R != nil {
+			rel.R.IDStudioStudio = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_studio")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDStudioSubscriptions {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDStudioSubscriptions)
+			if ln > 1 && i < ln-1 {
+				o.R.IDStudioSubscriptions[i] = o.R.IDStudioSubscriptions[ln-1]
+			}
+			o.R.IDStudioSubscriptions = o.R.IDStudioSubscriptions[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

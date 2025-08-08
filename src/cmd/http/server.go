@@ -18,6 +18,7 @@ import (
 	followController "github.com/CPU-commits/Template_Go-EventDriven/src/follow/controller"
 	generatorCon "github.com/CPU-commits/Template_Go-EventDriven/src/generator/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
+	paymentControllers "github.com/CPU-commits/Template_Go-EventDriven/src/payment/controller"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
 	shorterController "github.com/CPU-commits/Template_Go-EventDriven/src/shorter/controller"
@@ -246,6 +247,19 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		shorterController := shorterController.NewHttpAdminStudioController(bus)
 
 		links.GET("/:idLink/metrics", shorterController.GetLinkMetrics)
+	}
+	payments := router.Group("api/payments")
+	subscriptions := router.Group("api/subscriptions")
+	{
+		subscriptionController := paymentControllers.NewHttpSubscriptionController(bus)
+		paymentController := paymentControllers.NewHttpPaymentController(bus)
+
+		subscriptions.GET("/my", middleware.JWTMiddleware(), subscriptionController.GetMySubscription)
+		subscriptions.GET("/plans", subscriptionController.GetAllActivePlans)
+		subscriptions.POST("/plans/:idPlan/request", middleware.JWTMiddleware(), subscriptionController.RequestSubscription)
+		subscriptions.DELETE("/cancel", middleware.JWTMiddleware(), subscriptionController.CancelSubscription)
+		payments.POST("/lemonsqueezy/webhook", paymentController.LemonSqueezyPagoWebhook)
+		payments.GET("", paymentController.GetPayments)
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

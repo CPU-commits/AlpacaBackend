@@ -10,6 +10,7 @@ import (
 type Criteria struct {
 	ID       int64
 	IDOwner  int64
+	IsActive *bool
 	Email    repository.CriteriaString
 	Username repository.CriteriaString
 	Name     repository.CriteriaString
@@ -31,6 +32,7 @@ type SelectOpts struct {
 	Username    bool
 	Description bool
 	Address     *bool
+	IsActive    *bool
 }
 
 type findOptions struct {
@@ -93,6 +95,8 @@ type UpdateData struct {
 	FullAddress string
 	Email       string
 	Phone       *string
+	IsActive    *bool
+	IsLimited   *bool
 	Avatar      *fileModel.Image
 	Banner      *fileModel.Image
 	AddMedia    []shorterModel.Media

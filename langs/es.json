@@ -81,6 +81,7 @@
 		"user_not_admin": "El usuario no es administrador del estudio",
 		"no_permission": "No tienes permiso para esta acción",
 		"not_found": "No existe el estudio",
+		"is_not_active": "El estudio no está activo por suscripción",
 		"cant_create_owner": "No se puede crear un usuario dueño",
 		"user_not_in_studio": "El usuario no es parte del estudio",
 		"permissions": {
@@ -107,5 +108,11 @@
 	},
 	"shorter": {
 		"no_access": "No tienes acceso al link"
+	},
+	"subscription": {
+		"cancelled": "La suscripción está cancelada",
+		"plan_not_exists": "El plan no existe",
+		"has_subscription_active_with_plan": "Ya tienes una suscripción activa con el plan",
+		"need_studio": "La suscripción es para estudios"
 	}
 }
