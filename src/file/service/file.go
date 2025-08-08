@@ -39,6 +39,9 @@ func (fileService *FileService) CheckImageMimeType(file store.ImageDto) error {
 
 	return nil
 }
+func (fileService *FileService) DeleteImg(key string) error {
+	return fileService.imageStore.Delete(key)
+}
 
 func NewFileService(imageStore store.ImageStore) *FileService {
 	if fileServiceInstance == nil {

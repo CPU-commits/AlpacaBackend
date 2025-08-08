@@ -6,8 +6,12 @@ type GetTattoosResponse struct {
 	Tattoos []model.Tattoo `json:"tattoos"`
 }
 
-type GetDesignsResponse struct {
+type GetDesignResponse struct {
 	Designs []model.Design `json:"designs"`
+}
+
+type GetDesignsResponse struct {
+	Design model.Design `json:"design"`
 }
 
 type GetCategoriesResponse struct {

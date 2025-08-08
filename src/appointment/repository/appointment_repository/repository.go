@@ -18,6 +18,7 @@ type Criteria struct {
 	IDTattooArtist int64
 	FinishedAt     *repository.CriteriaTime
 	ScheduledAtGTE time.Time
+	IDDesign       int64
 	Or             []Criteria
 	IDStudio       int64
 }

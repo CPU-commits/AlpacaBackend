@@ -3,6 +3,8 @@ package service
 import (
 	"fmt"
 
+	"github.com/CPU-commits/Template_Go-EventDriven/src/appointment/repository/appointment_repository"
+	appointmentService "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
@@ -20,10 +22,11 @@ type DesignsMetadata struct {
 }
 
 type DesignService struct {
-	imageStore       store.ImageStore
-	profileService   service.ProfileService
-	designRepository design_repository.DesignRepository
-	fileService      file_service.FileService
+	imageStore         store.ImageStore
+	profileService     service.ProfileService
+	designRepository   design_repository.DesignRepository
+	fileService        file_service.FileService
+	appointmentService appointmentService.AppointmentService
 }
 
 func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, userId int64) ([]model.Design, error) {
@@ -54,7 +57,23 @@ func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, u
 	}
 	return modelDesigns, nil
 }
+func (designService *DesignService) GetDesign(idDesign int64, username string) (*model.Design, error) {
+	opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
+		Image:         true,
+		ProfileAvatar: true,
+		ProfileUser:   true,
+	})
+	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
+	if err != nil {
+		return nil, err
+	}
 
+	return designService.designRepository.FindOne(&design_repository.Criteria{
+		ID:        idDesign,
+		IDProfile: profileId,
+		IsDeleted: utils.Bool(false),
+	}, opts)
+}
 func (designService *DesignService) GetDesigns(username string, params dto.DesignFindDto) ([]model.Design, *DesignsMetadata, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
@@ -86,8 +105,8 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 	desings, err := designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
 		Category:  params.Category,
+		IsDeleted: utils.Bool(false),
 	}, opts)
-	fmt.Printf("desings: %v\n", desings)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -102,7 +121,6 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 		Total: int(count),
 	}, nil
 }
-
 func (designService *DesignService) GetLatestDesigns(username string) ([]model.Design, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
@@ -116,9 +134,9 @@ func (designService *DesignService) GetLatestDesigns(username string) ([]model.D
 
 	return designService.designRepository.Find(&design_repository.Criteria{
 		IDProfile: profileId,
+		IsDeleted: utils.Bool(false),
 	}, opts)
 }
-
 func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataUpdate) error {
 	if data.Description == "" && data.Price == 0 {
 		return ErrNotParams
@@ -138,11 +156,47 @@ func (designService *DesignService) DeleteDesign(idUser int64, designId int64) e
 	if err != nil {
 		return err
 	}
-
-	return designService.designRepository.Delete(&design_repository.Criteria{
+	// No mas
+	opts := design_repository.NewFindOneOptions().Include(design_repository.Include{
+		Image: true,
+	})
+	design, err := designService.designRepository.FindOne(&design_repository.Criteria{
 		ID:        designId,
 		IDProfile: idProfile,
+	}, opts)
+	if err != nil {
+		return err
+	}
+	if design == nil {
+		return ErrDesignNotExists
+	}
+	exists, err := designService.appointmentService.Exists(appointment_repository.Criteria{
+		IDDesign: design.ID,
 	})
+	if err != nil {
+		return err
+	}
+
+	switch exists {
+	case true:
+		return designService.designRepository.Update(&design_repository.Criteria{
+			ID:        designId,
+			IDProfile: idProfile,
+		}, design_repository.UpdateData{
+			IsDeleted: utils.Bool(true),
+		})
+	case false:
+		if err := designService.fileService.DeleteImg(design.Image.Key); err != nil {
+			return err
+		}
+		return designService.designRepository.Delete(&design_repository.Criteria{
+			ID:        designId,
+			IDProfile: idProfile,
+		})
+	default:
+		return utils.ErrRepositoryFailed
+	}
+
 }
 
 func (designService *DesignService) GetDesignCategories(username string) ([]string, error) {
@@ -161,13 +215,15 @@ func NewDesignService(
 	profileService service.ProfileService,
 	designRepository design_repository.DesignRepository,
 	fileService file_service.FileService,
+	appointmentService appointmentService.AppointmentService,
 ) *DesignService {
 	if designService == nil {
 		designService = &DesignService{
-			imageStore:       imageStore,
-			profileService:   profileService,
-			designRepository: designRepository,
-			fileService:      fileService,
+			imageStore:         imageStore,
+			profileService:     profileService,
+			designRepository:   designRepository,
+			fileService:        fileService,
+			appointmentService: appointmentService,
 		}
 	}
 	return designService

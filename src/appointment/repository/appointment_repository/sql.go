@@ -180,6 +180,9 @@ func (sqlAR appointmentRepositorySql) criteriaToWhere(criteria *Criteria) []Quer
 	if criteria.IDStudio != 0 {
 		where = append(where, models.AppointmentWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
+	if criteria.IDDesign != 0 {
+		where = append(where, models.AppointmentWhere.IDDesign.EQ(null.Int64From(criteria.IDDesign)))
+	}
 	if criteria.FinishedAt != nil {
 		where = append(where, models.AppointmentWhere.FinishedAt.IsNotNull())
 		if !criteria.FinishedAt.LTE.IsZero() {
@@ -477,6 +480,8 @@ func (sqlAR appointmentRepositorySql) Insert(
 		Phone:          null.StringFrom(appointment.Phone),
 		IDStudio:       null.NewInt64(appointment.IDStudio, appointment.IDStudio != 0),
 	}
+	fmt.Printf("appointment.HasIdea: %v\n", sqlAppointment.HasIdea)
+	fmt.Printf("sqlAppointment.HasDesign: %v\n", sqlAppointment.HasDesign)
 	if err := sqlAppointment.Insert(context.Background(), tx, boil.Infer()); err != nil {
 		tx.Rollback()
 		fmt.Printf("err: %v\n", err)

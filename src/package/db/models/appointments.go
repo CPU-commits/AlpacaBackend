@@ -472,8 +472,8 @@ type appointmentL struct{}
 
 var (
 	appointmentAllColumns            = []string{"id", "id_user", "id_tattoo_artist", "status", "created_at", "area", "color", "description", "has_idea", "height", "phone", "width", "duration", "finished_at", "scheduled_at", "id_calendar", "is_paid", "id_studio", "has_design", "id_design"}
-	appointmentColumnsWithoutDefault = []string{"id_user", "status", "description", "has_idea"}
-	appointmentColumnsWithDefault    = []string{"id", "id_tattoo_artist", "created_at", "area", "color", "height", "phone", "width", "duration", "finished_at", "scheduled_at", "id_calendar", "is_paid", "id_studio", "has_design", "id_design"}
+	appointmentColumnsWithoutDefault = []string{"id_user", "status", "description", "has_idea", "has_design"}
+	appointmentColumnsWithDefault    = []string{"id", "id_tattoo_artist", "created_at", "area", "color", "height", "phone", "width", "duration", "finished_at", "scheduled_at", "id_calendar", "is_paid", "id_studio", "id_design"}
 	appointmentPrimaryKeyColumns     = []string{"id"}
 	appointmentGeneratedColumns      = []string{}
 )

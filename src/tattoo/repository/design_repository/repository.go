@@ -7,6 +7,7 @@ type Criteria struct {
 	IDs       []int64
 	IDProfile int64
 	Category  string
+	IsDeleted *bool
 }
 
 type Include struct {
@@ -56,6 +57,7 @@ type UpdateData struct {
 	Description *string
 	Categories  *[]string
 	Price       *int64
+	IsDeleted   *bool
 }
 
 type SimilarityParams struct {

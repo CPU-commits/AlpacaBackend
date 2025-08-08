@@ -265,4 +265,8 @@ func init() {
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "subscription.need_studio",
 	}
+	errorsService[tattooService.ErrDesignNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "design.design_not_exists",
+	}
 }

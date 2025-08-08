@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"strings"
 
+	appointmentService "github.com/CPU-commits/Template_Go-EventDriven/src/appointment/service"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
+	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
@@ -130,6 +132,38 @@ func (httpDesign *HttpDesignController) GetDesigns(c *gin.Context) {
 	c.JSON(http.StatusOK, designs)
 }
 
+// Get doc
+//
+//	@Summary	Recibir los diseños de un usuario
+//	@Tags		designs
+//	@Success	200			{object}	controller.GetDesignsResponse
+//	@Param		username	path		string					true	"username"
+//	@Param		id		query		int						true	"id de diseño"
+//	@Failure	503			object		utils.ProblemDetails	"Error con la base de datos"
+//	@Router		/api/design/{username} [Get]
+func (httpDesign *HttpDesignController) GetDesign(c *gin.Context) {
+	var designFind *dto.DesignFindDto
+
+	if err := c.ShouldBindUri(&designFind); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	if err := c.ShouldBindQuery(&designFind); err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	design, err := httpDesign.designService.GetDesign(
+		designFind.ID,
+		designFind.Username,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, design)
+}
+
 // Get godoc
 //
 //	@Summary	Recibir los ultimos diseños de un usuario
@@ -241,27 +275,44 @@ func (httpDesign *HttpDesignController) GetCategories(c *gin.Context) {
 }
 
 func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
+	userService := *authService.NewUserService(
+		userRepository,
+		roleRepository,
+		uidGenerator,
+		bus,
+	)
+	profileService := *userServices.NewProfileService(
+		profileRepository,
+		userService,
+		cloudinary_store.NewCloudinaryImageStore(),
+		*fileService,
+		followRepository,
+		publicationRDRepository,
+		*viewService,
+		userServices.SinglentonFollowService(),
+	)
+	peopleStudioService := *studioService.NewPeopleStudioService(
+		peopleStudioRepository,
+		studioRepository,
+		userService,
+	)
 	return &HttpDesignController{
 		bus: bus,
 		designService: *service.NewDesignService(
 			imageStore,
-			*userServices.NewProfileService(
-				profileRepository,
-				*authService.NewUserService(
-					userRepository,
-					roleRepository,
-					uidGenerator,
-					bus,
-				),
-				cloudinary_store.NewCloudinaryImageStore(),
-				*fileService,
-				followRepository,
-				publicationRDRepository,
-				*viewService,
-				userServices.SinglentonFollowService(),
-			),
+			profileService,
 			designRepository,
 			*fileService,
+			*appointmentService.NewAppointmentService(
+				*fileService,
+				appointmentRepository,
+				userService,
+				googleCalendar,
+				reviewRepository,
+				profileService,
+				peopleStudioService,
+				studioRepository,
+			),
 		),
 	}
 }
