@@ -2,13 +2,11 @@ package publication_repository
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/typesense/typesense-go/v3/typesense"
@@ -56,16 +54,17 @@ func (tsPR tsPublicationRepository) Search(
 		}
 	}
 
-	apiResult, err := tsPR.ts.Collection("publications").Documents().Search(
+	apiResult, err := tsPR.ts.Collection("tattoos").Documents().Search(
 		context.Background(),
 		&api.SearchCollectionParams{
 			Q:           pointer.String(q),
-			QueryBy:     pointer.String("content,categories,embedding"),
+			QueryBy:     pointer.String("description,categories,publication_description,descr_embedding"),
 			PerPage:     perPage,
 			FilterBy:    tsPR.criteriaToFilterBy(criteria),
 			Page:        page,
-			VectorQuery: pointer.String("embedding:([], distance_threshold: 0.8)"),
+			VectorQuery: pointer.String("descr_embedding:([], distance_threshold: 0.8)"),
 			SortBy:      pointer.String("_text_match:desc,rating:desc"),
+			GroupBy:     utils.String("id_publication"),
 		},
 	)
 	if err != nil {
@@ -73,19 +72,39 @@ func (tsPR tsPublicationRepository) Search(
 	}
 
 	found = *apiResult.Found
+	appendHits := func(hit api.SearchResultHit) error {
+		tattoo := (*hit.Document)
+		idTattooStr := tattoo["id_publication"].(string)
+		idTattoo, err := strconv.Atoi(idTattooStr)
+		if err != nil {
+			return err
+		}
+
+		idPublications = append(idPublications, int64(idTattoo))
+		return nil
+	}
+
 	if apiResult.Hits != nil {
 		hits := *apiResult.Hits
 		for _, hit := range hits {
-			publication := (*hit.Document)
-			idPublicationStr := publication["id"].(string)
-			idPublication, err := strconv.Atoi(idPublicationStr)
-			if err != nil {
+			if err := appendHits(hit); err != nil {
 				return nil, 0, err
 			}
-
-			idPublications = append(idPublications, int64(idPublication))
 		}
 	}
+	if apiResult.GroupedHits != nil {
+		gHits := *apiResult.GroupedHits
+
+		for _, gHit := range gHits {
+			hits := gHit.Hits
+			for _, hit := range hits {
+				if err := appendHits(hit); err != nil {
+					return nil, 0, err
+				}
+			}
+		}
+	}
+
 	return
 }
 
@@ -101,7 +120,6 @@ func (tsPR *tsPublicationRepository) DeletePublication(publication *model.Public
 }
 
 func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publication) error {
-
 	params := &api.DocumentIndexParameters{}
 	strID := strconv.FormatInt(publication.ID, 10)
 	tsPublication := model.TSPublication{
@@ -113,28 +131,6 @@ func (tsPR *tsPublicationRepository) IndexPublication(publication *model.Publica
 		Mentions:   publication.Mentions,
 		CreatedAt:  publication.CreatedAt.Unix(),
 		Rating:     0.3,
-	}
-	imageNumber := 1
-	for _, image := range publication.Images {
-		imageBytes, err := cloudinary_store.NewCloudinaryImageStore().Download(
-			image.Key,
-		)
-		if err != nil {
-			return err
-		}
-		imageBase64 := base64.StdEncoding.EncodeToString(imageBytes)
-
-		if imageNumber == 1 {
-			tsPublication.Image1 = imageBase64
-		} else if imageNumber == 2 {
-			tsPublication.Image2 = imageBase64
-		} else if imageNumber == 3 {
-			tsPublication.Image3 = imageBase64
-		} else if imageNumber == 4 {
-			tsPublication.Image4 = imageBase64
-		} else if imageNumber == 5 {
-			tsPublication.Image5 = imageBase64
-		}
 	}
 
 	_, err := tsPR.ts.Collection("publications").Documents().Upsert(
@@ -188,6 +184,7 @@ func (tsPR *tsPublicationRepository) UpdatePublication(
 
 func init() {
 	client := db.TSClient
+	//client.Collection("publications").Delete(context.Background())
 
 	// Publications
 	fieldsPublication := []api.Field{
@@ -199,11 +196,6 @@ func init() {
 		{Name: "mentions", Type: "int64[]", Facet: pointer.True()},
 		{Name: "created_at", Type: "int64", Sort: pointer.True(), Facet: pointer.True()},
 		{Name: "rating", Type: "float", Sort: pointer.True()},
-		{Name: "image_1", Type: "image", Store: pointer.False(), Optional: pointer.True()},
-		{Name: "image_2", Type: "image", Store: pointer.False(), Optional: pointer.True()},
-		{Name: "image_3", Type: "image", Store: pointer.False(), Optional: pointer.True()},
-		{Name: "image_4", Type: "image", Store: pointer.False(), Optional: pointer.True()},
-		{Name: "image_5", Type: "image", Store: pointer.False(), Optional: pointer.True()},
 		{
 			Name: "embedding",
 			Type: "float[]",
@@ -222,7 +214,7 @@ func init() {
 					Url            *string "json:\"url,omitempty\""
 				} "json:\"model_config\""
 			}{
-				From: []string{"image_1", "image_2", "image_3", "image_4", "image_5"},
+				From: []string{"content"},
 				ModelConfig: struct {
 					AccessToken    *string "json:\"access_token,omitempty\""
 					ApiKey         *string "json:\"api_key,omitempty\""
@@ -235,7 +227,9 @@ func init() {
 					RefreshToken   *string "json:\"refresh_token,omitempty\""
 					Url            *string "json:\"url,omitempty\""
 				}{
-					ModelName: "ts/clip-vit-b-p32",
+					ModelName:      "ts/multilingual-e5-small",
+					IndexingPrefix: pointer.String("passage: "),
+					QueryPrefix:    pointer.String("query: "),
 				},
 			},
 			Optional: pointer.True(),

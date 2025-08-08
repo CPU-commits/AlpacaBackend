@@ -1,10 +1,15 @@
 package utils
 
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/base32"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"strings"
 	"time"
@@ -74,4 +79,29 @@ func IterateDates[T any](from time.Time, to time.Time, fun func(d time.Time) T) 
 	}
 
 	return result
+}
+
+func ReaderImageToBase64(r io.Reader) (string, error) {
+	br := bufio.NewReader(r)
+
+	data, err := io.ReadAll(br)
+	if err != nil {
+		return "", err
+	}
+	b64 := base64.StdEncoding.EncodeToString(data)
+	return b64, nil
+}
+
+func ReaderImageToBase64DataURI(r io.Reader) (string, error) {
+	br := bufio.NewReader(r)
+
+	head, _ := br.Peek(512)
+	mime := http.DetectContentType(head)
+
+	data, err := io.ReadAll(br)
+	if err != nil {
+		return "", err
+	}
+	b64 := base64.StdEncoding.EncodeToString(data)
+	return fmt.Sprintf("data:%s;base64,%s", mime, b64), nil
 }

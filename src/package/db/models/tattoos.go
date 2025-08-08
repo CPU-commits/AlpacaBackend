@@ -25,107 +25,135 @@ import (
 
 // Tattoo is an object representing the database table.
 type Tattoo struct {
-	ID          int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IDProfile   int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
-	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
-	Likes       int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
-	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	IDPost      null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
-	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Popularity  int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
-	Views       int               `boil:"views" json:"views" toml:"views" yaml:"views"`
-	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
-	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
-	IDStudio    null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	ID             int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IDProfile      int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
+	IDImage        int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
+	Likes          int               `boil:"likes" json:"likes" toml:"likes" yaml:"likes"`
+	CreatedAt      time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDPost         null.Int64        `boil:"id_post" json:"id_post,omitempty" toml:"id_post" yaml:"id_post,omitempty"`
+	Description    null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Popularity     int               `boil:"popularity" json:"popularity" toml:"popularity" yaml:"popularity"`
+	Views          int               `boil:"views" json:"views" toml:"views" yaml:"views"`
+	Coordinate     null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
+	Categories     types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	IDStudio       null.Int64        `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	Areas          null.JSON         `boil:"areas" json:"areas,omitempty" toml:"areas" yaml:"areas,omitempty"`
+	Color          null.String       `boil:"color" json:"color,omitempty" toml:"color" yaml:"color,omitempty"`
+	Mentions       types.Int64Array  `boil:"mentions" json:"mentions,omitempty" toml:"mentions" yaml:"mentions,omitempty"`
+	LLMDescription null.String       `boil:"llm_description" json:"llm_description,omitempty" toml:"llm_description" yaml:"llm_description,omitempty"`
 
 	R *tattooR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tattooL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TattooColumns = struct {
-	ID          string
-	IDProfile   string
-	IDImage     string
-	Likes       string
-	CreatedAt   string
-	IDPost      string
-	Description string
-	Popularity  string
-	Views       string
-	Coordinate  string
-	Categories  string
-	IDStudio    string
+	ID             string
+	IDProfile      string
+	IDImage        string
+	Likes          string
+	CreatedAt      string
+	IDPost         string
+	Description    string
+	Popularity     string
+	Views          string
+	Coordinate     string
+	Categories     string
+	IDStudio       string
+	Areas          string
+	Color          string
+	Mentions       string
+	LLMDescription string
 }{
-	ID:          "id",
-	IDProfile:   "id_profile",
-	IDImage:     "id_image",
-	Likes:       "likes",
-	CreatedAt:   "created_at",
-	IDPost:      "id_post",
-	Description: "description",
-	Popularity:  "popularity",
-	Views:       "views",
-	Coordinate:  "coordinate",
-	Categories:  "categories",
-	IDStudio:    "id_studio",
+	ID:             "id",
+	IDProfile:      "id_profile",
+	IDImage:        "id_image",
+	Likes:          "likes",
+	CreatedAt:      "created_at",
+	IDPost:         "id_post",
+	Description:    "description",
+	Popularity:     "popularity",
+	Views:          "views",
+	Coordinate:     "coordinate",
+	Categories:     "categories",
+	IDStudio:       "id_studio",
+	Areas:          "areas",
+	Color:          "color",
+	Mentions:       "mentions",
+	LLMDescription: "llm_description",
 }
 
 var TattooTableColumns = struct {
-	ID          string
-	IDProfile   string
-	IDImage     string
-	Likes       string
-	CreatedAt   string
-	IDPost      string
-	Description string
-	Popularity  string
-	Views       string
-	Coordinate  string
-	Categories  string
-	IDStudio    string
+	ID             string
+	IDProfile      string
+	IDImage        string
+	Likes          string
+	CreatedAt      string
+	IDPost         string
+	Description    string
+	Popularity     string
+	Views          string
+	Coordinate     string
+	Categories     string
+	IDStudio       string
+	Areas          string
+	Color          string
+	Mentions       string
+	LLMDescription string
 }{
-	ID:          "tattoos.id",
-	IDProfile:   "tattoos.id_profile",
-	IDImage:     "tattoos.id_image",
-	Likes:       "tattoos.likes",
-	CreatedAt:   "tattoos.created_at",
-	IDPost:      "tattoos.id_post",
-	Description: "tattoos.description",
-	Popularity:  "tattoos.popularity",
-	Views:       "tattoos.views",
-	Coordinate:  "tattoos.coordinate",
-	Categories:  "tattoos.categories",
-	IDStudio:    "tattoos.id_studio",
+	ID:             "tattoos.id",
+	IDProfile:      "tattoos.id_profile",
+	IDImage:        "tattoos.id_image",
+	Likes:          "tattoos.likes",
+	CreatedAt:      "tattoos.created_at",
+	IDPost:         "tattoos.id_post",
+	Description:    "tattoos.description",
+	Popularity:     "tattoos.popularity",
+	Views:          "tattoos.views",
+	Coordinate:     "tattoos.coordinate",
+	Categories:     "tattoos.categories",
+	IDStudio:       "tattoos.id_studio",
+	Areas:          "tattoos.areas",
+	Color:          "tattoos.color",
+	Mentions:       "tattoos.mentions",
+	LLMDescription: "tattoos.llm_description",
 }
 
 // Generated where
 
 var TattooWhere = struct {
-	ID          whereHelperint64
-	IDProfile   whereHelperint64
-	IDImage     whereHelperint64
-	Likes       whereHelperint
-	CreatedAt   whereHelpertime_Time
-	IDPost      whereHelpernull_Int64
-	Description whereHelpernull_String
-	Popularity  whereHelperint
-	Views       whereHelperint
-	Coordinate  whereHelpernull_String
-	Categories  whereHelpertypes_StringArray
-	IDStudio    whereHelpernull_Int64
+	ID             whereHelperint64
+	IDProfile      whereHelperint64
+	IDImage        whereHelperint64
+	Likes          whereHelperint
+	CreatedAt      whereHelpertime_Time
+	IDPost         whereHelpernull_Int64
+	Description    whereHelpernull_String
+	Popularity     whereHelperint
+	Views          whereHelperint
+	Coordinate     whereHelpernull_String
+	Categories     whereHelpertypes_StringArray
+	IDStudio       whereHelpernull_Int64
+	Areas          whereHelpernull_JSON
+	Color          whereHelpernull_String
+	Mentions       whereHelpertypes_Int64Array
+	LLMDescription whereHelpernull_String
 }{
-	ID:          whereHelperint64{field: "\"tattoos\".\"id\""},
-	IDProfile:   whereHelperint64{field: "\"tattoos\".\"id_profile\""},
-	IDImage:     whereHelperint64{field: "\"tattoos\".\"id_image\""},
-	Likes:       whereHelperint{field: "\"tattoos\".\"likes\""},
-	CreatedAt:   whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
-	IDPost:      whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
-	Description: whereHelpernull_String{field: "\"tattoos\".\"description\""},
-	Popularity:  whereHelperint{field: "\"tattoos\".\"popularity\""},
-	Views:       whereHelperint{field: "\"tattoos\".\"views\""},
-	Coordinate:  whereHelpernull_String{field: "\"tattoos\".\"coordinate\""},
-	Categories:  whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
-	IDStudio:    whereHelpernull_Int64{field: "\"tattoos\".\"id_studio\""},
+	ID:             whereHelperint64{field: "\"tattoos\".\"id\""},
+	IDProfile:      whereHelperint64{field: "\"tattoos\".\"id_profile\""},
+	IDImage:        whereHelperint64{field: "\"tattoos\".\"id_image\""},
+	Likes:          whereHelperint{field: "\"tattoos\".\"likes\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"tattoos\".\"created_at\""},
+	IDPost:         whereHelpernull_Int64{field: "\"tattoos\".\"id_post\""},
+	Description:    whereHelpernull_String{field: "\"tattoos\".\"description\""},
+	Popularity:     whereHelperint{field: "\"tattoos\".\"popularity\""},
+	Views:          whereHelperint{field: "\"tattoos\".\"views\""},
+	Coordinate:     whereHelpernull_String{field: "\"tattoos\".\"coordinate\""},
+	Categories:     whereHelpertypes_StringArray{field: "\"tattoos\".\"categories\""},
+	IDStudio:       whereHelpernull_Int64{field: "\"tattoos\".\"id_studio\""},
+	Areas:          whereHelpernull_JSON{field: "\"tattoos\".\"areas\""},
+	Color:          whereHelpernull_String{field: "\"tattoos\".\"color\""},
+	Mentions:       whereHelpertypes_Int64Array{field: "\"tattoos\".\"mentions\""},
+	LLMDescription: whereHelpernull_String{field: "\"tattoos\".\"llm_description\""},
 }
 
 // TattooRels is where relationship names are stored.
@@ -222,9 +250,9 @@ func (r *tattooR) GetIDStudioStudio() *Studio {
 type tattooL struct{}
 
 var (
-	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio"}
+	tattooAllColumns            = []string{"id", "id_profile", "id_image", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio", "areas", "color", "mentions", "llm_description"}
 	tattooColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	tattooColumnsWithDefault    = []string{"id", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio"}
+	tattooColumnsWithDefault    = []string{"id", "likes", "created_at", "id_post", "description", "popularity", "views", "coordinate", "categories", "id_studio", "areas", "color", "mentions", "llm_description"}
 	tattooPrimaryKeyColumns     = []string{"id"}
 	tattooGeneratedColumns      = []string{}
 )

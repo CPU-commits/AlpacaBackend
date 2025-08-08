@@ -3,6 +3,7 @@ package tattoo_repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -28,13 +29,16 @@ type sqlTattooRepository struct {
 
 func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tattoo {
 	tattoo := model.Tattoo{
-		ID:            sqlTattoo.ID,
-		Likes:         sqlTattoo.Likes,
-		CreatedAt:     sqlTattoo.CreatedAt,
-		Views:         sqlTattoo.Views,
-		IDPublication: sqlTattoo.IDPost.Int64,
-		Description:   sqlTattoo.Description.String,
-		Categories:    sqlTattoo.Categories,
+		ID:             sqlTattoo.ID,
+		Likes:          sqlTattoo.Likes,
+		CreatedAt:      sqlTattoo.CreatedAt,
+		Views:          sqlTattoo.Views,
+		IDPublication:  sqlTattoo.IDPost.Int64,
+		Description:    sqlTattoo.Description.String,
+		Categories:     sqlTattoo.Categories,
+		Color:          sqlTattoo.Color.String,
+		Mentions:       sqlTattoo.Mentions,
+		LLMDescription: sqlTattoo.LLMDescription.String,
 	}
 	if sqlTattoo.R != nil && sqlTattoo.R.IDImageImage != nil {
 		sqlImage := sqlTattoo.R.IDImageImage
@@ -103,12 +107,18 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 }
 
 func (sqlTattooRepository) tattooModelToSqlTattoo(tattoo model.Tattoo, idProfile, sqlImageID int64) models.Tattoo {
+	areas, _ := json.Marshal(tattoo.Areas)
+
 	sqlTattoo := models.Tattoo{
-		Likes:      tattoo.Likes,
-		IDProfile:  idProfile,
-		IDImage:    sqlImageID,
-		Categories: tattoo.Categories,
-		IDStudio:   null.Int64FromPtr(tattoo.IDStudio),
+		Likes:          tattoo.Likes,
+		IDProfile:      idProfile,
+		IDImage:        sqlImageID,
+		Categories:     tattoo.Categories,
+		IDStudio:       null.Int64FromPtr(tattoo.IDStudio),
+		Areas:          null.JSONFrom(areas),
+		Color:          null.NewString(tattoo.Color, tattoo.Color != ""),
+		Mentions:       tattoo.Mentions,
+		LLMDescription: null.NewString(tattoo.LLMDescription, tattoo.LLMDescription != ""),
 	}
 	if tattoo.Description != "" {
 		sqlTattoo.Description = null.StringFrom(tattoo.Description)

@@ -60,8 +60,9 @@ type UpdateData struct {
 }
 
 type SimilarityParams struct {
-	Embedding []float64
-	IDTattoo  int64
+	Embedding   []float64
+	ImageBase64 string
+	IDTattoo    int64
 }
 
 type SimilarityOptions struct {

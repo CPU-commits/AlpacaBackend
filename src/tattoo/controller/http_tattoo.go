@@ -93,7 +93,6 @@ func (httpTattoo *HttpTattooController) SearchByImage(c *gin.Context) {
 
 	tattooImageForm, err := c.FormFile("image")
 	if err != nil && err.Error() != errNoSuchFile.Error() {
-		fmt.Printf("%v\n", err)
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}

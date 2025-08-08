@@ -47,9 +47,4 @@ type TSPublication struct {
 	Mentions   []int64  `json:"mentions"`
 	CreatedAt  int64    `json:"created_at"`
 	Rating     float64  `json:"rating"`
-	Image1     string   `json:"image_1,omitempty"`
-	Image2     string   `json:"image_2,omitempty"`
-	Image3     string   `json:"image_3,omitempty"`
-	Image4     string   `json:"image_4,omitempty"`
-	Image5     string   `json:"image_5,omitempty"`
 }

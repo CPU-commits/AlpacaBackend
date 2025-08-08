@@ -60,13 +60,11 @@ func (tattooService *TattooService) SearchByImage(
 
 	paramsSimilarity := tattoo_repository.SimilarityParams{}
 	if params.Image != nil {
-		embedding, err := tattooService.embedding.EmbedImage(
-			params.Image,
-		)
+		base64Image, err := utils.ReaderImageToBase64(params.Image)
 		if err != nil {
 			return nil, nil, err
 		}
-		paramsSimilarity.Embedding = embedding
+		paramsSimilarity.ImageBase64 = base64Image
 	} else if params.IsLikeTattooID != 0 {
 		paramsSimilarity.IDTattoo = params.IsLikeTattooID
 	}

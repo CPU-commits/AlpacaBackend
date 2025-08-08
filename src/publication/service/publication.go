@@ -533,10 +533,17 @@ func (publicationService *PublicationService) predictIfPublicationImagesAreTatto
 	publication *model.Publication,
 	idStudio int64,
 ) {
-	imageTattoos, err := utils.ConcurrentFilter(publication.Images, func(image fileModel.Image) (bool, error) {
+	type toMap struct {
+		image      fileModel.Image
+		prediction *TattooPredict
+	}
+
+	imageTattoosPredictions, err := utils.ConcurrentMap(publication.Images, func(image fileModel.Image) (toMap, error) {
 		imageUrl, err := publicationService.imageStore.GetURL(image.Key)
 		if err != nil {
-			return false, err
+			return toMap{
+				image: image,
+			}, err
 		}
 		prediction, _, err := openaiprovider.Predict[TattooPredict](
 			llm.PredictSchema{
@@ -549,29 +556,44 @@ func (publicationService *PublicationService) predictIfPublicationImagesAreTatto
 			},
 		)
 		if err != nil {
-			return false, err
+			return toMap{
+				image: image,
+			}, err
 		}
 
-		return prediction.IsTattoo, nil
+		return toMap{
+			image:      image,
+			prediction: &prediction,
+		}, nil
+	}, nil)
+	imageTattoos := utils.FilterNoError(imageTattoosPredictions, func(mapped toMap) bool {
+		return mapped.prediction != nil && mapped.prediction.IsTattoo
 	})
+
 	if err != nil {
 		return
 	}
-	idImages := utils.MapNoError(imageTattoos, func(image fileModel.Image) int64 {
-		return image.ID
+	idImages := utils.MapNoError(imageTattoos, func(mapped toMap) int64 {
+		return mapped.image.ID
 	})
 	var idStudioPtr *int64
 	if idStudio != 0 {
 		idStudioPtr = &idStudio
 	}
 
-	tattoos := utils.MapNoError(imageTattoos, func(image fileModel.Image) tattooModel.Tattoo {
+	tattoos := utils.MapNoError(imageTattoos, func(mapped toMap) tattooModel.Tattoo {
 		return tattooModel.Tattoo{
-			Image:         image,
+			Image:         mapped.image,
 			Description:   publication.Content,
 			IDPublication: publication.ID,
 			Categories:    publication.Categories,
 			IDStudio:      idStudioPtr,
+			Areas: utils.MapNoError(mapped.prediction.Area, func(area string) tattooModel.TattooArea {
+				return tattooModel.TattooArea(area)
+			}),
+			LLMDescription: mapped.prediction.Description,
+			Color:          mapped.prediction.Color,
+			Mentions:       publication.Mentions,
 		}
 	})
 

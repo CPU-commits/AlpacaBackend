@@ -208,64 +208,7 @@ func ConcurrentMap[T any, R any](
 	transformer func(v T) (R, error),
 	options *OptionsConcurrentMap,
 ) ([]R, error) {
-	// Init options
-	congruent := options != nil && options.Congruent
-	var wight int64 = 10
-	if options != nil && options.SemaphoreWight != 0 {
-		wight = options.SemaphoreWight
-	}
-	// Data
-	var newSlide []R
-
-	if congruent {
-		newSlide = make([]R, len(slide))
-	}
-	// Sync
-	var locker sync.RWMutex
-	var wg sync.WaitGroup
-	// Handle
-	var err error
-	// Buffered
-	c := make(chan struct{}, wight)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for i, v := range slide {
-		wg.Add(1)
-
-		go func(v T, i int, err *error, wg *sync.WaitGroup, locker *sync.RWMutex, c chan struct{}) {
-			defer wg.Done()
-			c <- struct{}{}
-
-			// Handle error
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				newValue, errT := transformer(v)
-				if errT != nil {
-					*err = errT
-					cancel()
-					return
-				}
-				if congruent {
-					newSlide[i] = newValue
-				} else {
-					locker.Lock()
-					newSlide = append(newSlide, newValue)
-					locker.Unlock()
-				}
-				<-c
-			}
-		}(v, i, &err, &wg, &locker, c)
-	}
-	wg.Wait()
-	if err != nil {
-		return nil, err
-	}
-
-	return newSlide, nil
+	return Map(slide, transformer)
 }
 
 func Reduce[T any, R any](
