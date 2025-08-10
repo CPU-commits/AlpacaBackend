@@ -923,7 +923,7 @@ func testReviewsSelect(t *testing.T) {
 }
 
 var (
-	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDAppointment`: `bigint`}
+	reviewDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `IDAppointment`: `bigint`, `Content`: `text`, `Stars`: `integer`, `CreatedAt`: `timestamp without time zone`}
 	_             = bytes.MinRead
 )
 

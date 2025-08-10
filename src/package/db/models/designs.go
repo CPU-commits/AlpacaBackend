@@ -29,9 +29,9 @@ type Design struct {
 	IDProfile   int64             `boil:"id_profile" json:"id_profile" toml:"id_profile" yaml:"id_profile"`
 	IDImage     int64             `boil:"id_image" json:"id_image" toml:"id_image" yaml:"id_image"`
 	Description null.String       `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Price       null.Int64        `boil:"price" json:"price,omitempty" toml:"price" yaml:"price,omitempty"`
 	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
-	Price       null.Int64        `boil:"price" json:"price,omitempty" toml:"price" yaml:"price,omitempty"`
 	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	IsDeleted   bool              `boil:"is_deleted" json:"is_deleted" toml:"is_deleted" yaml:"is_deleted"`
 
@@ -44,9 +44,9 @@ var DesignColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Description string
+	Price       string
 	Categories  string
 	Coordinate  string
-	Price       string
 	CreatedAt   string
 	IsDeleted   string
 }{
@@ -54,9 +54,9 @@ var DesignColumns = struct {
 	IDProfile:   "id_profile",
 	IDImage:     "id_image",
 	Description: "description",
+	Price:       "price",
 	Categories:  "categories",
 	Coordinate:  "coordinate",
-	Price:       "price",
 	CreatedAt:   "created_at",
 	IsDeleted:   "is_deleted",
 }
@@ -66,9 +66,9 @@ var DesignTableColumns = struct {
 	IDProfile   string
 	IDImage     string
 	Description string
+	Price       string
 	Categories  string
 	Coordinate  string
-	Price       string
 	CreatedAt   string
 	IsDeleted   string
 }{
@@ -76,9 +76,9 @@ var DesignTableColumns = struct {
 	IDProfile:   "designs.id_profile",
 	IDImage:     "designs.id_image",
 	Description: "designs.description",
+	Price:       "designs.price",
 	Categories:  "designs.categories",
 	Coordinate:  "designs.coordinate",
-	Price:       "designs.price",
 	CreatedAt:   "designs.created_at",
 	IsDeleted:   "designs.is_deleted",
 }
@@ -116,9 +116,9 @@ var DesignWhere = struct {
 	IDProfile   whereHelperint64
 	IDImage     whereHelperint64
 	Description whereHelpernull_String
+	Price       whereHelpernull_Int64
 	Categories  whereHelpertypes_StringArray
 	Coordinate  whereHelpernull_String
-	Price       whereHelpernull_Int64
 	CreatedAt   whereHelpertime_Time
 	IsDeleted   whereHelperbool
 }{
@@ -126,9 +126,9 @@ var DesignWhere = struct {
 	IDProfile:   whereHelperint64{field: "\"designs\".\"id_profile\""},
 	IDImage:     whereHelperint64{field: "\"designs\".\"id_image\""},
 	Description: whereHelpernull_String{field: "\"designs\".\"description\""},
+	Price:       whereHelpernull_Int64{field: "\"designs\".\"price\""},
 	Categories:  whereHelpertypes_StringArray{field: "\"designs\".\"categories\""},
 	Coordinate:  whereHelpernull_String{field: "\"designs\".\"coordinate\""},
-	Price:       whereHelpernull_Int64{field: "\"designs\".\"price\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"designs\".\"created_at\""},
 	IsDeleted:   whereHelperbool{field: "\"designs\".\"is_deleted\""},
 }
@@ -208,9 +208,9 @@ func (r *designR) GetIDDesignAppointments() AppointmentSlice {
 type designL struct{}
 
 var (
-	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "categories", "coordinate", "price", "created_at", "is_deleted"}
+	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "price", "categories", "coordinate", "created_at", "is_deleted"}
 	designColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	designColumnsWithDefault    = []string{"id", "description", "categories", "coordinate", "price", "created_at", "is_deleted"}
+	designColumnsWithDefault    = []string{"id", "description", "price", "categories", "coordinate", "created_at", "is_deleted"}
 	designPrimaryKeyColumns     = []string{"id"}
 	designGeneratedColumns      = []string{}
 )

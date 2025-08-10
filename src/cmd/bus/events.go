@@ -10,7 +10,9 @@ const (
 	DELETE_PUBLICATION        bus.EventName = "publication.delete_publication"
 	VERIFY_TEMPORAL_VIEW      bus.EventName = "publications.verify_temporal_view"
 
-	NEW_TATTOO bus.EventName = "tattoo.new_tattoo"
+	NEW_TATTOO             bus.EventName = "tattoo.new_tattoo"
+	UPDATE_TATTOOS_RATINGS bus.EventName = "tattoo.update_tattoos_rating"
+	DELETE_TATTOO          bus.EventName = "tattoo.delete_tattoo"
 
 	NEW_TOKEN_EMAIL_UPDATE    bus.EventName = "token.new_token_email_update"
 	NEW_TOKEN_PASSWORD_UPDATE bus.EventName = "token.new_token_password_update"

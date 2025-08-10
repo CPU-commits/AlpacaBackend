@@ -1144,7 +1144,7 @@ func testTattoosSelect(t *testing.T) {
 }
 
 var (
-	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `Likes`: `integer`, `CreatedAt`: `timestamp without time zone`, `IDPost`: `bigint`, `Description`: `text`, `Popularity`: `integer`, `Views`: `integer`, `Coordinate`: `geometry`, `Categories`: `ARRAY_text`, `IDStudio`: `bigint`, `Areas`: `jsonb`, `Color`: `enum.tattoo_color('black','full_color')`, `Mentions`: `ARRAY_int4`, `LLMDescription`: `text`}
+	tattooDBTypes = map[string]string{`ID`: `bigint`, `IDProfile`: `bigint`, `IDImage`: `bigint`, `IDStudio`: `bigint`, `Likes`: `integer`, `Areas`: `jsonb`, `Color`: `enum.tattoo_color('black','full_color')`, `LLMDescription`: `text`, `Mentions`: `ARRAY_int4`, `Description`: `text`, `Categories`: `ARRAY_text`, `CreatedAt`: `timestamp without time zone`, `Popularity`: `integer`, `IDPost`: `bigint`, `Views`: `integer`, `Coordinate`: `geometry`}
 	_             = bytes.MinRead
 )
 

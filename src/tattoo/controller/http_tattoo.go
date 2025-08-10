@@ -262,6 +262,7 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 			tattooRepository,
 			*fileService,
 			embeddingapi.NewAPIEmbedding(),
+			bus,
 		),
 	}
 }

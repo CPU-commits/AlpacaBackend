@@ -28,6 +28,7 @@ type Plan struct {
 	Name         string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Description  null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Price        float64     `boil:"price" json:"price" toml:"price" yaml:"price"`
+	PricingModel string      `boil:"pricing_model" json:"pricing_model" toml:"pricing_model" yaml:"pricing_model"`
 	Currency     string      `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	Features     null.JSON   `boil:"features" json:"features,omitempty" toml:"features" yaml:"features,omitempty"`
 	BillingCycle string      `boil:"billing_cycle" json:"billing_cycle" toml:"billing_cycle" yaml:"billing_cycle"`
@@ -36,10 +37,9 @@ type Plan struct {
 	IsActive     bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Identifier   string      `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
 	BannerURL    null.String `boil:"banner_url" json:"banner_url,omitempty" toml:"banner_url" yaml:"banner_url,omitempty"`
+	ForStudios   bool        `boil:"for_studios" json:"for_studios" toml:"for_studios" yaml:"for_studios"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	ForStudios   bool        `boil:"for_studios" json:"for_studios" toml:"for_studios" yaml:"for_studios"`
-	PricingModel string      `boil:"pricing_model" json:"pricing_model" toml:"pricing_model" yaml:"pricing_model"`
 
 	R *planR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L planL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -50,6 +50,7 @@ var PlanColumns = struct {
 	Name         string
 	Description  string
 	Price        string
+	PricingModel string
 	Currency     string
 	Features     string
 	BillingCycle string
@@ -58,15 +59,15 @@ var PlanColumns = struct {
 	IsActive     string
 	Identifier   string
 	BannerURL    string
+	ForStudios   string
 	CreatedAt    string
 	UpdatedAt    string
-	ForStudios   string
-	PricingModel string
 }{
 	ID:           "id",
 	Name:         "name",
 	Description:  "description",
 	Price:        "price",
+	PricingModel: "pricing_model",
 	Currency:     "currency",
 	Features:     "features",
 	BillingCycle: "billing_cycle",
@@ -75,10 +76,9 @@ var PlanColumns = struct {
 	IsActive:     "is_active",
 	Identifier:   "identifier",
 	BannerURL:    "banner_url",
+	ForStudios:   "for_studios",
 	CreatedAt:    "created_at",
 	UpdatedAt:    "updated_at",
-	ForStudios:   "for_studios",
-	PricingModel: "pricing_model",
 }
 
 var PlanTableColumns = struct {
@@ -86,6 +86,7 @@ var PlanTableColumns = struct {
 	Name         string
 	Description  string
 	Price        string
+	PricingModel string
 	Currency     string
 	Features     string
 	BillingCycle string
@@ -94,15 +95,15 @@ var PlanTableColumns = struct {
 	IsActive     string
 	Identifier   string
 	BannerURL    string
+	ForStudios   string
 	CreatedAt    string
 	UpdatedAt    string
-	ForStudios   string
-	PricingModel string
 }{
 	ID:           "plans.id",
 	Name:         "plans.name",
 	Description:  "plans.description",
 	Price:        "plans.price",
+	PricingModel: "plans.pricing_model",
 	Currency:     "plans.currency",
 	Features:     "plans.features",
 	BillingCycle: "plans.billing_cycle",
@@ -111,10 +112,9 @@ var PlanTableColumns = struct {
 	IsActive:     "plans.is_active",
 	Identifier:   "plans.identifier",
 	BannerURL:    "plans.banner_url",
+	ForStudios:   "plans.for_studios",
 	CreatedAt:    "plans.created_at",
 	UpdatedAt:    "plans.updated_at",
-	ForStudios:   "plans.for_studios",
-	PricingModel: "plans.pricing_model",
 }
 
 // Generated where
@@ -147,6 +147,7 @@ var PlanWhere = struct {
 	Name         whereHelperstring
 	Description  whereHelpernull_String
 	Price        whereHelperfloat64
+	PricingModel whereHelperstring
 	Currency     whereHelperstring
 	Features     whereHelpernull_JSON
 	BillingCycle whereHelperstring
@@ -155,15 +156,15 @@ var PlanWhere = struct {
 	IsActive     whereHelperbool
 	Identifier   whereHelperstring
 	BannerURL    whereHelpernull_String
+	ForStudios   whereHelperbool
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
-	ForStudios   whereHelperbool
-	PricingModel whereHelperstring
 }{
 	ID:           whereHelperint64{field: "\"plans\".\"id\""},
 	Name:         whereHelperstring{field: "\"plans\".\"name\""},
 	Description:  whereHelpernull_String{field: "\"plans\".\"description\""},
 	Price:        whereHelperfloat64{field: "\"plans\".\"price\""},
+	PricingModel: whereHelperstring{field: "\"plans\".\"pricing_model\""},
 	Currency:     whereHelperstring{field: "\"plans\".\"currency\""},
 	Features:     whereHelpernull_JSON{field: "\"plans\".\"features\""},
 	BillingCycle: whereHelperstring{field: "\"plans\".\"billing_cycle\""},
@@ -172,10 +173,9 @@ var PlanWhere = struct {
 	IsActive:     whereHelperbool{field: "\"plans\".\"is_active\""},
 	Identifier:   whereHelperstring{field: "\"plans\".\"identifier\""},
 	BannerURL:    whereHelpernull_String{field: "\"plans\".\"banner_url\""},
+	ForStudios:   whereHelperbool{field: "\"plans\".\"for_studios\""},
 	CreatedAt:    whereHelpertime_Time{field: "\"plans\".\"created_at\""},
 	UpdatedAt:    whereHelpertime_Time{field: "\"plans\".\"updated_at\""},
-	ForStudios:   whereHelperbool{field: "\"plans\".\"for_studios\""},
-	PricingModel: whereHelperstring{field: "\"plans\".\"pricing_model\""},
 }
 
 // PlanRels is where relationship names are stored.
@@ -215,9 +215,9 @@ func (r *planR) GetIDPlanSubscriptions() SubscriptionSlice {
 type planL struct{}
 
 var (
-	planAllColumns            = []string{"id", "name", "description", "price", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model"}
+	planAllColumns            = []string{"id", "name", "description", "price", "pricing_model", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "for_studios", "created_at", "updated_at"}
 	planColumnsWithoutDefault = []string{"name", "price", "currency", "billing_cycle", "code", "trial_days", "is_active", "identifier"}
-	planColumnsWithDefault    = []string{"id", "description", "features", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model"}
+	planColumnsWithDefault    = []string{"id", "description", "pricing_model", "features", "banner_url", "for_studios", "created_at", "updated_at"}
 	planPrimaryKeyColumns     = []string{"id"}
 	planGeneratedColumns      = []string{}
 )

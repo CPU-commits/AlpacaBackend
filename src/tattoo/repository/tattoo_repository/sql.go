@@ -24,7 +24,7 @@ import (
 type sqlTattooRepository struct {
 	db                 *sql.DB
 	ts                 *typesense.Client
-	tsTattooRepository tsTattooRepository
+	tsTattooRepository TattooTSRepository
 }
 
 func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tattoo {
@@ -35,6 +35,7 @@ func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tat
 		Views:          sqlTattoo.Views,
 		IDPublication:  sqlTattoo.IDPost.Int64,
 		Description:    sqlTattoo.Description.String,
+		Areas:          []model.TattooArea{model.TattooArea(sqlTattoo.Areas.JSON)},
 		Categories:     sqlTattoo.Categories,
 		Color:          sqlTattoo.Color.String,
 		Mentions:       sqlTattoo.Mentions,
@@ -102,13 +103,15 @@ func (sqlTattooRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IDStudio != 0 {
 		mod = append(mod, models.TattooWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
+	if criteria.IDPublication != 0 {
+		mod = append(mod, models.TattooWhere.IDPost.EQ(null.Int64From(criteria.IDPublication)))
+	}
 
 	return mod
 }
 
 func (sqlTattooRepository) tattooModelToSqlTattoo(tattoo model.Tattoo, idProfile, sqlImageID int64) models.Tattoo {
 	areas, _ := json.Marshal(tattoo.Areas)
-
 	sqlTattoo := models.Tattoo{
 		Likes:          tattoo.Likes,
 		IDProfile:      idProfile,
@@ -435,6 +438,14 @@ func (sqlTR sqlTattooRepository) FindOne(criteria *Criteria, opts *FindOneOpts) 
 	tattoo := sqlTR.sqlTattooToTattoo(sqlTattoo)
 
 	return &tattoo, nil
+}
+
+func (sqlTR sqlTattooRepository) Delete(criteria *Criteria) error {
+	where := sqlTR.criteriaToWhere(criteria)
+	if _, err := models.Tattoos(where...).DeleteAll(context.Background(), sqlTR.db); err != nil {
+		return utils.ErrRepositoryFailed
+	}
+	return nil
 }
 
 func NewSqlTattooRepository(sqlDB *sql.DB) TattooRepository {

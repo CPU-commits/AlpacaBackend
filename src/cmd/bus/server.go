@@ -14,7 +14,7 @@ func Init(logger logger.Logger) {
 	queueBus := queue.New(logger)
 	// Controllers
 	publicationController := controller.NewPublicationQueueController(queueBus)
-	tattooController := tattooCon.NewTattooQueueController()
+	tattooController := tattooCon.NewTattooQueueController(queueBus)
 	tokenController := generatorCon.NewTokenQueueController()
 	emailController := notificationsCon.NewEmailQueueController(queueBus)
 	paymentController := paymentCon.NewBusPaymentsController(queueBus)
@@ -84,5 +84,13 @@ func Init(logger logger.Logger) {
 	queueBus.Subscribe(
 		REMOVE_BENEFITS_USER_FROM_PLAN,
 		paymentController.HandleRemoveBenefits,
+	)
+	queueBus.Subscribe(
+		UPDATE_TATTOOS_RATINGS,
+		tattooController.UpdateRatings,
+	)
+	queueBus.Subscribe(
+		DELETE_TATTOO,
+		tattooController.DeleteTattoos,
 	)
 }

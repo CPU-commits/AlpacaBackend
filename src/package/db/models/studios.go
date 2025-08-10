@@ -25,18 +25,18 @@ import (
 // Studio is an object representing the database table.
 type Studio struct {
 	ID          int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Email       string      `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Phone       null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
-	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	IDAvatar    null.Int64  `boil:"id_avatar" json:"id_avatar,omitempty" toml:"id_avatar" yaml:"id_avatar,omitempty"`
 	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Username    string      `boil:"username" json:"username" toml:"username" yaml:"username"`
-	FullAddress string      `boil:"full_address" json:"full_address" toml:"full_address" yaml:"full_address"`
-	IDOwner     int64       `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
+	IDAvatar    null.Int64  `boil:"id_avatar" json:"id_avatar,omitempty" toml:"id_avatar" yaml:"id_avatar,omitempty"`
 	IDBanner    null.Int64  `boil:"id_banner" json:"id_banner,omitempty" toml:"id_banner" yaml:"id_banner,omitempty"`
+	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	FullAddress string      `boil:"full_address" json:"full_address" toml:"full_address" yaml:"full_address"`
+	Email       string      `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Phone       null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
+	IDOwner     int64       `boil:"id_owner" json:"id_owner" toml:"id_owner" yaml:"id_owner"`
 	IsActive    bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	IsLimit     bool        `boil:"is_limit" json:"is_limit" toml:"is_limit" yaml:"is_limit"`
+	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *studioR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,94 +44,94 @@ type Studio struct {
 
 var StudioColumns = struct {
 	ID          string
-	Description string
-	Email       string
-	Phone       string
-	CreatedAt   string
-	IDAvatar    string
 	Name        string
 	Username    string
-	FullAddress string
-	IDOwner     string
+	IDAvatar    string
 	IDBanner    string
+	Description string
+	FullAddress string
+	Email       string
+	Phone       string
+	IDOwner     string
 	IsActive    string
 	IsLimit     string
+	CreatedAt   string
 }{
 	ID:          "id",
-	Description: "description",
-	Email:       "email",
-	Phone:       "phone",
-	CreatedAt:   "created_at",
-	IDAvatar:    "id_avatar",
 	Name:        "name",
 	Username:    "username",
-	FullAddress: "full_address",
-	IDOwner:     "id_owner",
+	IDAvatar:    "id_avatar",
 	IDBanner:    "id_banner",
+	Description: "description",
+	FullAddress: "full_address",
+	Email:       "email",
+	Phone:       "phone",
+	IDOwner:     "id_owner",
 	IsActive:    "is_active",
 	IsLimit:     "is_limit",
+	CreatedAt:   "created_at",
 }
 
 var StudioTableColumns = struct {
 	ID          string
-	Description string
-	Email       string
-	Phone       string
-	CreatedAt   string
-	IDAvatar    string
 	Name        string
 	Username    string
-	FullAddress string
-	IDOwner     string
+	IDAvatar    string
 	IDBanner    string
+	Description string
+	FullAddress string
+	Email       string
+	Phone       string
+	IDOwner     string
 	IsActive    string
 	IsLimit     string
+	CreatedAt   string
 }{
 	ID:          "studios.id",
-	Description: "studios.description",
-	Email:       "studios.email",
-	Phone:       "studios.phone",
-	CreatedAt:   "studios.created_at",
-	IDAvatar:    "studios.id_avatar",
 	Name:        "studios.name",
 	Username:    "studios.username",
-	FullAddress: "studios.full_address",
-	IDOwner:     "studios.id_owner",
+	IDAvatar:    "studios.id_avatar",
 	IDBanner:    "studios.id_banner",
+	Description: "studios.description",
+	FullAddress: "studios.full_address",
+	Email:       "studios.email",
+	Phone:       "studios.phone",
+	IDOwner:     "studios.id_owner",
 	IsActive:    "studios.is_active",
 	IsLimit:     "studios.is_limit",
+	CreatedAt:   "studios.created_at",
 }
 
 // Generated where
 
 var StudioWhere = struct {
 	ID          whereHelperint64
-	Description whereHelpernull_String
-	Email       whereHelperstring
-	Phone       whereHelpernull_String
-	CreatedAt   whereHelpertime_Time
-	IDAvatar    whereHelpernull_Int64
 	Name        whereHelperstring
 	Username    whereHelperstring
-	FullAddress whereHelperstring
-	IDOwner     whereHelperint64
+	IDAvatar    whereHelpernull_Int64
 	IDBanner    whereHelpernull_Int64
+	Description whereHelpernull_String
+	FullAddress whereHelperstring
+	Email       whereHelperstring
+	Phone       whereHelpernull_String
+	IDOwner     whereHelperint64
 	IsActive    whereHelperbool
 	IsLimit     whereHelperbool
+	CreatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperint64{field: "\"studios\".\"id\""},
-	Description: whereHelpernull_String{field: "\"studios\".\"description\""},
-	Email:       whereHelperstring{field: "\"studios\".\"email\""},
-	Phone:       whereHelpernull_String{field: "\"studios\".\"phone\""},
-	CreatedAt:   whereHelpertime_Time{field: "\"studios\".\"created_at\""},
-	IDAvatar:    whereHelpernull_Int64{field: "\"studios\".\"id_avatar\""},
 	Name:        whereHelperstring{field: "\"studios\".\"name\""},
 	Username:    whereHelperstring{field: "\"studios\".\"username\""},
-	FullAddress: whereHelperstring{field: "\"studios\".\"full_address\""},
-	IDOwner:     whereHelperint64{field: "\"studios\".\"id_owner\""},
+	IDAvatar:    whereHelpernull_Int64{field: "\"studios\".\"id_avatar\""},
 	IDBanner:    whereHelpernull_Int64{field: "\"studios\".\"id_banner\""},
+	Description: whereHelpernull_String{field: "\"studios\".\"description\""},
+	FullAddress: whereHelperstring{field: "\"studios\".\"full_address\""},
+	Email:       whereHelperstring{field: "\"studios\".\"email\""},
+	Phone:       whereHelpernull_String{field: "\"studios\".\"phone\""},
+	IDOwner:     whereHelperint64{field: "\"studios\".\"id_owner\""},
 	IsActive:    whereHelperbool{field: "\"studios\".\"is_active\""},
 	IsLimit:     whereHelperbool{field: "\"studios\".\"is_limit\""},
+	CreatedAt:   whereHelpertime_Time{field: "\"studios\".\"created_at\""},
 }
 
 // StudioRels is where relationship names are stored.
@@ -380,9 +380,9 @@ func (r *studioR) GetIDStudioViews() ViewSlice {
 type studioL struct{}
 
 var (
-	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner", "is_active", "is_limit"}
-	studioColumnsWithoutDefault = []string{"email", "name", "username", "full_address", "id_owner"}
-	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner", "is_active", "is_limit"}
+	studioAllColumns            = []string{"id", "name", "username", "id_avatar", "id_banner", "description", "full_address", "email", "phone", "id_owner", "is_active", "is_limit", "created_at"}
+	studioColumnsWithoutDefault = []string{"name", "username", "full_address", "email", "id_owner"}
+	studioColumnsWithDefault    = []string{"id", "id_avatar", "id_banner", "description", "phone", "is_active", "is_limit", "created_at"}
 	studioPrimaryKeyColumns     = []string{"id"}
 	studioGeneratedColumns      = []string{}
 )

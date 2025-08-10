@@ -1027,7 +1027,7 @@ func testFollowsSelect(t *testing.T) {
 }
 
 var (
-	followDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `CreatedAt`: `timestamp without time zone`, `IDStudio`: `bigint`}
+	followDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDProfile`: `bigint`, `IDStudio`: `bigint`, `CreatedAt`: `timestamp without time zone`}
 	_             = bytes.MinRead
 )
 

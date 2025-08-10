@@ -9,6 +9,7 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
+	modelPublication "github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/typesense/typesense-go/v3/typesense/api"
@@ -19,40 +20,22 @@ type tsTattooRepository struct {
 	ts *typesense.Client
 }
 
-func NewTsTattooRepository() tsTattooRepository {
-	return tsTattooRepository{
+func NewTsTattooRepository() TattooTSRepository {
+	return &tsTattooRepository{
 		ts: db.TSClient,
 	}
 }
 
-type TSTattoo struct {
-	ID                     string   `json:"id"`
-	IDProfile              int64    `json:"id_profile"`
-	IDPublication          string   `json:"id_publication"`
-	IDImage                int64    `json:"id_image"`
-	Likes                  int32    `json:"likes"`
-	Categories             []string `json:"categories,omitempty"`
-	Description            string   `json:"description"`
-	PublicationDescription string   `json:"publication_description"`
-	Mentions               []int64  `json:"mentions"`
-	Views                  int32    `json:"views"`
-	Popularity             int64    `json:"popularity"`
-	Image                  string   `json:"image,omitempty"`
-	CreatedAt              int64    `json:"created_at"`
-	Color                  string   `json:"color"`
-	Rating                 float64  `json:"rating"`
+func (tsTR *tsTattooRepository) DeleteTattoo(Tattoo *model.Tattoo) error {
+	strID := strconv.FormatInt(Tattoo.ID, 10)
+
+	_, err := tsTR.ts.Collection("tattoos").Document(strID).Delete(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
-
-// func (tsTR *tsTattooRepository) DeleteTattoo(Tattoo *model.Tattoo) error {
-// 	strID := strconv.FormatInt(Tattoo.ID, 10)
-
-// 	_, err := tsTR.ts.Collection("tattoos").Document(strID).Delete(context.Background())
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	return nil
-// }
 
 func (tsTR *tsTattooRepository) Search(
 	params SimilarityParams,
@@ -119,16 +102,16 @@ func (tsTR *tsTattooRepository) IndexTattoo(tattoo *model.Tattoo) error {
 	strID := strconv.FormatInt(tattoo.ID, 10)
 	strIDPublication := strconv.FormatInt(tattoo.IDPublication, 10)
 	params := &api.DocumentIndexParameters{}
-	tsTattoo := TSTattoo{
+	tsTattoo := model.TSTattoo{
 		ID:                     strID,
 		IDProfile:              tattoo.Profile.ID,
 		IDPublication:          strIDPublication,
 		IDImage:                tattoo.Image.ID,
 		Likes:                  int32(tattoo.Likes),
 		Views:                  int32(tattoo.Views),
-		Popularity:             0,
 		CreatedAt:              tattoo.CreatedAt.Unix(),
 		Rating:                 0.3,
+		Areas:                  tattoo.AreasToStringSlice(),
 		Description:            tattoo.LLMDescription,
 		PublicationDescription: tattoo.Description,
 		Categories:             tattoo.Categories,
@@ -157,38 +140,41 @@ func (tsTR *tsTattooRepository) IndexTattoo(tattoo *model.Tattoo) error {
 }
 
 // Actualiza el rating con los nuevos valores
-// func (tsTR *tsTattooRepository) UpdateTattoo(
-// 	tattoo *model.Tattoo,
-// 	daysSincePublished int,
-// 	followers int,
-// ) error {
+func (tsTR *tsTattooRepository) UpdateRatingTattoo(
+	tattoo *model.Tattoo,
+	publication *modelPublication.TSPublication,
+) error {
 
-// 	params := &api.DocumentIndexParameters{}
-// 	strID := strconv.FormatInt(tattoo.ID, 10)
+	params := &api.DocumentIndexParameters{}
+	strID := strconv.FormatInt(tattoo.ID, 10)
 
-// 	rating := utils.CalculateRanting(daysSincePublished, tattoo.Likes, tattoo.Views, 0, followers)
-// 	tsTattoo := TSTattoo{
-// 		ID:            strID,
-// 		IDProfile:     tattoo.Profile.ID,
-// 		IDPublication: tattoo.IDPublication,
-// 		IDImage:       tattoo.Image.ID,
-// 		Likes:         int32(tattoo.Likes),
-// 		Views:         int32(tattoo.Views),
-// 		CreatedAt:     tattoo.CreatedAt.Unix(),
-// 		Rating:        rating,
-// 	}
+	tsTattoo := model.TSTattoo{
+		ID:                     strID,
+		IDProfile:              tattoo.Profile.ID,
+		IDPublication:          publication.ID,
+		IDImage:                tattoo.Image.ID,
+		Areas:                  tattoo.AreasToStringSlice(),
+		Description:            tattoo.LLMDescription,
+		PublicationDescription: publication.Content,
+		Color:                  tattoo.Color,
+		Likes:                  publication.Likes,
+		Views:                  publication.Views,
+		Mentions:               publication.Mentions,
+		Categories:             publication.Categories,
+		Rating:                 publication.Rating,
+		CreatedAt:              tattoo.CreatedAt.Unix(),
+	}
 
-// 	_, err := tsTR.ts.Collection("tattoos").Document(tsTattoo.ID).Update(context.Background(), tsTattoo, params)
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	_, err := tsTR.ts.Collection("tattoos").Document(tsTattoo.ID).Update(context.Background(), tsTattoo, params)
+	if err != nil {
+		panic(err)
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 func init() {
 	client := db.TSClient
-	//client.Collection("tattoos").Delete(context.Background())
 
 	fields := []api.Field{
 		{Name: "id_profile", Type: "int64", Facet: pointer.True()},
@@ -203,9 +189,9 @@ func init() {
 		{Name: "views", Type: "int32", Facet: pointer.True()},
 		{Name: "categories", Type: "string[]", Facet: pointer.True(), Optional: pointer.True()},
 		{Name: "mentions", Type: "int64[]", Facet: pointer.True(), Optional: pointer.True()},
-		{Name: "popularity", Type: "int64", Facet: pointer.True()},
 		{Name: "image", Type: "image", Store: pointer.False(), Optional: pointer.True()},
 		{Name: "color", Type: "string", Optional: pointer.True()},
+		{Name: "areas", Type: "string[]", Optional: pointer.True()},
 		{Name: "description", Type: "string", Index: pointer.True()},
 		{Name: "publication_description", Type: "string", Index: pointer.True()},
 		{Name: "created_at", Type: "int64", Sort: pointer.True(), Facet: pointer.True()},

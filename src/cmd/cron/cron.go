@@ -29,16 +29,16 @@ func Init(logger logger.Logger) {
 		)
 
 		if err := mutex.Lock(); err != nil {
-			log.Fatalf("Failed to schedule cronjob: %v", err)
+			log.Printf("Failed to schedule cronjob: %v", err)
 		}
 
 		cronPublication.UpdateRatings()
 
 		if ok, err := mutex.Unlock(); !ok || err != nil {
-			log.Fatalf("Failed to schedule cronjob: %v", err)
+			log.Printf("Failed to schedule cronjob: %v", err)
 
 		} else {
-			log.Fatalf("success cron-update-ratings")
+			log.Printf("success cron-update-ratings")
 
 		}
 	})

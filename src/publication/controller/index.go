@@ -45,6 +45,7 @@ var (
 	viewRepository          = view_repository.NewSqlViewRepository()
 	shareRepository         = share_repository.NewSqlShareRepository(db.DB)
 	temporalViewRepository  = temporal_view_repository.NewRdTemportalViewRepository()
+	tattooTSRepository      = tattoo_repository.NewTsTattooRepository()
 )
 
 // Services

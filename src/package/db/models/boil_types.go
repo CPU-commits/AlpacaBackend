@@ -53,17 +53,17 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for AppointmentStatus
 const (
-	AppointmentStatusCreated   string = "created"
 	AppointmentStatusScheduled string = "scheduled"
 	AppointmentStatusCanceled  string = "canceled"
+	AppointmentStatusCreated   string = "created"
 	AppointmentStatusReviewed  string = "reviewed"
 )
 
 func AllAppointmentStatus() []string {
 	return []string{
-		AppointmentStatusCreated,
 		AppointmentStatusScheduled,
 		AppointmentStatusCanceled,
+		AppointmentStatusCreated,
 		AppointmentStatusReviewed,
 	}
 }
@@ -129,19 +129,6 @@ func AllPaymentStatus() []string {
 	}
 }
 
-// Enum values for BillingCycle
-const (
-	BillingCycleMonthly string = "monthly"
-	BillingCycleYearly  string = "yearly"
-)
-
-func AllBillingCycle() []string {
-	return []string{
-		BillingCycleMonthly,
-		BillingCycleYearly,
-	}
-}
-
 // Enum values for PricingModel
 const (
 	PricingModelVolume   string = "volume"
@@ -152,6 +139,19 @@ func AllPricingModel() []string {
 	return []string{
 		PricingModelVolume,
 		PricingModelStandard,
+	}
+}
+
+// Enum values for BillingCycle
+const (
+	BillingCycleMonthly string = "monthly"
+	BillingCycleYearly  string = "yearly"
+)
+
+func AllBillingCycle() []string {
+	return []string{
+		BillingCycleMonthly,
+		BillingCycleYearly,
 	}
 }
 
@@ -173,18 +173,18 @@ func AllRoleName() []string {
 // Enum values for SubscriptionStatus
 const (
 	SubscriptionStatusTrialing string = "trialing"
+	SubscriptionStatusPaused   string = "paused"
 	SubscriptionStatusActive   string = "active"
 	SubscriptionStatusPastDue  string = "past_due"
 	SubscriptionStatusCanceled string = "canceled"
-	SubscriptionStatusPaused   string = "paused"
 )
 
 func AllSubscriptionStatus() []string {
 	return []string{
 		SubscriptionStatusTrialing,
+		SubscriptionStatusPaused,
 		SubscriptionStatusActive,
 		SubscriptionStatusPastDue,
 		SubscriptionStatusCanceled,
-		SubscriptionStatusPaused,
 	}
 }

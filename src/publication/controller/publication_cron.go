@@ -18,14 +18,15 @@ type cronPublicationController struct {
 func NewCronPublication(
 	bus bus.Bus,
 ) *cronPublicationController {
+	userService := authService.NewUserService(
+		userRepository,
+		roleRepository,
+		uidGenerator,
+		bus,
+	)
 	profileService := *userServices.NewProfileService(
 		profileRepository,
-		*authService.NewUserService(
-			userRepository,
-			roleRepository,
-			uidGenerator,
-			bus,
-		),
+		*userService,
 		imageStore,
 		*fileService,
 		followRepository,
@@ -33,12 +34,7 @@ func NewCronPublication(
 		*viewService,
 		userServices.SinglentonFollowService(),
 	)
-	userService := authService.NewUserService(
-		userRepository,
-		roleRepository,
-		uidGenerator,
-		bus,
-	)
+
 	adminStudioService := studioService.NewPeopleStudioService(
 		adminStudioRepository,
 		studioRepository,
@@ -54,6 +50,7 @@ func NewCronPublication(
 				tattooRepository,
 				*fileService,
 				embeddingapi.NewAPIEmbedding(),
+				bus,
 			),
 			profileService,
 			imageStore,

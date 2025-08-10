@@ -1354,7 +1354,7 @@ func testSubscriptionsSelect(t *testing.T) {
 }
 
 var (
-	subscriptionDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDPlan`: `bigint`, `StartDate`: `timestamp without time zone`, `CardBrand`: `text`, `CardLastFour`: `text`, `BillingAnchor`: `integer`, `EndDate`: `timestamp without time zone`, `Status`: `enum.subscription_status('trialing','active','past_due','canceled','paused')`, `CanceledAt`: `timestamp without time zone`, `NextBillingDate`: `timestamp without time zone`, `Identifier`: `text`, `CreatedAt`: `timestamp without time zone`, `IDStudio`: `bigint`}
+	subscriptionDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDStudio`: `bigint`, `IDPlan`: `bigint`, `StartDate`: `timestamp without time zone`, `CardBrand`: `text`, `CardLastFour`: `text`, `BillingAnchor`: `integer`, `EndDate`: `timestamp without time zone`, `Status`: `enum.subscription_status('trialing','paused','active','past_due','canceled')`, `CanceledAt`: `timestamp without time zone`, `NextBillingDate`: `timestamp without time zone`, `Identifier`: `text`, `CreatedAt`: `timestamp without time zone`}
 	_                   = bytes.MinRead
 )
 

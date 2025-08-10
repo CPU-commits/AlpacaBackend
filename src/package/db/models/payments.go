@@ -26,6 +26,7 @@ import (
 type Payment struct {
 	ID             int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDUser         null.Int64  `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
+	IDStudio       null.Int64  `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 	IDSubscription null.Int64  `boil:"id_subscription" json:"id_subscription,omitempty" toml:"id_subscription" yaml:"id_subscription,omitempty"`
 	Status         string      `boil:"status" json:"status" toml:"status" yaml:"status"`
 	Text           null.String `boil:"text" json:"text,omitempty" toml:"text" yaml:"text,omitempty"`
@@ -36,7 +37,6 @@ type Payment struct {
 	TotalFormated  string      `boil:"total_formated" json:"total_formated" toml:"total_formated" yaml:"total_formated"`
 	CreatedAt      time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt      time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	IDStudio       null.Int64  `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 
 	R *paymentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L paymentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,6 +45,7 @@ type Payment struct {
 var PaymentColumns = struct {
 	ID             string
 	IDUser         string
+	IDStudio       string
 	IDSubscription string
 	Status         string
 	Text           string
@@ -55,10 +56,10 @@ var PaymentColumns = struct {
 	TotalFormated  string
 	CreatedAt      string
 	UpdatedAt      string
-	IDStudio       string
 }{
 	ID:             "id",
 	IDUser:         "id_user",
+	IDStudio:       "id_studio",
 	IDSubscription: "id_subscription",
 	Status:         "status",
 	Text:           "text",
@@ -69,12 +70,12 @@ var PaymentColumns = struct {
 	TotalFormated:  "total_formated",
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
-	IDStudio:       "id_studio",
 }
 
 var PaymentTableColumns = struct {
 	ID             string
 	IDUser         string
+	IDStudio       string
 	IDSubscription string
 	Status         string
 	Text           string
@@ -85,10 +86,10 @@ var PaymentTableColumns = struct {
 	TotalFormated  string
 	CreatedAt      string
 	UpdatedAt      string
-	IDStudio       string
 }{
 	ID:             "payments.id",
 	IDUser:         "payments.id_user",
+	IDStudio:       "payments.id_studio",
 	IDSubscription: "payments.id_subscription",
 	Status:         "payments.status",
 	Text:           "payments.text",
@@ -99,7 +100,6 @@ var PaymentTableColumns = struct {
 	TotalFormated:  "payments.total_formated",
 	CreatedAt:      "payments.created_at",
 	UpdatedAt:      "payments.updated_at",
-	IDStudio:       "payments.id_studio",
 }
 
 // Generated where
@@ -160,6 +160,7 @@ func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsN
 var PaymentWhere = struct {
 	ID             whereHelperint64
 	IDUser         whereHelpernull_Int64
+	IDStudio       whereHelpernull_Int64
 	IDSubscription whereHelpernull_Int64
 	Status         whereHelperstring
 	Text           whereHelpernull_String
@@ -170,10 +171,10 @@ var PaymentWhere = struct {
 	TotalFormated  whereHelperstring
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
-	IDStudio       whereHelpernull_Int64
 }{
 	ID:             whereHelperint64{field: "\"payments\".\"id\""},
 	IDUser:         whereHelpernull_Int64{field: "\"payments\".\"id_user\""},
+	IDStudio:       whereHelpernull_Int64{field: "\"payments\".\"id_studio\""},
 	IDSubscription: whereHelpernull_Int64{field: "\"payments\".\"id_subscription\""},
 	Status:         whereHelperstring{field: "\"payments\".\"status\""},
 	Text:           whereHelpernull_String{field: "\"payments\".\"text\""},
@@ -184,7 +185,6 @@ var PaymentWhere = struct {
 	TotalFormated:  whereHelperstring{field: "\"payments\".\"total_formated\""},
 	CreatedAt:      whereHelpertime_Time{field: "\"payments\".\"created_at\""},
 	UpdatedAt:      whereHelpertime_Time{field: "\"payments\".\"updated_at\""},
-	IDStudio:       whereHelpernull_Int64{field: "\"payments\".\"id_studio\""},
 }
 
 // PaymentRels is where relationship names are stored.
@@ -262,9 +262,9 @@ func (r *paymentR) GetIDUserUser() *User {
 type paymentL struct{}
 
 var (
-	paymentAllColumns            = []string{"id", "id_user", "id_subscription", "status", "text", "price", "currency", "items", "identifier", "total_formated", "created_at", "updated_at", "id_studio"}
+	paymentAllColumns            = []string{"id", "id_user", "id_studio", "id_subscription", "status", "text", "price", "currency", "items", "identifier", "total_formated", "created_at", "updated_at"}
 	paymentColumnsWithoutDefault = []string{"price", "currency", "identifier", "total_formated"}
-	paymentColumnsWithDefault    = []string{"id", "id_user", "id_subscription", "status", "text", "items", "created_at", "updated_at", "id_studio"}
+	paymentColumnsWithDefault    = []string{"id", "id_user", "id_studio", "id_subscription", "status", "text", "items", "created_at", "updated_at"}
 	paymentPrimaryKeyColumns     = []string{"id"}
 	paymentGeneratedColumns      = []string{}
 )
