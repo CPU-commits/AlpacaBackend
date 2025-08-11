@@ -23,8 +23,14 @@ func (httpSubscriptionController *httpSubscriptionController) GetAllActivePlans(
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	allStr := c.DefaultQuery("all", "false")
+	all, err := strconv.ParseBool(allStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
 
-	plans, err := httpSubscriptionController.subscriptionService.GetAllActivePlans(forStudios)
+	plans, err := httpSubscriptionController.subscriptionService.GetAllActivePlans(forStudios, all)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -114,6 +120,7 @@ func NewHttpSubscriptionController(bus bus.Bus) *httpSubscriptionController {
 		peopleStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return &httpSubscriptionController{
@@ -126,6 +133,7 @@ func NewHttpSubscriptionController(bus bus.Bus) *httpSubscriptionController {
 			roleRepository,
 			studioRepository,
 			*peopleService,
+			peopleHistoriesRepository,
 			bus,
 		),
 	}

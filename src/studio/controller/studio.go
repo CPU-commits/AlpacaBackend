@@ -296,6 +296,7 @@ func NewHttpStudioController(bus bus.Bus) httpStudioController {
 		studioAdminRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 	studioService := service.NewStudioService(
 		studioRepository,

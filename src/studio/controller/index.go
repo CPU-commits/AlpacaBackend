@@ -10,6 +10,7 @@ import (
 	ipipinfo "github.com/CPU-commits/Template_Go-EventDriven/src/package/ip/ip_ipinfo"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
@@ -29,14 +30,15 @@ var ipConfig = ipipinfo.NewIPIpInfo()
 
 // Repositories
 var (
-	studioRepository       = studio_repository.NewSqlStudioRepository()
-	authRepository         = auth_repository.NewSQLAuthRepository(db.DB)
-	userRepository         = user_repository.NewSQLUserRepository(db.DB)
-	studioAdminRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
-	roleRepository         = role_repository.NewSQLRoleRepository()
-	followRepository       = follow_repository.NewSqlFollowRepository()
-	viewRepository         = view_repository.NewSqlViewRepository()
-	temporalViewRepository = temporal_view_repository.NewRdTemportalViewRepository()
+	studioRepository          = studio_repository.NewSqlStudioRepository()
+	authRepository            = auth_repository.NewSQLAuthRepository(db.DB)
+	userRepository            = user_repository.NewSQLUserRepository(db.DB)
+	studioAdminRepository     = people_studio_repository.NewSqlPeopleStudioRepository()
+	roleRepository            = role_repository.NewSQLRoleRepository()
+	followRepository          = follow_repository.NewSqlFollowRepository()
+	viewRepository            = view_repository.NewSqlViewRepository()
+	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 
 // Services

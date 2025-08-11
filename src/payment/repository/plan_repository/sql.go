@@ -38,6 +38,7 @@ func (sqlPlanRepository) SqlPlanToModel(
 		CreatedAt:    sqlPlan.CreatedAt,
 		Identifier:   sqlPlan.Identifier,
 		BannerUrl:    sqlPlan.BannerURL.String,
+		VolumeItem:   sqlPlan.VolumeItem.String,
 		UpdatedAt:    sqlPlan.UpdatedAt,
 		ForStudios:   sqlPlan.ForStudios,
 		Code:         model.CodePlan(sqlPlan.Code),

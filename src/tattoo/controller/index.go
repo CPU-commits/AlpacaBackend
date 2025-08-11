@@ -13,6 +13,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/design_repository"
@@ -33,20 +34,21 @@ var ipInfo = ipipinfo.NewIPIpInfo()
 
 // Repositories
 var (
-	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
-	tattooRepository        = tattoo_repository.NewSqlTattooRepository(db.DB)
-	userRepository          = user_repository.NewSQLUserRepository(db.DB)
-	roleRepository          = role_repository.NewSQLRoleRepository()
-	followRepository        = follow_repository.NewSqlFollowRepository()
-	publicationRDRepository = publication_repository.NewRdPublicationRepository()
-	tattooTSRepository      = tattoo_repository.NewTsTattooRepository()
-	designRepository        = design_repository.NewSqlDesignRepository(db.DB)
-	viewRepository          = view_repository.NewSqlViewRepository()
-	temporalViewRepository  = temporal_view_repository.NewRdTemportalViewRepository()
-	appointmentRepository   = appointment_repository.NewSqlAppointmentRepository()
-	reviewRepository        = review_repository.NewSqlReviewRepository()
-	studioRepository        = studio_repository.NewSqlStudioRepository()
-	peopleStudioRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
+	profileRepository         = profile_repository.NewSqlProfileRepository(db.DB)
+	tattooRepository          = tattoo_repository.NewSqlTattooRepository(db.DB)
+	userRepository            = user_repository.NewSQLUserRepository(db.DB)
+	roleRepository            = role_repository.NewSQLRoleRepository()
+	followRepository          = follow_repository.NewSqlFollowRepository()
+	publicationRDRepository   = publication_repository.NewRdPublicationRepository()
+	tattooTSRepository        = tattoo_repository.NewTsTattooRepository()
+	designRepository          = design_repository.NewSqlDesignRepository(db.DB)
+	viewRepository            = view_repository.NewSqlViewRepository()
+	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
+	appointmentRepository     = appointment_repository.NewSqlAppointmentRepository()
+	reviewRepository          = review_repository.NewSqlReviewRepository()
+	studioRepository          = studio_repository.NewSqlStudioRepository()
+	peopleStudioRepository    = people_studio_repository.NewSqlPeopleStudioRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 var googleCalendar = googlecalendar.NewGoogleCalendar()
 

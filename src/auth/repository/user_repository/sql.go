@@ -39,6 +39,13 @@ func (sqlUserRepository) SqlUserToUser(
 			})
 		}
 	}
+	if sqlUser.R != nil && sqlUser.R.IDUserRolesUsers != nil && roles == nil {
+		sqlRoles := sqlUser.R.IDUserRolesUsers
+
+		for _, sqlRole := range sqlRoles {
+			roles = append(roles, sqlRole.Role)
+		}
+	}
 
 	return &model.User{
 		ID:    sqlUser.ID,
@@ -93,11 +100,12 @@ func (sqlUR sqlUserRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	}
 	if criteria.Roles != nil {
 		mod = append(mod,
-			Load(models.UserRels.IDUserRolesUsers, models.RolesUserWhere.Role.IN(
-				utils.MapNoError(criteria.Roles, func(role model.Role) string {
-					return string(role)
-				}),
-			)),
+			Select(`"users"."id" AS "id"`),
+			Load(models.UserRels.IDUserRolesUsers),
+			LeftOuterJoin("roles_users ru on ru.id_user = users.id"),
+			WhereIn("ru.role in ?", utils.MapNoError(criteria.Roles, func(role model.Role) any {
+				return string(role)
+			})...),
 		)
 	}
 
@@ -120,7 +128,7 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 		return mod
 	}
 	if selectOpts.ID != nil && *selectOpts.ID {
-		mod = append(mod, Select(models.UserColumns.ID))
+		mod = append(mod, Select(models.UserTableColumns.ID))
 	}
 	if selectOpts.Name != nil && *selectOpts.Name {
 		mod = append(mod, Select(models.UserColumns.Name))
@@ -157,7 +165,6 @@ func (sqlUR sqlUserRepository) FindOne(criteria *Criteria, opts *FindOneOptions)
 
 	sqlUser, err := models.Users(append(mod, where...)...).One(context.Background(), sqlUR.db)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -190,6 +197,7 @@ func (sqlUR sqlUserRepository) Find(criteria *Criteria, opts *FindOptions) ([]mo
 
 	sqlUsers, err := models.Users(append(mod, where...)...).All(context.Background(), sqlUR.db)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, utils.ErrRepositoryFailed
 	}
 

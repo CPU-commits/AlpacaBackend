@@ -241,6 +241,7 @@ func (studioService *StudioService) SearchStudios(
 
 	return studioService.studioRepository.Find(
 		&studio_repository.Criteria{
+			IsActive: utils.Bool(true),
 			OR: []studio_repository.Criteria{
 				{
 					Name: repository.CriteriaString{

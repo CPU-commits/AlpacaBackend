@@ -317,6 +317,8 @@ func (publicationService *PublicationService) Search(
 	q string,
 	categories []string,
 	page int,
+	color string,
+	areas []tattooModel.TattooArea,
 ) ([]model.Publication, *PublicationsMetadata, error) {
 	limit := 10
 	opts := publication_repository.NewSearchOptions().
@@ -343,6 +345,10 @@ func (publicationService *PublicationService) Search(
 		q,
 		&publication_repository.Criteria{
 			Categories: categories,
+			TattooCriteria: &tattoo_repository.Criteria{
+				Color: color,
+				Areas: areas,
+			},
 		},
 		opts,
 	)

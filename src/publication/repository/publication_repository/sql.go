@@ -363,7 +363,6 @@ func (sqlPR sqlPublicationRepository) Search(
 ) ([]model.Publication, int64, error) {
 	idPublications, found, err := sqlPR.tsPublicationRepository.Search(q, criteria, opts)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, 0, utils.ErrRepositoryFailed
 	}
 

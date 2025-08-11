@@ -10,9 +10,12 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/payment/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/payment/service"
 	"github.com/gin-gonic/gin"
 )
@@ -131,13 +134,31 @@ func (httpPaymentController *httpPaymentController) LemonSqueezyPagoWebhook(c *g
 			return
 		}
 	}
-
+	var actionEvent string
+	if strings.Contains(event.Meta.EventName, "created") {
+		actionEvent = "create"
+	} else if strings.Contains(event.Meta.EventName, "cancelled") || strings.Contains(event.Meta.EventName, "expired") {
+		actionEvent = "cancel"
+	} else {
+		actionEvent = "update"
+	}
 	eventToSend := map[string]any{
 		"idUser":     idUser,
 		"event":      eventType,
+		"action":     actionEvent,
 		"identifier": identifier,
 		"idStudio":   idStudio,
 	}
+	// Data
+	if actionEvent == "create" {
+		createdAtStr := event.Data["attributes"].(map[string]any)["created_at"].(string)
+		t, _ := time.Parse(time.RFC3339Nano, createdAtStr)
+
+		eventToSend["createdActionData"] = &dto.CreatedActionData{
+			CreatedAt: t,
+		}
+	}
+
 	payload, _ := json.Marshal(eventToSend)
 
 	if err := httpPaymentController.bus.Publish(bus.Event{

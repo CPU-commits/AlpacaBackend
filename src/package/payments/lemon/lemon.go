@@ -22,6 +22,40 @@ type lemonSqueezePayments struct {
 	http   *resty.Client
 }
 
+func (l lemonSqueezePayments) SetUsageInSubscription(identifier string, quantity int) error {
+	payload := M{"data": M{
+		"type": "usage-records",
+		"attributes": M{
+			"quantity": quantity,
+			"action":   "set",
+		},
+		"relationships": M{
+			"subscription-item": M{
+				"data": M{
+					"type": "subscription-items",
+					"id":   identifier,
+				},
+			},
+		},
+	}}
+
+	res, err := l.http.R().
+		SetHeader("Content-Type", "application/vnd.api+json").
+		SetHeader("Accept", "application/vnd.api+json").
+		SetHeader("Authorization", fmt.Sprintf("Bearer %s", settingsData.LEMONSQUEEZY_TOKEN)).
+		SetBody(payload).
+		Post("https://api.lemonsqueezy.com/v1/usage-records")
+
+	if err != nil {
+		return err
+	}
+	if res.IsError() {
+		return fmt.Errorf("HTTP: %s, Res: %s", res.Status(), res.String())
+	}
+
+	return nil
+}
+
 func (l lemonSqueezePayments) CancelSubscription(identifier string) error {
 	_, _, err := l.client.Subscriptions.Cancel(context.Background(), identifier)
 	return err
@@ -96,7 +130,7 @@ func (l lemonSqueezePayments) FetchSubscription(id string) (*payments.Subscripti
 			0,
 			time.UTC,
 		)
-	} else if subStatus == "" || subStatus == "past_due" {
+	} else if subStatus == "unpaid" || subStatus == "past_due" {
 		endsAt = time.Date(
 			subscription.Data.Attributes.RenewsAt.Year(),
 			subscription.Data.Attributes.RenewsAt.Month(),
@@ -107,6 +141,10 @@ func (l lemonSqueezePayments) FetchSubscription(id string) (*payments.Subscripti
 			0,
 			time.UTC,
 		)
+	}
+	var identifierItemsSubscription string
+	if subscription.Data.Attributes.FirstSubscriptionItem != nil {
+		identifierItemsSubscription = strconv.Itoa(subscription.Data.Attributes.FirstSubscriptionItem.ID)
 	}
 
 	return &payments.Subscription{
@@ -120,9 +158,10 @@ func (l lemonSqueezePayments) FetchSubscription(id string) (*payments.Subscripti
 		Urls: payments.SubscriptionUrls{
 			UpdatePaymentMethod: subscription.Data.Attributes.Urls.UpdatePaymentMethod,
 		},
-		CreatedAt:  subscription.Data.Attributes.CreatedAt,
-		RenewsAt:   subscription.Data.Attributes.RenewsAt,
-		CanceledAt: subscription.Data.Attributes.EndsAt,
+		CreatedAt:                   subscription.Data.Attributes.CreatedAt,
+		RenewsAt:                    subscription.Data.Attributes.RenewsAt,
+		CanceledAt:                  subscription.Data.Attributes.EndsAt,
+		IdentifierItemsSubscription: identifierItemsSubscription,
 	}, nil
 }
 
@@ -182,11 +221,9 @@ func (l lemonSqueezePayments) RequestPayment(config payments.PaymentConfig) (str
 		Post("https://api.lemonsqueezy.com/v1/checkouts")
 
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return "", err
 	}
 	if res.IsError() {
-		fmt.Printf("err %v\n", fmt.Errorf("HTTP: %s, Res: %s", res.Status(), res.String()))
 		return "", fmt.Errorf("HTTP: %s, Res: %s", res.Status(), res.String())
 	}
 
@@ -218,7 +255,6 @@ func (l lemonSqueezePayments) RequestPayment(config payments.PaymentConfig) (str
 			return "", err
 		}
 	*/
-	fmt.Printf("response.Data.Attributes.URL: %v\n", response.Data.Attributes.URL)
 
 	return response.Data.Attributes.URL, nil
 }

@@ -24,6 +24,7 @@ var TableNames = struct {
 	Sessions                string
 	Shares                  string
 	StudioAdminsPermissions string
+	StudioUserHistories     string
 	StudioUsers             string
 	Studios                 string
 	Subscriptions           string
@@ -53,6 +54,7 @@ var TableNames = struct {
 	Sessions:                "sessions",
 	Shares:                  "shares",
 	StudioAdminsPermissions: "studio_admins_permissions",
+	StudioUserHistories:     "studio_user_histories",
 	StudioUsers:             "studio_users",
 	Studios:                 "studios",
 	Subscriptions:           "subscriptions",

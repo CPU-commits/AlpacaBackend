@@ -33,6 +33,7 @@ type SelectOpts struct {
 	Description bool
 	Address     *bool
 	IsActive    *bool
+	IsLimited   *bool
 }
 
 type findOptions struct {

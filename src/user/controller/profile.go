@@ -7,12 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
+	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -134,8 +136,13 @@ func (httpProfile *HttpProfileController) GetMetricsProfile(c *gin.Context) {
 
 func (httpProfile *HttpProfileController) SearchProfiles(c *gin.Context) {
 	q := c.Query("q")
+	filterRoles := domainUtils.FilterNoError(strings.Split(c.Query("roles"), ","), func(role string) bool {
+		return role != ""
+	})
 
-	profile, err := httpProfile.profileService.SearchProfile(q)
+	profile, err := httpProfile.profileService.SearchProfile(q, domainUtils.MapNoError(filterRoles, func(role string) model.Role {
+		return model.Role(role)
+	})...)
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return

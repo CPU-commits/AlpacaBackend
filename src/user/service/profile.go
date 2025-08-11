@@ -214,8 +214,11 @@ func (profileService *ProfileService) GetProfile(username, identifier, ip string
 	return profile, nil
 }
 
-func (profileService *ProfileService) SearchProfile(q string) ([]model.Profile, error) {
-	users, err := profileService.userService.SearchUsers(q, nil)
+func (profileService *ProfileService) SearchProfile(
+	q string,
+	roles ...authModel.Role,
+) ([]model.Profile, error) {
+	users, err := profileService.userService.SearchUsers(q, nil, roles...)
 	if err != nil {
 		return nil, err
 	}

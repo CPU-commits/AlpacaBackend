@@ -107,6 +107,7 @@ var UserRels = struct {
 	IDUserReviews              string
 	IDUserRolesUsers           string
 	IDUserShares               string
+	IDUserStudioUserHistories  string
 	IDUserStudioUsers          string
 	IDOwnerStudios             string
 	IDUserSubscriptions        string
@@ -126,6 +127,7 @@ var UserRels = struct {
 	IDUserReviews:              "IDUserReviews",
 	IDUserRolesUsers:           "IDUserRolesUsers",
 	IDUserShares:               "IDUserShares",
+	IDUserStudioUserHistories:  "IDUserStudioUserHistories",
 	IDUserStudioUsers:          "IDUserStudioUsers",
 	IDOwnerStudios:             "IDOwnerStudios",
 	IDUserSubscriptions:        "IDUserSubscriptions",
@@ -135,24 +137,25 @@ var UserRels = struct {
 
 // userR is where relationships are stored.
 type userR struct {
-	IDUserAuth                 *Auth             `boil:"IDUserAuth" json:"IDUserAuth" toml:"IDUserAuth" yaml:"IDUserAuth"`
-	IDUserProfile              *Profile          `boil:"IDUserProfile" json:"IDUserProfile" toml:"IDUserProfile" yaml:"IDUserProfile"`
-	IDUserTokenPassword        *TokenPassword    `boil:"IDUserTokenPassword" json:"IDUserTokenPassword" toml:"IDUserTokenPassword" yaml:"IDUserTokenPassword"`
-	IDTattooArtistAppointments AppointmentSlice  `boil:"IDTattooArtistAppointments" json:"IDTattooArtistAppointments" toml:"IDTattooArtistAppointments" yaml:"IDTattooArtistAppointments"`
-	IDUserAppointments         AppointmentSlice  `boil:"IDUserAppointments" json:"IDUserAppointments" toml:"IDUserAppointments" yaml:"IDUserAppointments"`
-	IDUserCodes                CodeSlice         `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
-	IDUserFollows              FollowSlice       `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
-	IDUserLikes                LikeSlice         `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
-	IDUserLinks                LinkSlice         `boil:"IDUserLinks" json:"IDUserLinks" toml:"IDUserLinks" yaml:"IDUserLinks"`
-	IDUserPayments             PaymentSlice      `boil:"IDUserPayments" json:"IDUserPayments" toml:"IDUserPayments" yaml:"IDUserPayments"`
-	IDUserReviews              ReviewSlice       `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
-	IDUserRolesUsers           RolesUserSlice    `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
-	IDUserShares               ShareSlice        `boil:"IDUserShares" json:"IDUserShares" toml:"IDUserShares" yaml:"IDUserShares"`
-	IDUserStudioUsers          StudioUserSlice   `boil:"IDUserStudioUsers" json:"IDUserStudioUsers" toml:"IDUserStudioUsers" yaml:"IDUserStudioUsers"`
-	IDOwnerStudios             StudioSlice       `boil:"IDOwnerStudios" json:"IDOwnerStudios" toml:"IDOwnerStudios" yaml:"IDOwnerStudios"`
-	IDUserSubscriptions        SubscriptionSlice `boil:"IDUserSubscriptions" json:"IDUserSubscriptions" toml:"IDUserSubscriptions" yaml:"IDUserSubscriptions"`
-	IDUserTokens               TokenSlice        `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
-	IDUserViews                ViewSlice         `boil:"IDUserViews" json:"IDUserViews" toml:"IDUserViews" yaml:"IDUserViews"`
+	IDUserAuth                 *Auth                  `boil:"IDUserAuth" json:"IDUserAuth" toml:"IDUserAuth" yaml:"IDUserAuth"`
+	IDUserProfile              *Profile               `boil:"IDUserProfile" json:"IDUserProfile" toml:"IDUserProfile" yaml:"IDUserProfile"`
+	IDUserTokenPassword        *TokenPassword         `boil:"IDUserTokenPassword" json:"IDUserTokenPassword" toml:"IDUserTokenPassword" yaml:"IDUserTokenPassword"`
+	IDTattooArtistAppointments AppointmentSlice       `boil:"IDTattooArtistAppointments" json:"IDTattooArtistAppointments" toml:"IDTattooArtistAppointments" yaml:"IDTattooArtistAppointments"`
+	IDUserAppointments         AppointmentSlice       `boil:"IDUserAppointments" json:"IDUserAppointments" toml:"IDUserAppointments" yaml:"IDUserAppointments"`
+	IDUserCodes                CodeSlice              `boil:"IDUserCodes" json:"IDUserCodes" toml:"IDUserCodes" yaml:"IDUserCodes"`
+	IDUserFollows              FollowSlice            `boil:"IDUserFollows" json:"IDUserFollows" toml:"IDUserFollows" yaml:"IDUserFollows"`
+	IDUserLikes                LikeSlice              `boil:"IDUserLikes" json:"IDUserLikes" toml:"IDUserLikes" yaml:"IDUserLikes"`
+	IDUserLinks                LinkSlice              `boil:"IDUserLinks" json:"IDUserLinks" toml:"IDUserLinks" yaml:"IDUserLinks"`
+	IDUserPayments             PaymentSlice           `boil:"IDUserPayments" json:"IDUserPayments" toml:"IDUserPayments" yaml:"IDUserPayments"`
+	IDUserReviews              ReviewSlice            `boil:"IDUserReviews" json:"IDUserReviews" toml:"IDUserReviews" yaml:"IDUserReviews"`
+	IDUserRolesUsers           RolesUserSlice         `boil:"IDUserRolesUsers" json:"IDUserRolesUsers" toml:"IDUserRolesUsers" yaml:"IDUserRolesUsers"`
+	IDUserShares               ShareSlice             `boil:"IDUserShares" json:"IDUserShares" toml:"IDUserShares" yaml:"IDUserShares"`
+	IDUserStudioUserHistories  StudioUserHistorySlice `boil:"IDUserStudioUserHistories" json:"IDUserStudioUserHistories" toml:"IDUserStudioUserHistories" yaml:"IDUserStudioUserHistories"`
+	IDUserStudioUsers          StudioUserSlice        `boil:"IDUserStudioUsers" json:"IDUserStudioUsers" toml:"IDUserStudioUsers" yaml:"IDUserStudioUsers"`
+	IDOwnerStudios             StudioSlice            `boil:"IDOwnerStudios" json:"IDOwnerStudios" toml:"IDOwnerStudios" yaml:"IDOwnerStudios"`
+	IDUserSubscriptions        SubscriptionSlice      `boil:"IDUserSubscriptions" json:"IDUserSubscriptions" toml:"IDUserSubscriptions" yaml:"IDUserSubscriptions"`
+	IDUserTokens               TokenSlice             `boil:"IDUserTokens" json:"IDUserTokens" toml:"IDUserTokens" yaml:"IDUserTokens"`
+	IDUserViews                ViewSlice              `boil:"IDUserViews" json:"IDUserViews" toml:"IDUserViews" yaml:"IDUserViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -366,6 +369,22 @@ func (r *userR) GetIDUserShares() ShareSlice {
 	}
 
 	return r.IDUserShares
+}
+
+func (o *User) GetIDUserStudioUserHistories() StudioUserHistorySlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDUserStudioUserHistories()
+}
+
+func (r *userR) GetIDUserStudioUserHistories() StudioUserHistorySlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDUserStudioUserHistories
 }
 
 func (o *User) GetIDUserStudioUsers() StudioUserSlice {
@@ -935,6 +954,20 @@ func (o *User) IDUserShares(mods ...qm.QueryMod) shareQuery {
 	)
 
 	return Shares(queryMods...)
+}
+
+// IDUserStudioUserHistories retrieves all the studio_user_history's StudioUserHistories with an executor via id_user column.
+func (o *User) IDUserStudioUserHistories(mods ...qm.QueryMod) studioUserHistoryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"studio_user_histories\".\"id_user\"=?", o.ID),
+	)
+
+	return StudioUserHistories(queryMods...)
 }
 
 // IDUserStudioUsers retrieves all the studio_user's StudioUsers with an executor via id_user column.
@@ -2488,6 +2521,119 @@ func (userL) LoadIDUserShares(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
+// LoadIDUserStudioUserHistories allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadIDUserStudioUserHistories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`studio_user_histories`),
+		qm.WhereIn(`studio_user_histories.id_user in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load studio_user_histories")
+	}
+
+	var resultSlice []*StudioUserHistory
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice studio_user_histories")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on studio_user_histories")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for studio_user_histories")
+	}
+
+	if len(studioUserHistoryAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDUserStudioUserHistories = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &studioUserHistoryR{}
+			}
+			foreign.R.IDUserUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.IDUser {
+				local.R.IDUserStudioUserHistories = append(local.R.IDUserStudioUserHistories, foreign)
+				if foreign.R == nil {
+					foreign.R = &studioUserHistoryR{}
+				}
+				foreign.R.IDUserUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDUserStudioUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (userL) LoadIDUserStudioUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
@@ -3946,6 +4092,59 @@ func (o *User) AddIDUserShares(ctx context.Context, exec boil.ContextExecutor, i
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &shareR{
+				IDUserUser: o,
+			}
+		} else {
+			rel.R.IDUserUser = o
+		}
+	}
+	return nil
+}
+
+// AddIDUserStudioUserHistories adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.IDUserStudioUserHistories.
+// Sets related.R.IDUserUser appropriately.
+func (o *User) AddIDUserStudioUserHistories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StudioUserHistory) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.IDUser = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"studio_user_histories\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_user"}),
+				strmangle.WhereClause("\"", "\"", 2, studioUserHistoryPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.IDUser = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			IDUserStudioUserHistories: related,
+		}
+	} else {
+		o.R.IDUserStudioUserHistories = append(o.R.IDUserStudioUserHistories, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &studioUserHistoryR{
 				IDUserUser: o,
 			}
 		} else {

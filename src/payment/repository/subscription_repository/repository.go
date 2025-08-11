@@ -7,6 +7,7 @@ import (
 )
 
 type Criteria struct {
+	ID         int64
 	IDUser     int64
 	Identifier string
 	IDPlan     int64
@@ -59,6 +60,6 @@ type SubscriptionRepository interface {
 	FindLast(criteria *Criteria, opts *findOneOptions) (*model.Subscription, error)
 	Exists(criteria *Criteria) (bool, error)
 	FindOne(criteria *Criteria, opts *findOneOptions) (*model.Subscription, error)
-	InsertOne(subscription model.Subscription) error
+	InsertOne(subscription model.Subscription) (int64, error)
 	Update(criteria *Criteria, data UpdateData) error
 }

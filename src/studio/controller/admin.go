@@ -240,6 +240,7 @@ func NewHttpAdminStudioController(bus bus.Bus) httpAdminStudioController {
 		studioAdminRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return httpAdminStudioController{

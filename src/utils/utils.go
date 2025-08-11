@@ -81,6 +81,18 @@ func IterateDates[T any](from time.Time, to time.Time, fun func(d time.Time) T) 
 	return result
 }
 
+func MonthStart(t time.Time) time.Time {
+	loc := t.Location()
+
+	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, loc)
+}
+
+func MonthEnd(t time.Time) time.Time {
+	startNext := MonthStart(t).AddDate(0, 1, 0)
+
+	return startNext.Add(-time.Nanosecond)
+}
+
 func ReaderImageToBase64(r io.Reader) (string, error) {
 	br := bufio.NewReader(r)
 

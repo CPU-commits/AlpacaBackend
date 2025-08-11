@@ -40,6 +40,7 @@ type Plan struct {
 	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	ForStudios   bool        `boil:"for_studios" json:"for_studios" toml:"for_studios" yaml:"for_studios"`
 	PricingModel string      `boil:"pricing_model" json:"pricing_model" toml:"pricing_model" yaml:"pricing_model"`
+	VolumeItem   null.String `boil:"volume_item" json:"volume_item,omitempty" toml:"volume_item" yaml:"volume_item,omitempty"`
 
 	R *planR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L planL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -62,6 +63,7 @@ var PlanColumns = struct {
 	UpdatedAt    string
 	ForStudios   string
 	PricingModel string
+	VolumeItem   string
 }{
 	ID:           "id",
 	Name:         "name",
@@ -79,6 +81,7 @@ var PlanColumns = struct {
 	UpdatedAt:    "updated_at",
 	ForStudios:   "for_studios",
 	PricingModel: "pricing_model",
+	VolumeItem:   "volume_item",
 }
 
 var PlanTableColumns = struct {
@@ -98,6 +101,7 @@ var PlanTableColumns = struct {
 	UpdatedAt    string
 	ForStudios   string
 	PricingModel string
+	VolumeItem   string
 }{
 	ID:           "plans.id",
 	Name:         "plans.name",
@@ -115,6 +119,7 @@ var PlanTableColumns = struct {
 	UpdatedAt:    "plans.updated_at",
 	ForStudios:   "plans.for_studios",
 	PricingModel: "plans.pricing_model",
+	VolumeItem:   "plans.volume_item",
 }
 
 // Generated where
@@ -159,6 +164,7 @@ var PlanWhere = struct {
 	UpdatedAt    whereHelpertime_Time
 	ForStudios   whereHelperbool
 	PricingModel whereHelperstring
+	VolumeItem   whereHelpernull_String
 }{
 	ID:           whereHelperint64{field: "\"plans\".\"id\""},
 	Name:         whereHelperstring{field: "\"plans\".\"name\""},
@@ -176,6 +182,7 @@ var PlanWhere = struct {
 	UpdatedAt:    whereHelpertime_Time{field: "\"plans\".\"updated_at\""},
 	ForStudios:   whereHelperbool{field: "\"plans\".\"for_studios\""},
 	PricingModel: whereHelperstring{field: "\"plans\".\"pricing_model\""},
+	VolumeItem:   whereHelpernull_String{field: "\"plans\".\"volume_item\""},
 }
 
 // PlanRels is where relationship names are stored.
@@ -215,9 +222,9 @@ func (r *planR) GetIDPlanSubscriptions() SubscriptionSlice {
 type planL struct{}
 
 var (
-	planAllColumns            = []string{"id", "name", "description", "price", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model"}
+	planAllColumns            = []string{"id", "name", "description", "price", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model", "volume_item"}
 	planColumnsWithoutDefault = []string{"name", "price", "currency", "billing_cycle", "code", "trial_days", "is_active", "identifier"}
-	planColumnsWithDefault    = []string{"id", "description", "features", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model"}
+	planColumnsWithDefault    = []string{"id", "description", "features", "banner_url", "created_at", "updated_at", "for_studios", "pricing_model", "volume_item"}
 	planPrimaryKeyColumns     = []string{"id"}
 	planGeneratedColumns      = []string{}
 )

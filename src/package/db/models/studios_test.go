@@ -879,6 +879,84 @@ func testStudioToManyIDStudioPosts(t *testing.T) {
 	}
 }
 
+func testStudioToManyIDStudioStudioUserHistories(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c StudioUserHistory
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, true, studioColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Studio struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, studioUserHistoryDBTypes, false, studioUserHistoryColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, studioUserHistoryDBTypes, false, studioUserHistoryColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.IDStudio = a.ID
+	c.IDStudio = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.IDStudioStudioUserHistories().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.IDStudio == b.IDStudio {
+			bFound = true
+		}
+		if v.IDStudio == c.IDStudio {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := StudioSlice{&a}
+	if err = a.L.LoadIDStudioStudioUserHistories(ctx, tx, false, (*[]*Studio)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioStudioUserHistories); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.IDStudioStudioUserHistories = nil
+	if err = a.L.LoadIDStudioStudioUserHistories(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.IDStudioStudioUserHistories); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testStudioToManyIDStudioStudioUsers(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -2443,6 +2521,81 @@ func testStudioToManyRemoveOpIDStudioPosts(t *testing.T) {
 	}
 }
 
+func testStudioToManyAddOpIDStudioStudioUserHistories(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Studio
+	var b, c, d, e StudioUserHistory
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, studioDBTypes, false, strmangle.SetComplement(studioPrimaryKeyColumns, studioColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*StudioUserHistory{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, studioUserHistoryDBTypes, false, strmangle.SetComplement(studioUserHistoryPrimaryKeyColumns, studioUserHistoryColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*StudioUserHistory{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddIDStudioStudioUserHistories(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.IDStudio {
+			t.Error("foreign key was wrong value", a.ID, first.IDStudio)
+		}
+		if a.ID != second.IDStudio {
+			t.Error("foreign key was wrong value", a.ID, second.IDStudio)
+		}
+
+		if first.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.IDStudioStudio != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.IDStudioStudioUserHistories[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.IDStudioStudioUserHistories[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.IDStudioStudioUserHistories().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
 func testStudioToManyAddOpIDStudioStudioUsers(t *testing.T) {
 	var err error
 

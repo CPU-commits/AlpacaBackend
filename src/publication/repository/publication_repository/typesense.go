@@ -3,11 +3,13 @@ package publication_repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
+	tattooModel "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/typesense/typesense-go/v3/typesense/api"
@@ -30,10 +32,34 @@ func (tsPublicationRepository) criteriaToFilterBy(criteria *Criteria) *string {
 	}
 	var filterBy string
 	if criteria.Categories != nil {
-		filterBy += "["
+		filterBy += "categories:["
 		filterBy += strings.Join(criteria.Categories, ", ")
 		filterBy += "]"
 	}
+	if criteria.TattooCriteria != nil {
+		if criteria.TattooCriteria.Color != "" {
+			if filterBy != "" {
+				filterBy += " && "
+			}
+
+			filterBy += fmt.Sprintf("color:%s", criteria.TattooCriteria.Color)
+		}
+		if criteria.TattooCriteria.Areas != nil {
+			if filterBy != "" {
+				filterBy += " && "
+			}
+
+			filterBy += "areas:["
+			filterBy += strings.Join(utils.MapNoError(
+				criteria.TattooCriteria.Areas,
+				func(area tattooModel.TattooArea) string {
+					return string(area)
+				},
+			), ", ")
+			filterBy += "]"
+		}
+	}
+	fmt.Printf("filterBy: %v\n", filterBy)
 
 	return pointer.String(filterBy)
 }
@@ -65,6 +91,7 @@ func (tsPR tsPublicationRepository) Search(
 			VectorQuery: pointer.String("descr_embedding:([], distance_threshold: 0.8)"),
 			SortBy:      pointer.String("_text_match:desc,rating:desc"),
 			GroupBy:     utils.String("id_publication"),
+			GroupLimit:  utils.Int(1),
 		},
 	)
 	if err != nil {
@@ -91,6 +118,7 @@ func (tsPR tsPublicationRepository) Search(
 				return nil, 0, err
 			}
 		}
+		return
 	}
 	if apiResult.GroupedHits != nil {
 		gHits := *apiResult.GroupedHits
@@ -104,6 +132,7 @@ func (tsPR tsPublicationRepository) Search(
 			}
 		}
 	}
+	fmt.Printf("idPublications: %v\n", idPublications)
 
 	return
 }
@@ -113,6 +142,13 @@ func (tsPR *tsPublicationRepository) DeletePublication(publication *model.Public
 
 	_, err := tsPR.ts.Collection("publications").Document(strID).Delete(context.Background())
 	if err != nil {
+		var httpError *typesense.HTTPError
+
+		if ok := errors.As(err, &httpError); ok {
+			if httpError.Status == 404 {
+				return nil
+			}
+		}
 		panic(err)
 	}
 

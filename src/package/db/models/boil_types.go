@@ -155,6 +155,17 @@ func AllPricingModel() []string {
 	}
 }
 
+// Enum values for VolumeItem
+const (
+	VolumeItemUser string = "user"
+)
+
+func AllVolumeItem() []string {
+	return []string{
+		VolumeItemUser,
+	}
+}
+
 // Enum values for RoleName
 const (
 	RoleNameAdmin        string = "admin"

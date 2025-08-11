@@ -7,6 +7,8 @@ type Criteria struct {
 	IDs       []int64
 	IDProfile int64
 	IDStudio  int64
+	Areas     []model.TattooArea
+	Color     string
 }
 
 type Include struct {

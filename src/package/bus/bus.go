@@ -8,6 +8,7 @@ type Event struct {
 	Name     EventName
 	Payload  []byte
 	Metadata map[string]string
+	ID       string
 }
 
 type Metadata interface {

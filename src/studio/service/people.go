@@ -1,19 +1,24 @@
 package service
 
 import (
+	"time"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 )
 
 type AdminStudioService struct {
-	peopleStudioRepository people_studio_repository.PeopleStudioRepository
-	studioRepository       studio_repository.StudioRepository
-	userService            service.UserService
+	peopleStudioRepository    people_studio_repository.PeopleStudioRepository
+	peopleHistoriesRepository people_histories_repository.PeopleHistoriesRepository
+	studioRepository          studio_repository.StudioRepository
+	userService               service.UserService
 }
 
 var adminStudioService *AdminStudioService
@@ -143,7 +148,6 @@ func (adminStudioService *AdminStudioService) ThrowAccessInStudio(
 	if !studio.IsActive {
 		return ErrStudioIsNotActive
 	}
-
 	isOwner, err := adminStudioService.studioRepository.Exists(&studio_repository.Criteria{
 		IDOwner: idUser,
 		ID:      idStudio,
@@ -153,6 +157,31 @@ func (adminStudioService *AdminStudioService) ThrowAccessInStudio(
 	}
 	if isOwner {
 		return nil
+	}
+	if studio.IsLimited {
+		peopleWithAccess, err := adminStudioService.peopleHistoriesRepository.Find(
+			&people_histories_repository.Criteria{
+				IDUser:         idStudio,
+				RemoveAtIsNull: utils.Bool(true),
+			},
+			people_histories_repository.NewFindOptions().
+				Limit(3).
+				Sort(people_histories_repository.Sort{
+					CreatedAt: repository.ASC,
+				}),
+		)
+		if err != nil {
+			return err
+		}
+		idsPeopleWithAccess := utils.MapNoError(
+			peopleWithAccess,
+			func(people model.PeopleHistory) int64 {
+				return people.ID
+			},
+		)
+		if !utils.Includes(idsPeopleWithAccess, idUser) {
+			return ErrNoHasPermission
+		}
 	}
 
 	isAdmin, err := adminStudioService.userIsAdminInStudio(idUser, idStudio)
@@ -326,10 +355,17 @@ func (adminStudioService *AdminStudioService) JoinPerson(
 		return nil
 	}
 
-	return adminStudioService.peopleStudioRepository.InsertOne(model.StudioPerson{
+	if err := adminStudioService.peopleStudioRepository.InsertOne(model.StudioPerson{
 		IDStudio: idStudio,
 		IDUser:   idUser,
 		Roles:    roles,
+	}); err != nil {
+		return err
+	}
+
+	return adminStudioService.peopleHistoriesRepository.Insert(model.PeopleHistory{
+		IDUser:   idUser,
+		IDStudio: idStudio,
 	})
 }
 
@@ -455,10 +491,23 @@ func (adminStudioService *AdminStudioService) RemovePerson(
 		return err
 	}
 
-	return adminStudioService.peopleStudioRepository.Delete(
+	if err := adminStudioService.peopleStudioRepository.Delete(
 		&people_studio_repository.Criteria{
 			IDStudio: idStudio,
 			IDUser:   idUser,
+		},
+	); err != nil {
+		return err
+	}
+
+	return adminStudioService.peopleHistoriesRepository.Update(
+		&people_histories_repository.Criteria{
+			IDUser:         idUser,
+			IDStudio:       idStudio,
+			RemoveAtIsNull: utils.Bool(true),
+		},
+		people_histories_repository.UpdateData{
+			RemovedAt: time.Now(),
 		},
 	)
 }
@@ -467,12 +516,14 @@ func NewPeopleStudioService(
 	peopleStudioRepository people_studio_repository.PeopleStudioRepository,
 	studioRepository studio_repository.StudioRepository,
 	userService service.UserService,
+	peopleHistoriesRepository people_histories_repository.PeopleHistoriesRepository,
 ) *AdminStudioService {
 	if adminStudioService == nil {
 		adminStudioService = &AdminStudioService{
-			peopleStudioRepository: peopleStudioRepository,
-			studioRepository:       studioRepository,
-			userService:            userService,
+			peopleStudioRepository:    peopleStudioRepository,
+			studioRepository:          studioRepository,
+			userService:               userService,
+			peopleHistoriesRepository: peopleHistoriesRepository,
 		}
 	}
 

@@ -21,7 +21,7 @@ type sqlSubscriptionRepository struct {
 	sqlPlanRepository plan_repository.SqlPlanRepository
 }
 
-func (sqlSR sqlSubscriptionRepository) InsertOne(subscription model.Subscription) error {
+func (sqlSR sqlSubscriptionRepository) InsertOne(subscription model.Subscription) (int64, error) {
 	sqlSubscription := models.Subscription{
 		IDUser:          null.NewInt64(subscription.IDUser, subscription.IDUser != 0),
 		IDPlan:          subscription.IDPlan,
@@ -38,10 +38,10 @@ func (sqlSR sqlSubscriptionRepository) InsertOne(subscription model.Subscription
 	}
 
 	if err := sqlSubscription.Insert(context.Background(), sqlSR.db, boil.Infer()); err != nil {
-		return utils.ErrRepositoryFailed
+		return 0, utils.ErrRepositoryFailed
 	}
 
-	return nil
+	return sqlSubscription.ID, nil
 }
 
 func (sqlSR sqlSubscriptionRepository) Update(criteria *Criteria, data UpdateData) error {
@@ -125,6 +125,9 @@ func (sqlSubscriptionRepository) criteriaToWhere(criteria *Criteria) []QueryMod 
 	}
 	if criteria.StatusNE != "" {
 		where = append(where, models.SubscriptionWhere.Status.NEQ(string(criteria.StatusNE)))
+	}
+	if criteria.ID != 0 {
+		where = append(where, models.SubscriptionWhere.ID.EQ(criteria.ID))
 	}
 
 	return where

@@ -342,6 +342,7 @@ func NewHTTPAppointmentController(bus bus.Bus) *HttpAppointmentController {
 		peopleStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return &HttpAppointmentController{

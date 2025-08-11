@@ -5,15 +5,17 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/common/repository"
 	fileModel "github.com/CPU-commits/Template_Go-EventDriven/src/file/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 )
 
 type Criteria struct {
-	ID         int64
-	IDProfile  int64
-	Categories []string
-	IDStudio   *repository.CriteriaNull[*int64]
-	Content    repository.CriteriaString
-	CreatedAt  *repository.CriteriaTime
+	ID             int64
+	IDProfile      int64
+	TattooCriteria *tattoo_repository.Criteria
+	Categories     []string
+	IDStudio       *repository.CriteriaNull[*int64]
+	Content        repository.CriteriaString
+	CreatedAt      *repository.CriteriaTime
 }
 
 type SelectOpts struct {

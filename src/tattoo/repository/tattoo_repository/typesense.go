@@ -10,6 +10,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/typesense/typesense-go/v3/typesense"
 	"github.com/typesense/typesense-go/v3/typesense/api"
 	"github.com/typesense/typesense-go/v3/typesense/api/pointer"
@@ -36,6 +37,7 @@ type TSTattoo struct {
 	PublicationDescription string   `json:"publication_description"`
 	Mentions               []int64  `json:"mentions"`
 	Views                  int32    `json:"views"`
+	Areas                  []string `json:"areas"`
 	Popularity             int64    `json:"popularity"`
 	Image                  string   `json:"image,omitempty"`
 	CreatedAt              int64    `json:"created_at"`
@@ -134,6 +136,9 @@ func (tsTR *tsTattooRepository) IndexTattoo(tattoo *model.Tattoo) error {
 		Categories:             tattoo.Categories,
 		Color:                  tattoo.Color,
 		Mentions:               tattoo.Mentions,
+		Areas: utils.MapNoError(tattoo.Areas, func(area model.TattooArea) string {
+			return string(area)
+		}),
 	}
 	imageBytes, err := cloudinary_store.NewCloudinaryImageStore().Download(
 		tattoo.Image.Key,
@@ -202,6 +207,7 @@ func init() {
 		{Name: "likes", Type: "int32", Facet: pointer.True()},
 		{Name: "views", Type: "int32", Facet: pointer.True()},
 		{Name: "categories", Type: "string[]", Facet: pointer.True(), Optional: pointer.True()},
+		{Name: "areas", Type: "string[]", Facet: pointer.True(), Optional: pointer.True()},
 		{Name: "mentions", Type: "int64[]", Facet: pointer.True(), Optional: pointer.True()},
 		{Name: "popularity", Type: "int64", Facet: pointer.True()},
 		{Name: "image", Type: "image", Store: pointer.False(), Optional: pointer.True()},

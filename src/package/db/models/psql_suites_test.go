@@ -46,6 +46,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("StudioAdminsPermissions", testStudioAdminsPermissionsUpsert)
 
+	t.Run("StudioUserHistories", testStudioUserHistoriesUpsert)
+
 	t.Run("StudioUsers", testStudioUsersUpsert)
 
 	t.Run("Studios", testStudiosUpsert)

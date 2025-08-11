@@ -69,9 +69,10 @@ func (natsClient *NatsClient) addStreams() {
 				log.Panicf("Stream %s not exists", expectedStream)
 			} else {
 				natsClient.js.CreateStream(context.Background(), jetstream.StreamConfig{
-					Name:     expectedStream,
-					Subjects: []string{strings.ToLower(expectedStream) + ".*"},
-					Storage:  jetstream.MemoryStorage,
+					Name:       expectedStream,
+					Subjects:   []string{strings.ToLower(expectedStream) + ".*"},
+					Storage:    jetstream.MemoryStorage,
+					Duplicates: time.Hour * 24 * 45,
 				})
 			}
 		}
@@ -92,7 +93,7 @@ func (natsClient *NatsClient) GetStream(stream string) jetstream.Stream {
 func (natsClient *NatsClient) Publish(
 	event bus.Event,
 ) error {
-	if event.Metadata == nil {
+	if event.Metadata == nil && event.ID == "" {
 		_, err := natsClient.js.Publish(
 			context.Background(),
 			string(event.Name),
@@ -105,6 +106,10 @@ func (natsClient *NatsClient) Publish(
 		msg.Header.Set(item, value)
 	}
 	msg.Data = event.Payload
+	if event.ID != "" {
+		msg.Header.Set("Nats-Msg-Id", event.ID)
+	}
+
 	_, err := natsClient.js.PublishMsg(
 		context.Background(),
 		msg,

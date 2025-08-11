@@ -32,7 +32,7 @@ type Coord struct {
 type Tattoo struct {
 	ID             int64              `json:"id"`
 	Likes          int                `json:"likes"`
-	Areas          []TattooArea       `json:"-"`
+	Areas          []TattooArea       `json:"areas,omitempty"`
 	Image          model.Image        `json:"image"`
 	Coord          *Coord             `json:"coord,omitempty"`
 	Description    string             `json:"description,omitempty"`

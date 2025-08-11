@@ -295,6 +295,7 @@ func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
 		peopleStudioRepository,
 		studioRepository,
 		userService,
+		peopleHistoriesRepository,
 	)
 	return &HttpDesignController{
 		bus: bus,

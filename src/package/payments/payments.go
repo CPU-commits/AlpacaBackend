@@ -41,17 +41,18 @@ type SubscriptionUrls struct {
 }
 
 type Subscription struct {
-	PlanIdentifier string
-	Identifier     string
-	Status         model.SubscriptionStatus
-	BillingAnchor  int
-	CanceledAt     *time.Time
-	EndsAt         time.Time
-	CardBrand      string
-	CardLastFour   string
-	Urls           SubscriptionUrls
-	CreatedAt      time.Time
-	RenewsAt       time.Time
+	PlanIdentifier              string
+	Identifier                  string
+	IdentifierItemsSubscription string
+	Status                      model.SubscriptionStatus
+	BillingAnchor               int
+	CanceledAt                  *time.Time
+	EndsAt                      time.Time
+	CardBrand                   string
+	CardLastFour                string
+	Urls                        SubscriptionUrls
+	CreatedAt                   time.Time
+	RenewsAt                    time.Time
 }
 
 type Payments interface {
@@ -59,4 +60,5 @@ type Payments interface {
 	RequestPayment(config PaymentConfig) (string, error)
 	FetchPayment(identifier string) (*Payment, error)
 	FetchSubscription(identifier string) (*Subscription, error)
+	SetUsageInSubscription(identifier string, quantity int) error
 }

@@ -37,6 +37,7 @@ type Plan struct {
 	IsActive     bool          `json:"isActive"`
 	Identifier   string        `json:"-"`
 	BannerUrl    string        `json:"bannerUrl,omitempty"`
+	VolumeItem   string        `json:"volumeItem,omitempty"`
 	CreatedAt    time.Time     `json:"createdAt"`
 	UpdatedAt    time.Time     `json:"updatedAt"`
 }

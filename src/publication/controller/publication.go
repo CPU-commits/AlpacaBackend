@@ -16,6 +16,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	domainUtils "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -195,11 +196,19 @@ func (httpPC *HttpPublicationController) Search(c *gin.Context) {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
 	}
+	color := c.Query("color")
+	areas := domainUtils.FilterNoError(strings.Split(c.Query("areas"), ","), func(role string) bool {
+		return role != ""
+	})
 
 	publications, metadata, err := httpPC.publicationService.Search(
 		q,
 		categories,
 		page,
+		color,
+		domainUtils.MapNoError(areas, func(area string) model.TattooArea {
+			return model.TattooArea(area)
+		}),
 	)
 	if err != nil {
 		utils.ResFromErr(c, err)
@@ -460,6 +469,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 		adminStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return &HttpPublicationController{

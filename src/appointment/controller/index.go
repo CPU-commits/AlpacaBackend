@@ -12,6 +12,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store/cloudinary_store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/repository/publication_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/temporal_view_repository"
@@ -24,17 +25,18 @@ import (
 
 // Repositories
 var (
-	appointmentRepository   = appointment_repository.NewSqlAppointmentRepository()
-	userRepository          = user_repository.NewSQLUserRepository(db.DB)
-	roleRepository          = role_repository.NewSQLRoleRepository()
-	reviewRepository        = review_repository.NewSqlReviewRepository()
-	profileRepository       = profile_repository.NewSqlProfileRepository(db.DB)
-	followRepository        = follow_repository.NewSqlFollowRepository()
-	publicationRDRepository = publication_repository.NewRdPublicationRepository()
-	peopleStudioRepository  = people_studio_repository.NewSqlPeopleStudioRepository()
-	studioRepository        = studio_repository.NewSqlStudioRepository()
-	viewRepository          = view_repository.NewSqlViewRepository()
-	temporalViewRepository  = temporal_view_repository.NewRdTemportalViewRepository()
+	appointmentRepository     = appointment_repository.NewSqlAppointmentRepository()
+	userRepository            = user_repository.NewSQLUserRepository(db.DB)
+	roleRepository            = role_repository.NewSQLRoleRepository()
+	reviewRepository          = review_repository.NewSqlReviewRepository()
+	profileRepository         = profile_repository.NewSqlProfileRepository(db.DB)
+	followRepository          = follow_repository.NewSqlFollowRepository()
+	publicationRDRepository   = publication_repository.NewRdPublicationRepository()
+	peopleStudioRepository    = people_studio_repository.NewSqlPeopleStudioRepository()
+	studioRepository          = studio_repository.NewSqlStudioRepository()
+	viewRepository            = view_repository.NewSqlViewRepository()
+	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 
 // UID Generator

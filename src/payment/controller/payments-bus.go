@@ -52,6 +52,27 @@ func (queueController *busPaymentsController) HandleRemoveBenefits(c bus.Context
 	return nil
 }
 
+func (queueController *busPaymentsController) WatchVolumeSubscription(c bus.Context) error {
+	var payload WatchVolumeSubscriptionPayload
+	if err := c.BindData(&payload); err != nil {
+		return c.Kill(err.Error())
+	}
+
+	retryIn, err := queueController.subscriptionService.WatchVolumeSubscription(
+		payload.IDSubscription,
+		payload.IDPlan,
+		payload.BillingDate,
+	)
+	if retryIn != nil {
+		return c.FollowUp(time.Until(*retryIn))
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewBusPaymentsController(bus bus.Bus) *busPaymentsController {
 	userService := authService.NewUserService(
 		userRepository,
@@ -63,6 +84,7 @@ func NewBusPaymentsController(bus bus.Bus) *busPaymentsController {
 		peopleStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return &busPaymentsController{
@@ -75,6 +97,7 @@ func NewBusPaymentsController(bus bus.Bus) *busPaymentsController {
 			roleRepository,
 			studioRepository,
 			*peopleService,
+			peopleHistoriesRepository,
 			bus,
 		),
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/uid/nanoid"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/shorter/repository/link_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/temporal_view_repository"
@@ -20,13 +21,14 @@ var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Repositories
 var (
-	linkRepository         = link_repository.NewSqlLinkRepository()
-	viewRepository         = view_repository.NewSqlViewRepository()
-	temporalViewRepository = temporal_view_repository.NewRdTemportalViewRepository()
-	peopleStudioRepository = people_studio_repository.NewSqlPeopleStudioRepository()
-	studioRepository       = studio_repository.NewSqlStudioRepository()
-	userRepository         = user_repository.NewSQLUserRepository(db.DB)
-	roleRepository         = role_repository.NewSQLRoleRepository()
+	linkRepository            = link_repository.NewSqlLinkRepository()
+	viewRepository            = view_repository.NewSqlViewRepository()
+	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
+	peopleStudioRepository    = people_studio_repository.NewSqlPeopleStudioRepository()
+	studioRepository          = studio_repository.NewSqlStudioRepository()
+	userRepository            = user_repository.NewSQLUserRepository(db.DB)
+	roleRepository            = role_repository.NewSQLRoleRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 
 // Settings

@@ -11,6 +11,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/payment/repository/subscription_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/payment/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/settings"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 )
@@ -22,13 +23,14 @@ var uidGenerator = nanoid.NewNanoIDGenerator()
 
 // Repositories
 var (
-	subscriptionRepository = subscription_repository.NewSqlSubscriptionRepository()
-	planRepository         = plan_repository.NewSqlPlanRepository()
-	paymentRepository      = payment_repository.NewSqlPaymentRepository()
-	userRepository         = user_repository.NewSQLUserRepository(db.DB)
-	roleRepository         = role_repository.NewSQLRoleRepository()
-	studioRepository       = studio_repository.NewSqlStudioRepository()
-	peopleStudioRepository = people_studio_repository.NewSqlPeopleStudioRepository()
+	subscriptionRepository    = subscription_repository.NewSqlSubscriptionRepository()
+	planRepository            = plan_repository.NewSqlPlanRepository()
+	paymentRepository         = payment_repository.NewSqlPaymentRepository()
+	userRepository            = user_repository.NewSQLUserRepository(db.DB)
+	roleRepository            = role_repository.NewSQLRoleRepository()
+	studioRepository          = studio_repository.NewSqlStudioRepository()
+	peopleStudioRepository    = people_studio_repository.NewSqlPeopleStudioRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 
 // Payments

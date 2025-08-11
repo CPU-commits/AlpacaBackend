@@ -85,6 +85,7 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 		IDBanner:    sqlStudio.IDBanner.Int64,
 		Media:       media,
 		IsActive:    sqlStudio.IsActive,
+		IsLimited:   sqlStudio.IsLimit,
 	}
 }
 
@@ -208,6 +209,9 @@ func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod 
 	}
 	if selectOpts.IsActive != nil && *selectOpts.IsActive {
 		mod = append(mod, Select(models.StudioColumns.IsActive))
+	}
+	if selectOpts.IsLimited != nil && *selectOpts.IsLimited {
+		mod = append(mod, Select(models.StudioColumns.IsLimit))
 	}
 
 	return mod

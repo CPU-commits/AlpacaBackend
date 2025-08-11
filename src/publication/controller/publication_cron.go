@@ -43,6 +43,7 @@ func NewCronPublication(
 		adminStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return &cronPublicationController{

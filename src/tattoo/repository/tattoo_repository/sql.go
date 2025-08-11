@@ -28,6 +28,11 @@ type sqlTattooRepository struct {
 }
 
 func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tattoo {
+	var areas []string
+	if !sqlTattoo.Areas.IsZero() {
+		sqlTattoo.Areas.Unmarshal(&areas)
+	}
+
 	tattoo := model.Tattoo{
 		ID:             sqlTattoo.ID,
 		Likes:          sqlTattoo.Likes,
@@ -39,6 +44,9 @@ func (sqlTattooRepository) sqlTattooToTattoo(sqlTattoo *models.Tattoo) model.Tat
 		Color:          sqlTattoo.Color.String,
 		Mentions:       sqlTattoo.Mentions,
 		LLMDescription: sqlTattoo.LLMDescription.String,
+		Areas: utils.MapNoError(areas, func(area string) model.TattooArea {
+			return model.TattooArea(area)
+		}),
 	}
 	if sqlTattoo.R != nil && sqlTattoo.R.IDImageImage != nil {
 		sqlImage := sqlTattoo.R.IDImageImage

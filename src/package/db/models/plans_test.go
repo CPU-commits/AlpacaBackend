@@ -722,7 +722,7 @@ func testPlansSelect(t *testing.T) {
 }
 
 var (
-	planDBTypes = map[string]string{`ID`: `bigint`, `Name`: `text`, `Description`: `text`, `Price`: `double precision`, `Currency`: `text`, `Features`: `jsonb`, `BillingCycle`: `enum.billing_cycle('monthly','yearly')`, `Code`: `text`, `TrialDays`: `integer`, `IsActive`: `boolean`, `Identifier`: `text`, `BannerURL`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`, `ForStudios`: `boolean`, `PricingModel`: `enum.pricing_model('volume','standard')`}
+	planDBTypes = map[string]string{`ID`: `bigint`, `Name`: `text`, `Description`: `text`, `Price`: `double precision`, `Currency`: `text`, `Features`: `jsonb`, `BillingCycle`: `enum.billing_cycle('monthly','yearly')`, `Code`: `text`, `TrialDays`: `integer`, `IsActive`: `boolean`, `Identifier`: `text`, `BannerURL`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`, `ForStudios`: `boolean`, `PricingModel`: `enum.pricing_model('volume','standard')`, `VolumeItem`: `enum.volume_item('user')`}
 	_           = bytes.MinRead
 )
 

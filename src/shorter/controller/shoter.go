@@ -155,6 +155,7 @@ func NewHttpAdminStudioController(bus bus.Bus) httpShorterController {
 		peopleStudioRepository,
 		studioRepository,
 		*userService,
+		peopleHistoriesRepository,
 	)
 
 	return httpShorterController{

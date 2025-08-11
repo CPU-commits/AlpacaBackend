@@ -74,6 +74,7 @@ model users {
 	shares shares[]
 	subscription subscriptions[]
 	payments payments[]
+	histories studio_user_histories[]
 }
 
 model token_passwords {
@@ -179,6 +180,16 @@ model studio_users {
 	permissions studio_admins_permissions[]
 }
 
+model studio_user_histories {
+	id BigInt @id @default(sequence())
+	id_user BigInt
+	id_studio BigInt
+	removed_at DateTime? @db.Timestamp(6)
+	created_at DateTime @default(now()) @db.Timestamp(6)
+	studio studios @relation(fields: [id_studio], references: [id])
+	user users @relation(fields: [id_user], references: [id])
+}
+
 model studio_admins_permissions {
 	id BigInt @id @default(sequence())
 	id_admin BigInt
@@ -213,6 +224,7 @@ model studios {
 	views views[]
 	subscriptions subscriptions[]
 	payments payments[]
+	histories studio_user_histories[]
 }
 
 model links {
@@ -387,11 +399,16 @@ model plans {
 	is_active Boolean
 	identifier String @unique
 	banner_url String?
+	volume_item volume_item?
 	for_studios Boolean @default(false)
 
 	created_at DateTime @db.Timestamp(6) @default(now())
 	updated_at DateTime @db.Timestamp(6) @updatedAt @default(now())
 	subscriptions subscriptions[]
+}
+
+enum volume_item {
+	user
 }
 
 enum pricing_model {
