@@ -533,12 +533,16 @@ func (subscriptionService *SubscriptionService) RequestSubscription(
 	if plan.ForStudios && idStudio == 0 {
 		return "", ErrPlanNeedStudio
 	}
+	criteria := &subscription_repository.Criteria{
+		IDPlan:   idPlan,
+		IDStudio: idStudio,
+	}
+	if !plan.ForStudios {
+		criteria.IDUser = idUser
+	}
 
 	subscription, err := subscriptionService.subscriptionRepository.FindLast(
-		&subscription_repository.Criteria{
-			IDPlan: idPlan,
-			IDUser: idUser,
-		},
+		criteria,
 		subscription_repository.NewFindOneOptions().
 			Select(subscription_repository.SelectOpts{
 				ID:     utils.Bool(true),
@@ -594,12 +598,18 @@ func (subscriptionService *SubscriptionService) RequestSubscription(
 }
 
 func (subscriptionService *SubscriptionService) CancelSubscription(
-	idUser int64,
+	idUser,
+	idStudio int64,
 ) error {
+	criteria := &subscription_repository.Criteria{
+		IDStudio: idStudio,
+	}
+	if idStudio == 0 {
+		criteria.IDUser = idUser
+	}
+
 	subscription, err := subscriptionService.subscriptionRepository.FindLast(
-		&subscription_repository.Criteria{
-			IDUser: idUser,
-		},
+		criteria,
 		nil,
 	)
 	if err != nil {

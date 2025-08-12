@@ -29,7 +29,7 @@ type Plan struct {
 	Description  string        `json:"description,omitempty"`
 	Price        float64       `json:"price"`
 	Code         CodePlan      `json:"-"`
-	ForStudios   bool          `json:"-"`
+	ForStudios   bool          `json:"forStudios"`
 	Currency     string        `json:"currency"`
 	Features     []PlanFeature `json:"features"`
 	BillingCycle string        `json:"billingCycle"`

@@ -71,8 +71,14 @@ func (httpSubscriptionController *httpSubscriptionController) RequestSubscriptio
 
 func (httpSubscriptionController *httpSubscriptionController) CancelSubscription(c *gin.Context) {
 	claims, _ := utils.NewClaimsFromContext(c)
+	idStudioStr := c.DefaultQuery("idStudio", "0")
+	idStudio, err := strconv.Atoi(idStudioStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
 
-	err := httpSubscriptionController.subscriptionService.CancelSubscription(claims.ID)
+	err = httpSubscriptionController.subscriptionService.CancelSubscription(claims.ID, int64(idStudio))
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
