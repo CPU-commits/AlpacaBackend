@@ -7,7 +7,6 @@ import (
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/bus/queue"
-	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/cron"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http"
 	utilsHttp "github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
@@ -102,7 +101,6 @@ func main() {
 	utils.Bundle = bundle
 	// Logger
 	zapLogger, logger := newLogger()
-	go cron.Init(logger)
 	// Cmd
 	utilsHttp.Bus = queue.New(logger)
 	bus.Init(logger)
