@@ -66,6 +66,9 @@ func (studioService *StudioService) GetStudio(
 	if err != nil {
 		return nil, err
 	}
+	if studio == nil {
+		return nil, ErrStudioNotExists
+	}
 	go studioService.viewService.AddPermanentViewIfTemporalViewNotExists(
 		identifier,
 		viewServices.ToView{
@@ -197,6 +200,39 @@ func (studioService *StudioService) GetStudioMetrics(
 				Count: countFollowsComparative,
 			},
 		},
+	}, nil
+}
+
+func (studioService *StudioService) ListStudios(
+	page int,
+) ([]model.Studio, *Metadata, error) {
+	limit := 100
+
+	opts := studio_repository.NewFindOptions().
+		Include(studio_repository.Include{
+			AvatarImage: true,
+		}).
+		Select(studio_repository.SelectOpts{
+			ID: true,
+		}).
+		Limit(int64(limit)).
+		Skip(int64(page * limit))
+
+	studios, err := studioService.studioRepository.Find(
+		nil,
+		opts,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	count, err := studioService.studioRepository.Count(nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return studios, &Metadata{
+		Total: int(count),
+		Limit: limit,
 	}, nil
 }
 

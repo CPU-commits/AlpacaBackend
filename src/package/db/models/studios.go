@@ -37,6 +37,7 @@ type Studio struct {
 	IDBanner    null.Int64  `boil:"id_banner" json:"id_banner,omitempty" toml:"id_banner" yaml:"id_banner,omitempty"`
 	IsActive    bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	IsLimit     bool        `boil:"is_limit" json:"is_limit" toml:"is_limit" yaml:"is_limit"`
+	UpdatedAt   time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *studioR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L studioL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,6 +57,7 @@ var StudioColumns = struct {
 	IDBanner    string
 	IsActive    string
 	IsLimit     string
+	UpdatedAt   string
 }{
 	ID:          "id",
 	Description: "description",
@@ -70,6 +72,7 @@ var StudioColumns = struct {
 	IDBanner:    "id_banner",
 	IsActive:    "is_active",
 	IsLimit:     "is_limit",
+	UpdatedAt:   "updated_at",
 }
 
 var StudioTableColumns = struct {
@@ -86,6 +89,7 @@ var StudioTableColumns = struct {
 	IDBanner    string
 	IsActive    string
 	IsLimit     string
+	UpdatedAt   string
 }{
 	ID:          "studios.id",
 	Description: "studios.description",
@@ -100,6 +104,7 @@ var StudioTableColumns = struct {
 	IDBanner:    "studios.id_banner",
 	IsActive:    "studios.is_active",
 	IsLimit:     "studios.is_limit",
+	UpdatedAt:   "studios.updated_at",
 }
 
 // Generated where
@@ -118,6 +123,7 @@ var StudioWhere = struct {
 	IDBanner    whereHelpernull_Int64
 	IsActive    whereHelperbool
 	IsLimit     whereHelperbool
+	UpdatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperint64{field: "\"studios\".\"id\""},
 	Description: whereHelpernull_String{field: "\"studios\".\"description\""},
@@ -132,6 +138,7 @@ var StudioWhere = struct {
 	IDBanner:    whereHelpernull_Int64{field: "\"studios\".\"id_banner\""},
 	IsActive:    whereHelperbool{field: "\"studios\".\"is_active\""},
 	IsLimit:     whereHelperbool{field: "\"studios\".\"is_limit\""},
+	UpdatedAt:   whereHelpertime_Time{field: "\"studios\".\"updated_at\""},
 }
 
 // StudioRels is where relationship names are stored.
@@ -399,9 +406,9 @@ func (r *studioR) GetIDStudioViews() ViewSlice {
 type studioL struct{}
 
 var (
-	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner", "is_active", "is_limit"}
+	studioAllColumns            = []string{"id", "description", "email", "phone", "created_at", "id_avatar", "name", "username", "full_address", "id_owner", "id_banner", "is_active", "is_limit", "updated_at"}
 	studioColumnsWithoutDefault = []string{"email", "name", "username", "full_address", "id_owner"}
-	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner", "is_active", "is_limit"}
+	studioColumnsWithDefault    = []string{"id", "description", "phone", "created_at", "id_avatar", "id_banner", "is_active", "is_limit", "updated_at"}
 	studioPrimaryKeyColumns     = []string{"id"}
 	studioGeneratedColumns      = []string{}
 )
@@ -3744,6 +3751,9 @@ func (o *Studio) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -3820,6 +3830,12 @@ func (o *Studio) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Studio) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -3956,6 +3972,7 @@ func (o *Studio) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

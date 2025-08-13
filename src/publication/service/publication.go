@@ -201,6 +201,41 @@ func (publicationService *PublicationService) GetPublicationMetrics(
 	return metrics, nil
 }
 
+func (publicationService *PublicationService) ListPublications(
+	page int,
+) ([]model.Publication, *PublicationsMetadata, error) {
+	limit := 100
+	opts := publication_repository.NewFindOptions().
+		Limit(limit).
+		Skip(page * limit).
+		Include(publication_repository.Include{
+			Images:       true,
+			Tattoos:      true,
+			TattoosImage: true,
+		}).
+		Select(publication_repository.SelectOpts{
+			ID:        utils.Bool(true),
+			CreatedAt: utils.Bool(true),
+		})
+
+	publications, err := publicationService.publicationRepository.Find(
+		nil,
+		opts,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Count
+	count, err := publicationService.publicationRepository.Count(
+		nil,
+	)
+
+	return publications, &PublicationsMetadata{
+		Limit: limit,
+		Total: int(count),
+	}, nil
+}
+
 func (publicationService *PublicationService) GetPublications(
 	params PublicationsParams,
 	page int,

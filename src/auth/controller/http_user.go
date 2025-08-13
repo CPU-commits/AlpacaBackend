@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/dto"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
@@ -76,6 +78,45 @@ func (httpUser *HttpUserController) UpdateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, nil)
+}
+
+func (httpUser *HttpUserController) GetSitemapData(c *gin.Context) {
+	pagesStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pagesStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+	filterRoles := domainUtils.FilterNoError(strings.Split(c.Query("roles"), ","), func(role string) bool {
+		return role != ""
+	})
+
+	users, metadata, err := httpUser.userService.ListUsers(
+		page,
+		domainUtils.MapNoError(filterRoles, func(role string) model.Role {
+			return model.Role(role)
+		})...,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	c.Header("X-Total", strconv.Itoa(int(metadata.Total)))
+	c.Header("X-Per-Page", strconv.Itoa(int(metadata.Limit)))
+
+	c.JSON(
+		http.StatusOK,
+		domainUtils.MapNoError(users, func(user model.User) utils.SitemapXML {
+			return utils.SitemapXML{
+				ChangeFreq: utils.DAILY,
+				LastMod:    user.UpdatedAt.Format(time.RFC3339),
+				Priority:   0.8,
+				Data: map[string]any{
+					"username": user.Username,
+				},
+			}
+		}),
+	)
 }
 
 func (httpUser *HttpUserController) SearchUsers(c *gin.Context) {

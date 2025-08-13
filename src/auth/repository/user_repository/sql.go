@@ -55,9 +55,10 @@ func (sqlUserRepository) SqlUserToUser(
 		Roles: utils.MapNoError(roles, func(role string) model.Role {
 			return model.Role(role)
 		}),
-		Username: sqlUser.Username,
-		Location: sqlUser.Location.String,
-		Media:    media,
+		Username:  sqlUser.Username,
+		Location:  sqlUser.Location.String,
+		Media:     media,
+		UpdatedAt: sqlUser.UpdatedAt,
 	}
 }
 
@@ -135,6 +136,9 @@ func (sqlUserRepository) SelectOpts(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.Email != nil && *selectOpts.Email {
 		mod = append(mod, Select(models.UserColumns.Email))
+	}
+	if selectOpts.UpdatedAt != nil && *selectOpts.UpdatedAt {
+		mod = append(mod, Select(models.UserColumns.UpdatedAt))
 	}
 	if selectOpts.Phone != nil && *selectOpts.Phone {
 		mod = append(mod, Select(models.UserColumns.Phone))
@@ -374,6 +378,17 @@ func (sqlUR sqlUserRepository) UpdateOne(userId int64, data UserUpdateData) erro
 		return utils.ErrRepositoryFailed
 	}
 	return nil
+}
+
+func (sqlUR sqlUserRepository) Count(criteria *Criteria) (int64, error) {
+	where := sqlUR.criteriaToWhere(criteria)
+
+	total, err := models.Users(where...).Count(context.Background(), sqlUR.db)
+	if err != nil {
+		return 0, utils.ErrRepositoryFailed
+	}
+
+	return total, nil
 }
 
 func NewSQLUserRepository(db *sql.DB) UserRepository {

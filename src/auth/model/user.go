@@ -22,6 +22,7 @@ type User struct {
 	Name      string        `json:"name"`
 	Phone     string        `json:"phone,omitempty"`
 	Username  string        `json:"username"`
+	UpdatedAt time.Time     `json:"updatedAt,omitempty"`
 	Roles     []Role        `json:"roles,omitempty"`
 	Media     []model.Media `json:"media,omitempty"`
 	CreatedAt time.Time     `json:"created_at,omitempty"`

@@ -86,6 +86,7 @@ func (sqlSR sqlStudioRepository) SqlStudioToModel(sqlStudio *models.Studio) *mod
 		Media:       media,
 		IsActive:    sqlStudio.IsActive,
 		IsLimited:   sqlStudio.IsLimit,
+		UpdatedAt:   sqlStudio.UpdatedAt,
 	}
 }
 
@@ -207,6 +208,9 @@ func (sqlSR sqlStudioRepository) SelectToMod(selectOpts *SelectOpts) []QueryMod 
 	if selectOpts.IDBanner != nil && *selectOpts.IDBanner {
 		mod = append(mod, Select(models.StudioColumns.IDBanner))
 	}
+	if selectOpts.UpdatedAt != nil && *selectOpts.UpdatedAt {
+		mod = append(mod, Select(models.StudioColumns.UpdatedAt))
+	}
 	if selectOpts.IsActive != nil && *selectOpts.IsActive {
 		mod = append(mod, Select(models.StudioColumns.IsActive))
 	}
@@ -226,6 +230,9 @@ func (sqlSR sqlStudioRepository) findOptionsToMod(opts *findOptions) []QueryMod 
 	mod = append(mod, sqlSR.SelectToMod(opts.selectOpts)...)
 	if opts.limit != nil {
 		mod = append(mod, Limit(int(*opts.limit)))
+	}
+	if opts.skip != nil {
+		mod = append(mod, Offset(int(*opts.skip)))
 	}
 
 	return mod

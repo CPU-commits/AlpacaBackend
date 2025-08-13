@@ -10,6 +10,7 @@ var (
 	ErrNoHasPermission       = errors.New("err: no permission")
 	ErrNoExistStudio         = errors.New("err: no exists studio")
 	ErrStudioIsNotActive     = errors.New("err: studio is not active")
+	ErrStudioNotExists       = errors.New("err: studio not exists")
 	ErrCantCreateOwner       = errors.New("err: cant create owner")
 	ErrUserNotInStudio       = errors.New("err: user not in studio")
 )

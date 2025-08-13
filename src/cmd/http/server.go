@@ -123,6 +123,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		auth.PATCH("/email", middleware.JWTMiddleware(), userController.UpdateEmail)
 		auth.GET("", middleware.JWTMiddleware(), userController.IsOwner)
 		user.GET("/search", userController.SearchUsers)
+		user.GET("/__sitemap__", userController.GetSitemapData)
 	}
 
 	tattoo := router.Group("api/tattoos")
@@ -166,6 +167,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		// Controllers
 		publicationController := publicationController.NewPublicationHttpController(bus)
 		// Define routes
+		publication.GET("/__sitemap__", publicationController.GetSitemapData)
 		publication.GET("/username/:username", publicationController.GetUserPublications)
 		publication.GET("/studio/:idStudio", publicationController.GetStudioPublications)
 		publication.GET("/:idPost", publicationController.GetPublication)
@@ -211,6 +213,7 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		adminStudioController := studioController.NewHttpAdminStudioController(bus)
 		studioController := studioController.NewHttpStudioController(bus)
 
+		studio.GET("/__sitemap__", studioController.GetSitemapData)
 		studio.GET("/:idStudio", middleware.OptionalJWTMiddleware(), studioController.GetStudio)
 		studio.GET("/:idStudio/metrics", middleware.JWTMiddleware(), studioController.GetStudioMetrics)
 		studio.GET("/:idStudio/username", studioController.GetStudioUsername)

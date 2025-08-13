@@ -21,6 +21,48 @@ type httpStudioController struct {
 	studioService *service.StudioService
 }
 
+func (httpStudioController httpStudioController) GetSitemapData(c *gin.Context) {
+	pagesStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pagesStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	studios, metadata, err := httpStudioController.studioService.ListStudios(
+		page,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	c.Header("X-Total", strconv.Itoa(int(metadata.Total)))
+	c.Header("X-Per-Page", strconv.Itoa(int(metadata.Limit)))
+
+	c.JSON(
+		http.StatusOK,
+		domainUtils.MapNoError(studios, func(studio model.Studio) utils.SitemapXML {
+			images := []utils.SitemapImage{}
+			if studio.Avatar != nil {
+				avatar, _ := imageStore.GetURL(studio.Avatar.Key)
+
+				images = append(images, utils.SitemapImage{
+					Loc: avatar,
+				})
+			}
+
+			return utils.SitemapXML{
+				ChangeFreq: utils.DAILY,
+				Images:     images,
+				LastMod:    studio.UpdatedAt.Format(time.RFC3339),
+				Priority:   0.8,
+				Data: map[string]any{
+					"id": studio.ID,
+				},
+			}
+		}))
+}
+
 func (httpStudioController httpStudioController) GetPermissions(c *gin.Context) {
 	permissions := httpStudioController.studioService.GetPermissions()
 	localizer := utils.GetI18nLocalizer(c)

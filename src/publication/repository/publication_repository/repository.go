@@ -23,6 +23,7 @@ type SelectOpts struct {
 	ID        *bool
 	IDStudio  *bool
 	IDProfile *bool
+	CreatedAt *bool
 }
 
 type Include struct {

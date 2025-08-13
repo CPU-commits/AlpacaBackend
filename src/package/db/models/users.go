@@ -31,6 +31,7 @@ type User struct {
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Location  null.String `boil:"location" json:"location,omitempty" toml:"location" yaml:"location,omitempty"`
+	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,6 +45,7 @@ var UserColumns = struct {
 	CreatedAt string
 	Username  string
 	Location  string
+	UpdatedAt string
 }{
 	ID:        "id",
 	Email:     "email",
@@ -52,6 +54,7 @@ var UserColumns = struct {
 	CreatedAt: "created_at",
 	Username:  "username",
 	Location:  "location",
+	UpdatedAt: "updated_at",
 }
 
 var UserTableColumns = struct {
@@ -62,6 +65,7 @@ var UserTableColumns = struct {
 	CreatedAt string
 	Username  string
 	Location  string
+	UpdatedAt string
 }{
 	ID:        "users.id",
 	Email:     "users.email",
@@ -70,6 +74,7 @@ var UserTableColumns = struct {
 	CreatedAt: "users.created_at",
 	Username:  "users.username",
 	Location:  "users.location",
+	UpdatedAt: "users.updated_at",
 }
 
 // Generated where
@@ -82,6 +87,7 @@ var UserWhere = struct {
 	CreatedAt whereHelpertime_Time
 	Username  whereHelperstring
 	Location  whereHelpernull_String
+	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"users\".\"id\""},
 	Email:     whereHelperstring{field: "\"users\".\"email\""},
@@ -90,6 +96,7 @@ var UserWhere = struct {
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
 	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Location:  whereHelpernull_String{field: "\"users\".\"location\""},
+	UpdatedAt: whereHelpertime_Time{field: "\"users\".\"updated_at\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -471,9 +478,9 @@ func (r *userR) GetIDUserViews() ViewSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "name", "phone", "created_at", "username", "location"}
+	userAllColumns            = []string{"id", "email", "name", "phone", "created_at", "username", "location", "updated_at"}
 	userColumnsWithoutDefault = []string{"email", "name", "username"}
-	userColumnsWithDefault    = []string{"id", "phone", "created_at", "location"}
+	userColumnsWithDefault    = []string{"id", "phone", "created_at", "location", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -4622,6 +4629,9 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -4698,6 +4708,12 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -4834,6 +4850,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

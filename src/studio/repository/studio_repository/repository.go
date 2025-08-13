@@ -34,12 +34,14 @@ type SelectOpts struct {
 	Address     *bool
 	IsActive    *bool
 	IsLimited   *bool
+	UpdatedAt   *bool
 }
 
 type findOptions struct {
 	include    *Include
 	selectOpts *SelectOpts
 	limit      *int64
+	skip       *int64
 }
 
 func NewFindOptions() *findOptions {
@@ -54,6 +56,12 @@ func (f *findOptions) Select(selectOpts SelectOpts) *findOptions {
 
 func (f *findOptions) Include(include Include) *findOptions {
 	f.include = &include
+
+	return f
+}
+
+func (f *findOptions) Skip(skip int64) *findOptions {
+	f.skip = &skip
 
 	return f
 }

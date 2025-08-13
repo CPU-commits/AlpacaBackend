@@ -207,6 +207,10 @@ func (profileService *ProfileService) GetProfile(username, identifier, ip string
 	if err != nil {
 		return nil, err
 	}
+	if profile == nil {
+		return nil, ErrProfileNotExists
+	}
+
 	profile.User.Media = profileService.toShortLinksMedia(
 		profile.User.Media,
 	)

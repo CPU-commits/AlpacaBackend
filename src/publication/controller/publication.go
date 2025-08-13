@@ -14,6 +14,7 @@ import (
 	embeddingapi "github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding/embedding_api"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/dto"
+	publicationModel "github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
@@ -26,6 +27,49 @@ import (
 type HttpPublicationController struct {
 	bus                bus.Bus
 	publicationService *service.PublicationService
+}
+
+func (httpPC *HttpPublicationController) GetSitemapData(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
+		return
+	}
+
+	publications, metadata, err := httpPC.publicationService.ListPublications(
+		page,
+	)
+	if err != nil {
+		utils.ResFromErr(c, err)
+		return
+	}
+	// Headers
+	c.Header("X-Per-Page", strconv.Itoa(metadata.Limit))
+	c.Header("X-Total", strconv.Itoa(metadata.Total))
+
+	c.JSON(
+		http.StatusOK,
+		domainUtils.MapNoError(publications, func(publication publicationModel.Publication) utils.SitemapXML {
+
+			imagesTattoos := domainUtils.MapNoError(publication.Tattoos, func(t model.Tattoo) utils.SitemapImage {
+				url, _ := imageStore.GetURL(t.Image.Key)
+				return utils.SitemapImage{
+					Loc: url,
+				}
+			})
+
+			return utils.SitemapXML{
+				ChangeFreq: utils.HOURLY,
+				LastMod:    publication.CreatedAt.Format(time.RFC3339),
+				Priority:   0.7,
+				Images:     imagesTattoos,
+				Data: map[string]any{
+					"id": publication.ID,
+				},
+			}
+		}),
+	)
 }
 
 // Get godoc

@@ -17,13 +17,14 @@ type Criteria struct {
 }
 
 type SelectOpts struct {
-	ID       *bool
-	Username *bool
-	Name     *bool
-	Email    *bool
-	Phone    *bool
-	IDUser   *bool
-	Location *bool
+	ID        *bool
+	Username  *bool
+	Name      *bool
+	Email     *bool
+	Phone     *bool
+	IDUser    *bool
+	Location  *bool
+	UpdatedAt *bool
 }
 
 type FindOneOptions struct {
@@ -87,6 +88,7 @@ type UserRepository interface {
 	FindOneByID(id int64) (*model.User, error)
 	FindOne(criteria *Criteria, opts *FindOneOptions) (*model.User, error)
 	Find(criteria *Criteria, opts *FindOptions) ([]model.User, error)
+	Count(criteria *Criteria) (int64, error)
 	Exists(criteria *Criteria) (bool, error)
 	InsertOne(user *model.User, password string) (*model.User, error)
 	UpdateOne(userId int64, data UserUpdateData) error

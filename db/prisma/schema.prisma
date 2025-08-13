@@ -55,6 +55,7 @@ model users {
   username String @unique
   phone              String?
   created_at         DateTime            @default(now()) @db.Timestamp(6)
+  updated_at         DateTime            @default(now()) @db.Timestamp(6) @updatedAt
   location String?
   auths              auths[]
   roles_users        roles_users[]
@@ -212,6 +213,7 @@ model studios {
 	is_active Boolean @default(true)
 	is_limit Boolean @default(true)
 	created_at DateTime @default(now()) @db.Timestamp(6)
+	updated_at DateTime @default(now()) @db.Timestamp(6) @updatedAt
 	avatar images? @relation(name: "StudioAvatar", fields: [id_avatar], references: [id], map: "studio_avatar_fkey")
 	banner images? @relation(name: "StudioBanner", fields: [id_banner], references: [id], map: "studio_banner_fkey")
 	owner users @relation(fields: [id_owner], references: [id])

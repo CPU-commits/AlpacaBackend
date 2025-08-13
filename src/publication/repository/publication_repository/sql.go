@@ -235,6 +235,9 @@ func (sqlPublicationRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
 	if selectOpts.IDStudio != nil && *selectOpts.IDStudio {
 		mod = append(mod, Select(models.PostColumns.IDStudio))
 	}
+	if selectOpts.CreatedAt != nil && *selectOpts.CreatedAt {
+		mod = append(mod, Select(models.PostColumns.CreatedAt))
+	}
 	return mod
 }
 

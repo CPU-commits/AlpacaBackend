@@ -150,6 +150,42 @@ func (userService *UserService) UserUpdate(idUser int64, data dto.UserUpdateData
 	return userService.userRepository.UpdateOne(idUser, dataUpdate)
 }
 
+func (userService *UserService) ListUsers(
+	page int,
+	roles ...model.Role,
+) ([]model.User, *Metadata, error) {
+	limit := 100
+
+	opts := user_repository.NewFindOptions().
+		Select(user_repository.SelectOpts{
+			ID:       utils.Bool(true),
+			Username: utils.Bool(true),
+		}).
+		Skip(int64(page * limit)).
+		Limit(int64(limit))
+
+	criteria := &user_repository.Criteria{
+		Roles: roles,
+	}
+
+	users, err := userService.userRepository.Find(
+		criteria,
+		opts,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	total, err := userService.userRepository.Count(criteria)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return users, &Metadata{
+		Total: total,
+		Limit: int64(limit),
+	}, nil
+}
+
 func (userService *UserService) SearchUsers(
 	q string,
 	filterUsers []int64,

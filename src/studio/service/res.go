@@ -5,6 +5,11 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 )
 
+type Metadata struct {
+	Limit int
+	Total int
+}
+
 type LocationMetric struct {
 	Location string `json:"location"`
 	Value    int64  `json:"value"`

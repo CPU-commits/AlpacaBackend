@@ -24,6 +24,7 @@ type Studio struct {
 	IsActive    bool                 `json:"isActive"`
 	IsLimited   bool                 `json:"isLimited"`
 	CreatedAt   time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time            `json:"updatedAt,omitempty"`
 	Admins      []authModel.User     `json:"admins,omitempty"`
 	Media       []shorterModel.Media `json:"media,omitempty"`
 }

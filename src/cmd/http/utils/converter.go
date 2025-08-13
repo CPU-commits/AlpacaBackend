@@ -77,6 +77,10 @@ func init() {
 		StatusCode: http.StatusUnauthorized,
 		MessageId:  "user.unauthorized",
 	}
+	errorsService[userService.ErrProfileNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "user.not_found",
+	}
 	errorsService[tattooService.ErrCategoriesNotExists] = errRes{
 		StatusCode: http.StatusConflict,
 		MessageId:  "category.not_exists",
@@ -188,6 +192,10 @@ func init() {
 	errorsService[studioService.ErrMaxStudios] = errRes{
 		StatusCode: http.StatusBadRequest,
 		MessageId:  "studio.max_studios",
+	}
+	errorsService[studioService.ErrStudioNotExists] = errRes{
+		StatusCode: http.StatusNotFound,
+		MessageId:  "studio.not_found",
 	}
 	errorsService[studioService.ErrExistsEmailOrUsername] = errRes{
 		StatusCode: http.StatusConflict,
