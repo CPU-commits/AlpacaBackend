@@ -185,7 +185,7 @@ func (tsPR *tsPublicationRepository) UpdatePublication(
 	publication *model.Publication,
 	daysSincePublished int,
 	followers int,
-) error {
+) (*model.TSPublication, error) {
 
 	params := &api.DocumentIndexParameters{}
 	strID := strconv.FormatInt(publication.ID, 10)
@@ -206,16 +206,15 @@ func (tsPR *tsPublicationRepository) UpdatePublication(
 	_, err := tsPR.ts.Collection("publications").Document(tsPublication.ID).Update(context.Background(), tsPublication, params)
 	if err != nil {
 		var httpError *typesense.HTTPError
-
 		if ok := errors.As(err, &httpError); ok {
 			if httpError.Status == 404 {
-				return nil
+				return nil, nil
 			}
 		}
 		panic(err)
 	}
 
-	return nil
+	return &tsPublication, nil
 }
 
 func init() {

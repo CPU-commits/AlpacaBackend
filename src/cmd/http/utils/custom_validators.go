@@ -13,6 +13,7 @@ func RegisterCustomValidators() {
 		v.RegisterValidation("areavalidator", dto.IsAppointmentArea)
 		v.RegisterValidation("colorvalidator", dto.IsAppointmentColor)
 		v.RegisterValidation("username", authDto.IsUsername)
+		v.RegisterValidation("name", authDto.IsName)
 		v.RegisterValidation("studioRole", studioDto.IsRole)
 		v.RegisterValidation("permission", studioDto.IsPermission)
 		v.RegisterValidation("mediaType", studioDto.IsMediaType)

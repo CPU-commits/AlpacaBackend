@@ -117,3 +117,8 @@ func ReaderImageToBase64DataURI(r io.Reader) (string, error) {
 	b64 := base64.StdEncoding.EncodeToString(data)
 	return fmt.Sprintf("data:%s;base64,%s", mime, b64), nil
 }
+
+func CleanAndLower(s string) string {
+	cleaned := strings.TrimSpace(s)
+	return strings.ToLower(cleaned)
+}

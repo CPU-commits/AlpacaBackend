@@ -32,7 +32,6 @@ var ipInfo = ipipinfo.NewIPIpInfo()
 
 // Repositories
 var (
-	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 	profileRepository         = profile_repository.NewSqlProfileRepository(db.DB)
 	userRepository            = user_repository.NewSQLUserRepository(db.DB)
 	tattooRepository          = tattoo_repository.NewSqlTattooRepository(db.DB)
@@ -48,6 +47,7 @@ var (
 	shareRepository           = share_repository.NewSqlShareRepository(db.DB)
 	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
 	tattooTSRepository        = tattoo_repository.NewTsTattooRepository()
+	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
 )
 
 // Services

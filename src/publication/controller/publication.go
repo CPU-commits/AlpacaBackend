@@ -525,6 +525,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 				tattooRepository,
 				*fileService,
 				embeddingapi.NewAPIEmbedding(),
+				bus,
 			),
 			profileService,
 			imageStore,

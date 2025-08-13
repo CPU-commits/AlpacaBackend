@@ -8,7 +8,7 @@ import (
 )
 
 type RegisterDto struct {
-	Name     string `json:"name" binding:"required,max=100" validate:"required"`
+	Name     string `json:"name" binding:"required,max=100,name" validate:"required"`
 	Username string `json:"username" binding:"required,max=100,username" validate:"required"`
 	Email    string `json:"email" binding:"required,email" validate:"required"`
 	Password string `json:"password" binding:"required,min=6" validate:"required"`
@@ -32,6 +32,18 @@ var IsUsername validator.Func = func(fl validator.FieldLevel) bool {
 			return false
 		}
 		return regexp.MustCompile(`[a-z]`).MatchString(username)
+	}
+	return false
+}
+var IsName validator.Func = func(fl validator.FieldLevel) bool {
+	name, ok := fl.Field().Interface().(string)
+	if ok {
+		pattern := `^[a-z0-9._]+$`
+		matched, err := regexp.MatchString(pattern, name)
+		if err != nil || !matched {
+			return false
+		}
+		return regexp.MustCompile(`[a-z]`).MatchString(name)
 	}
 	return false
 }

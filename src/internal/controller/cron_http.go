@@ -1,23 +1,26 @@
 package controller
 
 import (
+	"log"
+	"net/http"
+
 	authService "github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/internal/cron"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	embeddingapi "github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding/embedding_api"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/publication/service"
 	studioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
 	tattooService "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/service"
 	userServices "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
+	"github.com/gin-gonic/gin"
 )
 
-type CronPublicationController struct {
-	bus                bus.Bus
-	publicationService service.PublicationService
+type HttpInternalController struct {
+	bus             bus.Bus
+	publicationCron cron.PublicationCron
 }
 
-func NewCronPublication(
-	bus bus.Bus,
-) *CronPublicationController {
+func NewHTTPInternalController(bus bus.Bus) *HttpInternalController {
 	userService := authService.NewUserService(
 		userRepository,
 		roleRepository,
@@ -42,32 +45,37 @@ func NewCronPublication(
 		peopleHistoriesRepository,
 	)
 
-	return &CronPublicationController{
+	return &HttpInternalController{
 		bus: bus,
-		publicationService: *service.NewPublicationService(
-			*tattooService.NewTattooService(
-				imageStore,
+		publicationCron: *cron.NewCronPublication(
+			bus,
+			*service.NewPublicationService(
+				*tattooService.NewTattooService(
+					imageStore,
+					profileService,
+					tattooRepository,
+					*fileService,
+					embeddingapi.NewAPIEmbedding(),
+					bus,
+				),
 				profileService,
+				imageStore,
+				publicationRepository,
+				likeRepository,
 				tattooRepository,
+				userRepository,
 				*fileService,
-				embeddingapi.NewAPIEmbedding(),
+				*adminStudioService,
+				*viewService,
+				shareRepository,
 				bus,
 			),
-			profileService,
-			imageStore,
-			publicationRepository,
-			likeRepository,
-			tattooRepository,
-			userRepository,
-			*fileService,
-			*adminStudioService,
-			*viewService,
-			shareRepository,
-			bus,
 		),
 	}
 }
 
-func (cron *CronPublicationController) UpdateRatings() {
-	cron.publicationService.UpdateRatings()
+func (internalController *HttpInternalController) UpdateRatings(c *gin.Context) {
+	internalController.publicationCron.UpdateRatings()
+	log.Println("Update ratings cron")
+	c.JSON(http.StatusOK, nil)
 }

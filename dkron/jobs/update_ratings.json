@@ -1,0 +1,16 @@
+{
+	"name": "update_ratings_30m",
+	"schedule": "0 */30 * * * *",
+	"timezone": "America/Santiago",
+	"concurrency": "forbid",
+	"executor": "http",
+	"executor_config": {
+		"method": "POST",
+		"url": "http://app:8080/api/internals/update_ratings",
+		"headers": "[\"x-cron-api-key: N[r%hu[&x7X,~;3\"]",
+		"timeout": "120",
+		"expectCode": "200"
+	},
+
+	"retries": 2
+}

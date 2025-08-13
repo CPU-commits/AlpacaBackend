@@ -37,6 +37,7 @@ type settings struct {
 	LEMONSQUEEZY_TOKEN          string
 	LEMONSQUEEZY_SIGNING_SECRET string
 	LEMONSQUEEZY_STORE          string
+	CRON_KEY                    string
 }
 
 func validateSettings(settings *settings) {
@@ -111,6 +112,9 @@ func validateSettings(settings *settings) {
 	if settings.LEMONSQUEEZY_STORE == "" {
 		missing = append(missing, "LEMONSQUEEZY_STORE")
 	}
+	if settings.CRON_KEY == "" {
+		missing = append(missing, "CRON_KEY")
+	}
 	if len(missing) > 0 {
 		panic(fmt.Sprintf("Missing variables: %s", strings.Join(missing, ", ")))
 	}
@@ -141,6 +145,7 @@ func newSettings() *settings {
 		LEMONSQUEEZY_TOKEN:          os.Getenv("LEMONSQUEEZY_TOKEN"),
 		LEMONSQUEEZY_SIGNING_SECRET: os.Getenv("LEMONSQUEEZY_SIGNING_SECRET"),
 		LEMONSQUEEZY_STORE:          os.Getenv("LEMONSQUEEZY_STORE"),
+		CRON_KEY:                    os.Getenv("CRON_KEY"),
 	}
 	validateSettings(settings)
 

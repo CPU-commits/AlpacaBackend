@@ -8,6 +8,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
+	util "github.com/CPU-commits/Template_Go-EventDriven/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -51,6 +52,7 @@ func (httpAuth *HttpAuthController) Register(c *gin.Context) {
 		utils.ResErrValidators(c, err)
 		return
 	}
+	registerDto.Email = util.CleanAndLower(registerDto.Email)
 	if err := httpAuth.authService.Register(registerDto); err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -78,6 +80,8 @@ func (httpAuth *HttpAuthController) Login(c *gin.Context) {
 		utils.ResErrValidators(c, err)
 		return
 	}
+	authDto.Username = util.CleanAndLower(authDto.Username)
+
 	user, idAuth, err := httpAuth.authService.Login(*authDto)
 	if err != nil {
 		utils.ResFromErr(c, err)

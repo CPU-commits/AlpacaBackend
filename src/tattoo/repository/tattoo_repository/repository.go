@@ -1,14 +1,18 @@
 package tattoo_repository
 
-import "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
+import (
+	modelPublication "github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
+)
 
 type Criteria struct {
-	ID        int64
-	IDs       []int64
-	IDProfile int64
-	IDStudio  int64
-	Areas     []model.TattooArea
-	Color     string
+	Areas         []model.TattooArea
+	Color         string
+	ID            int64
+	IDs           []int64
+	IDProfile     int64
+	IDStudio      int64
+	IDPublication int64
 }
 
 type Include struct {
@@ -118,4 +122,12 @@ type TattooRepository interface {
 	UpdateViews(ids []int64) error
 	Update(criteria *Criteria, data UpdateData) error
 	TattooSimilarity(params SimilarityParams, opts *SimilarityOptions) ([]model.Tattoo, int64, error)
+	Delete(criteria *Criteria) error
+}
+
+type TattooTSRepository interface {
+	Search(params SimilarityParams, opts *SimilarityOptions) ([]int64, int64, error)
+	IndexTattoo(tattoo *model.Tattoo) error
+	UpdateRatingTattoo(tattoo *model.Tattoo, publication *modelPublication.TSPublication) error
+	DeleteTattoo(tattoo *model.Tattoo) error
 }

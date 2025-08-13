@@ -17,6 +17,7 @@ import (
 	httpUtils "github.com/CPU-commits/Template_Go-EventDriven/src/cmd/http/utils"
 	followController "github.com/CPU-commits/Template_Go-EventDriven/src/follow/controller"
 	generatorCon "github.com/CPU-commits/Template_Go-EventDriven/src/generator/controller"
+	internalController "github.com/CPU-commits/Template_Go-EventDriven/src/internal/controller"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/logger"
 	paymentControllers "github.com/CPU-commits/Template_Go-EventDriven/src/payment/controller"
 	publicationController "github.com/CPU-commits/Template_Go-EventDriven/src/publication/controller"
@@ -264,6 +265,12 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		subscriptions.DELETE("/cancel", middleware.JWTMiddleware(), subscriptionController.CancelSubscription)
 		payments.POST("/lemonsqueezy/webhook", paymentController.LemonSqueezyPagoWebhook)
 		payments.GET("", paymentController.GetPayments)
+	}
+	internal := router.Group("api/internals", middleware.CronApiKeyMiddleware())
+	{
+		internalController := internalController.NewHTTPInternalController(bus)
+		internal.POST("/update_ratings", internalController.UpdateRatings)
+
 	}
 	// Route docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

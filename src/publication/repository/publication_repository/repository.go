@@ -167,6 +167,6 @@ type RedisPublicationRepository interface {
 type TypeSensePublicationRepository interface {
 	DeletePublication(publication *model.Publication) error
 	IndexPublication(publication *model.Publication) error
-	UpdatePublication(publication *model.Publication, daysSincePublished int, followers int) error
+	UpdatePublication(publication *model.Publication, daysSincePublished int, followers int) (*model.TSPublication, error)
 	Search(q string, criteria *Criteria, opts *SearchOptions) ([]int64, int, error)
 }

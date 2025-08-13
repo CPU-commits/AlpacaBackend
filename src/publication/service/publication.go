@@ -738,7 +738,6 @@ func (publicationService *PublicationService) Publish(
 	})
 	insertedPublication, err := publicationService.publicationRepository.Insert(*publication, idProfile)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	if _, err := publicationService.tattooService.PublishTattoos(
@@ -770,9 +769,10 @@ func (publicationService *PublicationService) DeletePublication(
 ) error {
 	opts := publication_repository.NewFindOneOptions().
 		Include(publication_repository.Include{
-			ProfileUser: true,
-			Tattoos:     true,
-			Profile:     true,
+			ProfileUser:  true,
+			Tattoos:      true,
+			TattoosImage: true,
+			Profile:      true,
 		})
 
 	publication, err := publicationService.publicationRepository.FindOne(
@@ -787,6 +787,7 @@ func (publicationService *PublicationService) DeletePublication(
 	if publication == nil {
 		return ErrPublicationNotExists
 	}
+
 	if publication.Profile.User.ID != idUser && publication.IDStudio == 0 {
 		return ErrPublicationNotAccess
 	} else if publication.IDStudio != 0 && publication.Profile.User.ID != idUser {
@@ -797,7 +798,7 @@ func (publicationService *PublicationService) DeletePublication(
 		); err != nil {
 			return ErrPublicationNotAccess
 		}
-	} else {
+	} else if publication.IDStudio != 0 {
 		if err := publicationService.adminStudioService.ThrowAccessInStudio(
 			idUser,
 			publication.IDStudio,
@@ -812,19 +813,34 @@ func (publicationService *PublicationService) DeletePublication(
 	if err != nil {
 		return err
 	}
-	idTattoos := utils.MapNoError(publication.Tattoos, func(tattoo tattooModel.Tattoo) int64 {
-		return tattoo.ID
+	err = utils.ConcurrentForEach(publication.Tattoos, func(tattoo tattooModel.Tattoo, setError func(err error)) {
+		if err := publicationService.imageStore.Delete(tattoo.Image.Key); err != nil {
+			setError(err)
+			return
+		}
+		if err := publicationService.tattooRepository.Delete(&tattoo_repository.Criteria{
+			ID: tattoo.ID,
+		}); err != nil {
+			setError(err)
+			return
+		}
+	}, &utils.OptionsConcurrentForEach{
+		MaxConcurrency: 5,
 	})
-	if err := publicationService.tattooRepository.Update(
-		&tattoo_repository.Criteria{
-			IDs: idTattoos,
-		},
-		tattoo_repository.UpdateData{
-			UnsetIDPublication: true,
-		},
-	); err != nil {
+	if err != nil {
 		return err
 	}
+	// if err := publicationService.tattooRepository.Update(
+	// 	&tattoo_repository.Criteria{
+	// 		IDs: idTattoos,
+	// 	},
+	// 	tattoo_repository.UpdateData{
+	// 		UnsetIDPublication: true,
+	// 	},
+	// ); err != nil {
+	// 	return err
+	// }
+
 	// Delete images
 	for _, image := range images {
 		if err := publicationService.imageStore.Delete(image.Key); err != nil {

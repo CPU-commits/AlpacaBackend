@@ -56,6 +56,7 @@ func (authService *AuthService) Register(
 	if err != nil {
 		return err
 	}
+
 	_, err = authService.userRepository.InsertOne(user, registerDto.Password)
 	return err
 }
@@ -74,6 +75,7 @@ func (authService *AuthService) Login(authDto dto.AuthDto) (*model.User, int64, 
 	); err != nil {
 		return nil, 0, ErrInvalidCredentials
 	}
+
 	// User
 	user, err := authService.userRepository.FindOneByEmail(authDto.Username)
 	if err != nil {

@@ -12,6 +12,8 @@ services:
       - crdb
       - typesense
       - redis
+      - dkron
+      - dkron-init
     networks:
       - alpaca_network
   nats-js:
@@ -58,6 +60,40 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: tunnel
     command: tunnel --no-autoupdate run --token ${TOKEN_TUNNEL}
+    networks:
+      - alpaca_network
+  dkron:
+    image: dkron/dkron:latest
+    command:
+      [
+        "agent",
+        "--server",
+        "--bootstrap-expect=1",
+        "--node-name=dkron-0",
+        "--log-level=info",
+      ]
+    ports:
+      - "8081:8080"
+      # - "8946:8946"
+      # - "6868:6868"
+    networks:
+      - alpaca_network
+
+  dkron-init:
+    image: alpine:3.20
+    depends_on:
+      dkron:
+        condition: service_started
+
+    environment:
+      - DKRON_URL=http://dkron:8080
+      - APP_WAIT_URLS=http://app:8000/healthz
+      - APP_WAIT_TIMEOUT=10
+    volumes:
+      - ./dkron/jobs:/jobs:ro
+      - ./dkron/scripts/register_jobs.sh:/register_jobs.sh:ro
+    entrypoint:
+      ["/bin/sh", "-c", "apk add --no-cache curl jq && /register_jobs.sh"]
     networks:
       - alpaca_network
 

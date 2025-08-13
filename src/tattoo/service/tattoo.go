@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	file_service "github.com/CPU-commits/Template_Go-EventDriven/src/file/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/package/bus"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/embedding"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
+	modelPublication "github.com/CPU-commits/Template_Go-EventDriven/src/publication/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
@@ -21,6 +23,7 @@ type TattooService struct {
 	tattooRepository tattoo_repository.TattooRepository
 	fileService      file_service.FileService
 	embedding        embedding.Embedding
+	bus              bus.Bus
 }
 
 func (tattooService *TattooService) updateViews(idTattoos []int64) {
@@ -107,7 +110,9 @@ func (tattooService *TattooService) GetTattoos(params GetTattoosParams, page int
 	if params.IDStudio != 0 {
 		criteria.IDStudio = params.IDStudio
 	}
-
+	if params.IDPublication != 0 {
+		criteria.IDPublication = params.IDPublication
+	}
 	limit := 10
 
 	opts := tattoo_repository.NewFindOptions().
@@ -217,12 +222,37 @@ func (tattooService *TattooService) PublishTattoos(
 	return modelTatto, nil
 }
 
+type DataUpdateRating struct {
+	Tattoos       []model.Tattoo
+	TSPublication modelPublication.TSPublication
+}
+
+func (tattooService *TattooService) UpdateRating(publication modelPublication.TSPublication, tattoos []model.Tattoo) {
+	data := DataUpdateRating{
+		Tattoos:       tattoos,
+		TSPublication: publication,
+	}
+	go tattooService.bus.Publish(bus.Event{
+		Name:    UPDATE_TATTOOS_RATINGS,
+		Payload: utils.ToPayload(data),
+	})
+}
+func (tattooService *TattooService) DeleteTattoos(tattoos []model.Tattoo) error {
+
+	go tattooService.bus.Publish(bus.Event{
+		Name:    DELETE_TATTOO,
+		Payload: utils.Payload(tattoos),
+	})
+	return nil
+}
+
 func NewTattooService(
 	imageStore store.ImageStore,
 	profileService service.ProfileService,
 	tattooRepository tattoo_repository.TattooRepository,
 	fileService file_service.FileService,
 	embedding embedding.Embedding,
+	bus bus.Bus,
 ) *TattooService {
 	if tattooService == nil {
 		tattooService = &TattooService{
@@ -231,6 +261,7 @@ func NewTattooService(
 			tattooRepository: tattooRepository,
 			fileService:      fileService,
 			embedding:        embedding,
+			bus:              bus,
 		}
 	}
 

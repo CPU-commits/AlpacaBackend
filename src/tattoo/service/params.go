@@ -8,6 +8,7 @@ type SearchByImageParams struct {
 }
 
 type GetTattoosParams struct {
-	Username string
-	IDStudio int64
+	IDPublication int64
+	Username      string
+	IDStudio      int64
 }
