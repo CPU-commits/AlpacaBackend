@@ -29,8 +29,8 @@ type Link struct {
 	Link      string     `boil:"link" json:"link" toml:"link" yaml:"link"`
 	ShortCode string     `boil:"short_code" json:"short_code" toml:"short_code" yaml:"short_code"`
 	IDStudio  null.Int64 `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
-	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	IDUser    null.Int64 `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
+	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *linkR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L linkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,16 +42,16 @@ var LinkColumns = struct {
 	Link      string
 	ShortCode string
 	IDStudio  string
-	CreatedAt string
 	IDUser    string
+	CreatedAt string
 }{
 	ID:        "id",
 	Type:      "type",
 	Link:      "link",
 	ShortCode: "short_code",
 	IDStudio:  "id_studio",
-	CreatedAt: "created_at",
 	IDUser:    "id_user",
+	CreatedAt: "created_at",
 }
 
 var LinkTableColumns = struct {
@@ -60,16 +60,16 @@ var LinkTableColumns = struct {
 	Link      string
 	ShortCode string
 	IDStudio  string
-	CreatedAt string
 	IDUser    string
+	CreatedAt string
 }{
 	ID:        "links.id",
 	Type:      "links.type",
 	Link:      "links.link",
 	ShortCode: "links.short_code",
 	IDStudio:  "links.id_studio",
-	CreatedAt: "links.created_at",
 	IDUser:    "links.id_user",
+	CreatedAt: "links.created_at",
 }
 
 // Generated where
@@ -80,16 +80,16 @@ var LinkWhere = struct {
 	Link      whereHelperstring
 	ShortCode whereHelperstring
 	IDStudio  whereHelpernull_Int64
-	CreatedAt whereHelpertime_Time
 	IDUser    whereHelpernull_Int64
+	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"links\".\"id\""},
 	Type:      whereHelperstring{field: "\"links\".\"type\""},
 	Link:      whereHelperstring{field: "\"links\".\"link\""},
 	ShortCode: whereHelperstring{field: "\"links\".\"short_code\""},
 	IDStudio:  whereHelpernull_Int64{field: "\"links\".\"id_studio\""},
-	CreatedAt: whereHelpertime_Time{field: "\"links\".\"created_at\""},
 	IDUser:    whereHelpernull_Int64{field: "\"links\".\"id_user\""},
+	CreatedAt: whereHelpertime_Time{field: "\"links\".\"created_at\""},
 }
 
 // LinkRels is where relationship names are stored.
@@ -167,9 +167,9 @@ func (r *linkR) GetIDLinkViews() ViewSlice {
 type linkL struct{}
 
 var (
-	linkAllColumns            = []string{"id", "type", "link", "short_code", "id_studio", "created_at", "id_user"}
+	linkAllColumns            = []string{"id", "type", "link", "short_code", "id_studio", "id_user", "created_at"}
 	linkColumnsWithoutDefault = []string{"type", "link", "short_code"}
-	linkColumnsWithDefault    = []string{"id", "id_studio", "created_at", "id_user"}
+	linkColumnsWithDefault    = []string{"id", "id_studio", "id_user", "created_at"}
 	linkPrimaryKeyColumns     = []string{"id"}
 	linkGeneratedColumns      = []string{}
 )

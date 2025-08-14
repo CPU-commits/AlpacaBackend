@@ -15,6 +15,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_histories_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/people_studio_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/design_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/temporal_view_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/view/repository/view_repository"
 	viewServices "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
@@ -37,6 +38,7 @@ var (
 	viewRepository            = view_repository.NewSqlViewRepository()
 	temporalViewRepository    = temporal_view_repository.NewRdTemportalViewRepository()
 	peopleHistoriesRepository = people_histories_repository.NewSqlPeopleHistoriesRepository()
+	designRepository          = design_repository.NewSqlDesignRepository(db.DB)
 )
 
 // UID Generator

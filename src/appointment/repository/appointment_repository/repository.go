@@ -32,6 +32,7 @@ type SelectOpts struct {
 	IDTattooArtist *bool
 	IDStudio       *bool
 	IDCalendar     *bool
+	IDDesign       *bool
 }
 
 type findOptions struct {

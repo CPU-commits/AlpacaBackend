@@ -27,9 +27,9 @@ type User struct {
 	ID        int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email     string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Name      string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Phone     null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Location  null.String `boil:"location" json:"location,omitempty" toml:"location" yaml:"location,omitempty"`
 	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -41,18 +41,18 @@ var UserColumns = struct {
 	ID        string
 	Email     string
 	Name      string
+	Username  string
 	Phone     string
 	CreatedAt string
-	Username  string
 	Location  string
 	UpdatedAt string
 }{
 	ID:        "id",
 	Email:     "email",
 	Name:      "name",
+	Username:  "username",
 	Phone:     "phone",
 	CreatedAt: "created_at",
-	Username:  "username",
 	Location:  "location",
 	UpdatedAt: "updated_at",
 }
@@ -61,18 +61,18 @@ var UserTableColumns = struct {
 	ID        string
 	Email     string
 	Name      string
+	Username  string
 	Phone     string
 	CreatedAt string
-	Username  string
 	Location  string
 	UpdatedAt string
 }{
 	ID:        "users.id",
 	Email:     "users.email",
 	Name:      "users.name",
+	Username:  "users.username",
 	Phone:     "users.phone",
 	CreatedAt: "users.created_at",
-	Username:  "users.username",
 	Location:  "users.location",
 	UpdatedAt: "users.updated_at",
 }
@@ -83,18 +83,18 @@ var UserWhere = struct {
 	ID        whereHelperint64
 	Email     whereHelperstring
 	Name      whereHelperstring
+	Username  whereHelperstring
 	Phone     whereHelpernull_String
 	CreatedAt whereHelpertime_Time
-	Username  whereHelperstring
 	Location  whereHelpernull_String
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"users\".\"id\""},
 	Email:     whereHelperstring{field: "\"users\".\"email\""},
 	Name:      whereHelperstring{field: "\"users\".\"name\""},
+	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Phone:     whereHelpernull_String{field: "\"users\".\"phone\""},
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
-	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Location:  whereHelpernull_String{field: "\"users\".\"location\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"users\".\"updated_at\""},
 }
@@ -478,7 +478,7 @@ func (r *userR) GetIDUserViews() ViewSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "name", "phone", "created_at", "username", "location", "updated_at"}
+	userAllColumns            = []string{"id", "email", "name", "username", "phone", "created_at", "location", "updated_at"}
 	userColumnsWithoutDefault = []string{"email", "name", "username"}
 	userColumnsWithDefault    = []string{"id", "phone", "created_at", "location", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}

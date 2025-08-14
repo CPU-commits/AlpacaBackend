@@ -74,7 +74,6 @@ func (httpDesign *HttpDesignController) UploadDesigns(c *gin.Context) {
 		if err != nil {
 			design.Coord = coord
 		}
-
 		design.Image = store.ImageDto{
 			File:     openedFile,
 			Name:     file.Filename,
@@ -313,6 +312,7 @@ func NewDesignHttpController(bus bus.Bus) *HttpDesignController {
 				profileService,
 				peopleStudioService,
 				studioRepository,
+				designRepository,
 			),
 		),
 	}

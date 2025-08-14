@@ -1078,7 +1078,7 @@ func testPaymentsSelect(t *testing.T) {
 }
 
 var (
-	paymentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDSubscription`: `bigint`, `Status`: `enum.payment_status('pending','paid','refused','refunded')`, `Text`: `text`, `Price`: `double precision`, `Currency`: `text`, `Items`: `jsonb`, `Identifier`: `text`, `TotalFormated`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`, `IDStudio`: `bigint`}
+	paymentDBTypes = map[string]string{`ID`: `bigint`, `IDUser`: `bigint`, `IDStudio`: `bigint`, `IDSubscription`: `bigint`, `Status`: `enum.payment_status('pending','paid','refused','refunded')`, `Text`: `text`, `Price`: `double precision`, `Currency`: `text`, `Items`: `jsonb`, `Identifier`: `text`, `TotalFormated`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`}
 	_              = bytes.MinRead
 )
 

@@ -16,6 +16,7 @@ import (
 	studioModel "github.com/CPU-commits/Template_Go-EventDriven/src/studio/model"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/studio/repository/studio_repository"
 	adminStudioService "github.com/CPU-commits/Template_Go-EventDriven/src/studio/service"
+	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/design_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/repository/profile_repository"
 	userService "github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -31,6 +32,7 @@ type AppointmentService struct {
 	profileService        userService.ProfileService
 	adminStudioService    adminStudioService.AdminStudioService
 	studioRepository      studio_repository.StudioRepository
+	designRepository      design_repository.DesignRepository
 }
 
 var appointmentService *AppointmentService
@@ -365,6 +367,7 @@ func (appointmentService *AppointmentService) CancelAppointment(
 		opts := appointment_repository.NewFindOneOptions().Select(
 			appointment_repository.SelectOpts{
 				IDCalendar: utils.Bool(true),
+				IDDesign:   utils.Bool(true),
 			},
 		)
 
@@ -378,6 +381,22 @@ func (appointmentService *AppointmentService) CancelAppointment(
 			return
 		}
 
+		if appointment.IDDesign != nil {
+			design, err := appointmentService.designRepository.FindOne(&design_repository.Criteria{ID: *appointment.IDDesign}, nil)
+			if err != nil {
+				return
+			}
+			if design == nil {
+				return
+			}
+			if design.IsExclusive {
+				err = appointmentService.designRepository.UpdateStock(design.ID, "increase")
+				if err != nil {
+					return
+				}
+			}
+
+		}
 		appointmentService.calendar.Delete(calendar.EventID(appointment.IDCalendar))
 	}()
 
@@ -488,6 +507,7 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 			IDUser:     utils.Bool(true),
 			IDCalendar: utils.Bool(true),
 			IDStudio:   utils.Bool(true),
+			IDDesign:   utils.Bool(true),
 		})
 
 		appointment, err := appointmentService.appointmentRepository.FindOne(
@@ -506,6 +526,23 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 			if err != nil {
 				return
 			}
+			if appointment.IDDesign != nil {
+				design, err := appointmentService.designRepository.FindOne(&design_repository.Criteria{ID: *appointment.IDDesign}, nil)
+				if err != nil {
+					return
+				}
+				if design == nil {
+					return
+				}
+				if design.IsExclusive && design.MaxCopies > 0 {
+					err = appointmentService.designRepository.UpdateStock(design.ID, "reduce")
+					if err != nil {
+						return
+					}
+				}
+
+			}
+
 			if appointment.IDStudio != 0 {
 				studio, err := appointmentService.studioRepository.FindOne(
 					&studio_repository.Criteria{
@@ -550,6 +587,8 @@ func (appointmentService *AppointmentService) ScheduleAppointment(
 				ID:       calendar.EventID(appointment.IDCalendar),
 			})
 		}
+		// Quita 1 del stock a el diseño
+
 	}()
 
 	return nil
@@ -756,6 +795,7 @@ func NewAppointmentService(
 	profileService userService.ProfileService,
 	adminStudioService adminStudioService.AdminStudioService,
 	studioRepository studio_repository.StudioRepository,
+	designRepository design_repository.DesignRepository,
 ) *AppointmentService {
 	if appointmentService == nil {
 		appointmentService = &AppointmentService{
@@ -767,6 +807,7 @@ func NewAppointmentService(
 			profileService:        profileService,
 			adminStudioService:    adminStudioService,
 			studioRepository:      studioRepository,
+			designRepository:      designRepository,
 		}
 	}
 

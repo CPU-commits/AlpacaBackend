@@ -3,11 +3,13 @@ package design_repository
 import "github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
 
 type Criteria struct {
-	ID        int64
-	IDs       []int64
-	IDProfile int64
-	Category  string
-	IsDeleted *bool
+	ID          int64
+	IDs         []int64
+	IDProfile   int64
+	Category    string
+	IsDeleted   *bool
+	IsExclusive *bool
+	HaveStock   *bool
 }
 
 type Include struct {
@@ -20,6 +22,9 @@ type Include struct {
 type Sort struct {
 	CreatedAt string
 	Price     string
+}
+type SelectOpts struct {
+	IDDesign *bool
 }
 
 type FindOpts struct {
@@ -58,6 +63,7 @@ type UpdateData struct {
 	Categories  *[]string
 	Price       *int64
 	IsDeleted   *bool
+	ReduceStock *bool
 }
 
 type SimilarityParams struct {
@@ -111,4 +117,5 @@ type DesignRepository interface {
 	Update(criteria *Criteria, data UpdateData) error
 	Delete(criteria *Criteria) error
 	GetCategories(criteria *Criteria) ([]string, error)
+	UpdateStock(id int64, action string) error
 }

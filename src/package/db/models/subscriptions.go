@@ -26,6 +26,7 @@ import (
 type Subscription struct {
 	ID              int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDUser          null.Int64  `boil:"id_user" json:"id_user,omitempty" toml:"id_user" yaml:"id_user,omitempty"`
+	IDStudio        null.Int64  `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 	IDPlan          int64       `boil:"id_plan" json:"id_plan" toml:"id_plan" yaml:"id_plan"`
 	StartDate       time.Time   `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
 	CardBrand       null.String `boil:"card_brand" json:"card_brand,omitempty" toml:"card_brand" yaml:"card_brand,omitempty"`
@@ -37,7 +38,6 @@ type Subscription struct {
 	NextBillingDate null.Time   `boil:"next_billing_date" json:"next_billing_date,omitempty" toml:"next_billing_date" yaml:"next_billing_date,omitempty"`
 	Identifier      string      `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
 	CreatedAt       time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	IDStudio        null.Int64  `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
 
 	R *subscriptionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L subscriptionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -46,6 +46,7 @@ type Subscription struct {
 var SubscriptionColumns = struct {
 	ID              string
 	IDUser          string
+	IDStudio        string
 	IDPlan          string
 	StartDate       string
 	CardBrand       string
@@ -57,10 +58,10 @@ var SubscriptionColumns = struct {
 	NextBillingDate string
 	Identifier      string
 	CreatedAt       string
-	IDStudio        string
 }{
 	ID:              "id",
 	IDUser:          "id_user",
+	IDStudio:        "id_studio",
 	IDPlan:          "id_plan",
 	StartDate:       "start_date",
 	CardBrand:       "card_brand",
@@ -72,12 +73,12 @@ var SubscriptionColumns = struct {
 	NextBillingDate: "next_billing_date",
 	Identifier:      "identifier",
 	CreatedAt:       "created_at",
-	IDStudio:        "id_studio",
 }
 
 var SubscriptionTableColumns = struct {
 	ID              string
 	IDUser          string
+	IDStudio        string
 	IDPlan          string
 	StartDate       string
 	CardBrand       string
@@ -89,10 +90,10 @@ var SubscriptionTableColumns = struct {
 	NextBillingDate string
 	Identifier      string
 	CreatedAt       string
-	IDStudio        string
 }{
 	ID:              "subscriptions.id",
 	IDUser:          "subscriptions.id_user",
+	IDStudio:        "subscriptions.id_studio",
 	IDPlan:          "subscriptions.id_plan",
 	StartDate:       "subscriptions.start_date",
 	CardBrand:       "subscriptions.card_brand",
@@ -104,7 +105,6 @@ var SubscriptionTableColumns = struct {
 	NextBillingDate: "subscriptions.next_billing_date",
 	Identifier:      "subscriptions.identifier",
 	CreatedAt:       "subscriptions.created_at",
-	IDStudio:        "subscriptions.id_studio",
 }
 
 // Generated where
@@ -150,6 +150,7 @@ func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNo
 var SubscriptionWhere = struct {
 	ID              whereHelperint64
 	IDUser          whereHelpernull_Int64
+	IDStudio        whereHelpernull_Int64
 	IDPlan          whereHelperint64
 	StartDate       whereHelpertime_Time
 	CardBrand       whereHelpernull_String
@@ -161,10 +162,10 @@ var SubscriptionWhere = struct {
 	NextBillingDate whereHelpernull_Time
 	Identifier      whereHelperstring
 	CreatedAt       whereHelpertime_Time
-	IDStudio        whereHelpernull_Int64
 }{
 	ID:              whereHelperint64{field: "\"subscriptions\".\"id\""},
 	IDUser:          whereHelpernull_Int64{field: "\"subscriptions\".\"id_user\""},
+	IDStudio:        whereHelpernull_Int64{field: "\"subscriptions\".\"id_studio\""},
 	IDPlan:          whereHelperint64{field: "\"subscriptions\".\"id_plan\""},
 	StartDate:       whereHelpertime_Time{field: "\"subscriptions\".\"start_date\""},
 	CardBrand:       whereHelpernull_String{field: "\"subscriptions\".\"card_brand\""},
@@ -176,7 +177,6 @@ var SubscriptionWhere = struct {
 	NextBillingDate: whereHelpernull_Time{field: "\"subscriptions\".\"next_billing_date\""},
 	Identifier:      whereHelperstring{field: "\"subscriptions\".\"identifier\""},
 	CreatedAt:       whereHelpertime_Time{field: "\"subscriptions\".\"created_at\""},
-	IDStudio:        whereHelpernull_Int64{field: "\"subscriptions\".\"id_studio\""},
 }
 
 // SubscriptionRels is where relationship names are stored.
@@ -273,9 +273,9 @@ func (r *subscriptionR) GetIDSubscriptionPayments() PaymentSlice {
 type subscriptionL struct{}
 
 var (
-	subscriptionAllColumns            = []string{"id", "id_user", "id_plan", "start_date", "card_brand", "card_last_four", "billing_anchor", "end_date", "status", "canceled_at", "next_billing_date", "identifier", "created_at", "id_studio"}
+	subscriptionAllColumns            = []string{"id", "id_user", "id_studio", "id_plan", "start_date", "card_brand", "card_last_four", "billing_anchor", "end_date", "status", "canceled_at", "next_billing_date", "identifier", "created_at"}
 	subscriptionColumnsWithoutDefault = []string{"id_plan", "start_date", "end_date", "identifier"}
-	subscriptionColumnsWithDefault    = []string{"id", "id_user", "card_brand", "card_last_four", "billing_anchor", "status", "canceled_at", "next_billing_date", "created_at", "id_studio"}
+	subscriptionColumnsWithDefault    = []string{"id", "id_user", "id_studio", "card_brand", "card_last_four", "billing_anchor", "status", "canceled_at", "next_billing_date", "created_at"}
 	subscriptionPrimaryKeyColumns     = []string{"id"}
 	subscriptionGeneratedColumns      = []string{}
 )
