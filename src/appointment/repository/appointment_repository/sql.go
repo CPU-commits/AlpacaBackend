@@ -144,6 +144,7 @@ func (sqlAR appointmentRepositorySql) sqlAppointmentToModel(
 			},
 			Description: sqlDesign.Description.String,
 			Price:       sqlDesign.Price.Int64,
+			MaxCopies:   sqlDesign.MaxCopies.Int64,
 			Categories:  sqlDesign.Categories,
 			CreatedAt:   sqlDesign.CreatedAt,
 		}
@@ -258,6 +259,7 @@ func (sqlAR appointmentRepositorySql) loadToMod(load *LoadOpts) []QueryMod {
 			))
 		}
 	}
+
 	if load.TattooArtist != nil {
 		mod = append(mod, Load(
 			models.AppointmentRels.IDTattooArtistUser,
@@ -369,6 +371,9 @@ func (appointmentRepositorySql) selectToMod(selectOpts *SelectOpts) []QueryMod {
 	}
 	if selectOpts.IDStudio != nil && *selectOpts.IDStudio {
 		mod = append(mod, Select(models.AppointmentColumns.IDStudio))
+	}
+	if selectOpts.IDDesign != nil && *selectOpts.IDDesign {
+		mod = append(mod, Select(models.AppointmentColumns.IDDesign))
 	}
 
 	return mod

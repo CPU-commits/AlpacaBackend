@@ -34,7 +34,9 @@ func (sqlDS *sqlDesignRepository) sqlDesignToDesign(sqlDR *models.Design) *model
 		CreatedAt:   sqlDR.CreatedAt,
 		Categories:  sqlDR.Categories,
 		Price:       sqlDR.Price.Int64,
+		MaxCopies:   sqlDR.MaxCopies.Int64,
 		IsDeleted:   sqlDR.IsDeleted,
+		IsExclusive: sqlDR.IsExclusive.Bool,
 		Description: sqlDR.Description.String,
 	}
 	if sqlDR.R != nil && sqlDR.R.IDImageImage != nil {
@@ -95,6 +97,18 @@ func (*sqlDesignRepository) criteriaToWhere(c *Criteria) []QueryMod {
 	}
 	if c.IsDeleted != nil {
 		mods = append(mods, models.DesignWhere.IsDeleted.EQ(*c.IsDeleted))
+	}
+	if c.IsExclusive != nil {
+		mods = append(mods, models.DesignWhere.IsExclusive.EQ(null.BoolFromPtr(c.IsExclusive)))
+	}
+	if c.HaveStock != nil && *c.HaveStock {
+		if c.IsExclusive == nil {
+			mods = append(mods,
+				Where("(is_exclusive = FALSE) OR (is_exclusive = TRUE AND max_copies > 0)"),
+			)
+		} else if *c.IsExclusive {
+			mods = append(mods, Where("max_copies > 0"))
+		}
 	}
 	if c.Category != "" {
 		mods = append(mods, Where("categories && ARRAY[?]::text[]", c.Category))
@@ -219,11 +233,14 @@ func (sqlDS *sqlDesignRepository) Insert(designs []model.Design, idProfile int64
 			tx.Rollback()
 			return nil, utils.ErrRepositoryFailed
 		}
+		fmt.Printf("null.BoolFrom(design.IsExclusive): %v\n", design.IsExclusive)
 		sqlDesign := models.Design{
-			IDProfile:  idProfile,
-			IDImage:    sqlImage.ID,
-			Categories: design.Categories,
-			Price:      null.Int64From(design.Price),
+			IDProfile:   idProfile,
+			IDImage:     sqlImage.ID,
+			Categories:  design.Categories,
+			MaxCopies:   null.Int64From(design.MaxCopies),
+			Price:       null.Int64From(design.Price),
+			IsExclusive: null.BoolFrom(design.IsExclusive),
 		}
 		if design.Description != "" {
 			sqlDesign.Description = null.StringFrom(design.Description)
@@ -272,10 +289,41 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 		sd.IsDeleted = true
 		cols = append(cols, models.DesignColumns.IsDeleted)
 	}
+
 	if len(cols) == 0 {
 		return nil
 	}
 	_, err = sd.Update(ctx, sqlDS.db, boil.Whitelist(cols...))
+	if err != nil {
+		return utils.ErrRepositoryFailed
+	}
+	return nil
+}
+
+// Action reduce | increase
+func (sqlDS *sqlDesignRepository) UpdateStock(id int64, action string) error {
+	design, err := models.FindDesign(context.Background(), sqlDS.db, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return utils.ErrRepositoryFailed
+	}
+	var cols []string
+
+	if design.MaxCopies.Valid && action == "reduce" {
+		design.MaxCopies.Int64--
+		cols = append(cols, models.DesignColumns.MaxCopies)
+	}
+	if design.MaxCopies.Valid && action == "increase" {
+		design.MaxCopies.Int64++
+		cols = append(cols, models.DesignColumns.MaxCopies)
+	}
+	if len(cols) == 0 {
+		return nil
+	}
+
+	_, err = design.Update(context.Background(), sqlDS.db, boil.Whitelist(cols...))
 	if err != nil {
 		return utils.ErrRepositoryFailed
 	}

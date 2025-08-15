@@ -3959,7 +3959,7 @@ func testStudiosSelect(t *testing.T) {
 }
 
 var (
-	studioDBTypes = map[string]string{`ID`: `bigint`, `Description`: `text`, `Email`: `text`, `Phone`: `text`, `CreatedAt`: `timestamp without time zone`, `IDAvatar`: `bigint`, `Name`: `text`, `Username`: `text`, `FullAddress`: `text`, `IDOwner`: `bigint`, `IDBanner`: `bigint`, `IsActive`: `boolean`, `IsLimit`: `boolean`, `UpdatedAt`: `timestamp without time zone`}
+	studioDBTypes = map[string]string{`ID`: `bigint`, `Name`: `text`, `Username`: `text`, `IDAvatar`: `bigint`, `IDBanner`: `bigint`, `Description`: `text`, `FullAddress`: `text`, `Email`: `text`, `Phone`: `text`, `IDOwner`: `bigint`, `IsActive`: `boolean`, `IsLimit`: `boolean`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`}
 	_             = bytes.MinRead
 )
 

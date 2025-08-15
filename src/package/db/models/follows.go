@@ -27,8 +27,8 @@ type Follow struct {
 	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	IDUser    int64      `boil:"id_user" json:"id_user" toml:"id_user" yaml:"id_user"`
 	IDProfile null.Int64 `boil:"id_profile" json:"id_profile,omitempty" toml:"id_profile" yaml:"id_profile,omitempty"`
-	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	IDStudio  null.Int64 `boil:"id_studio" json:"id_studio,omitempty" toml:"id_studio" yaml:"id_studio,omitempty"`
+	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *followR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L followL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,28 +38,28 @@ var FollowColumns = struct {
 	ID        string
 	IDUser    string
 	IDProfile string
-	CreatedAt string
 	IDStudio  string
+	CreatedAt string
 }{
 	ID:        "id",
 	IDUser:    "id_user",
 	IDProfile: "id_profile",
-	CreatedAt: "created_at",
 	IDStudio:  "id_studio",
+	CreatedAt: "created_at",
 }
 
 var FollowTableColumns = struct {
 	ID        string
 	IDUser    string
 	IDProfile string
-	CreatedAt string
 	IDStudio  string
+	CreatedAt string
 }{
 	ID:        "follows.id",
 	IDUser:    "follows.id_user",
 	IDProfile: "follows.id_profile",
-	CreatedAt: "follows.created_at",
 	IDStudio:  "follows.id_studio",
+	CreatedAt: "follows.created_at",
 }
 
 // Generated where
@@ -68,14 +68,14 @@ var FollowWhere = struct {
 	ID        whereHelperint64
 	IDUser    whereHelperint64
 	IDProfile whereHelpernull_Int64
-	CreatedAt whereHelpertime_Time
 	IDStudio  whereHelpernull_Int64
+	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint64{field: "\"follows\".\"id\""},
 	IDUser:    whereHelperint64{field: "\"follows\".\"id_user\""},
 	IDProfile: whereHelpernull_Int64{field: "\"follows\".\"id_profile\""},
-	CreatedAt: whereHelpertime_Time{field: "\"follows\".\"created_at\""},
 	IDStudio:  whereHelpernull_Int64{field: "\"follows\".\"id_studio\""},
+	CreatedAt: whereHelpertime_Time{field: "\"follows\".\"created_at\""},
 }
 
 // FollowRels is where relationship names are stored.
@@ -153,9 +153,9 @@ func (r *followR) GetIDUserUser() *User {
 type followL struct{}
 
 var (
-	followAllColumns            = []string{"id", "id_user", "id_profile", "created_at", "id_studio"}
+	followAllColumns            = []string{"id", "id_user", "id_profile", "id_studio", "created_at"}
 	followColumnsWithoutDefault = []string{"id_user"}
-	followColumnsWithDefault    = []string{"id", "id_profile", "created_at", "id_studio"}
+	followColumnsWithDefault    = []string{"id", "id_profile", "id_studio", "created_at"}
 	followPrimaryKeyColumns     = []string{"id"}
 	followGeneratedColumns      = []string{}
 )

@@ -24,6 +24,8 @@ type DesignDto struct {
 	Description string `form:"description" binding:"omitempty, max=500"`
 	Price       int64  `form:"price" binding:"omitempty"`
 	Image       store.ImageDto
+	MaxCopies   *int64 `form:"maxCopies" binding:"omitempty"`
+	IsExclusive *bool  `form:"isExclusive" binding:"omitempty"`
 	Coord       *CoordDto
 }
 
@@ -48,6 +50,12 @@ func (designDto *DesignDto) ToModel(image fileModel.Image) model.Design {
 			X: design.Coord.X,
 			Y: design.Coord.Y,
 		}
+	}
+	if designDto.MaxCopies != nil {
+		design.MaxCopies = *designDto.MaxCopies
+	}
+	if designDto.IsExclusive != nil {
+		design.IsExclusive = *designDto.IsExclusive
 	}
 	return design
 }

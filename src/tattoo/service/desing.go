@@ -9,6 +9,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/store"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/dto"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/model"
+
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/design_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
@@ -39,7 +40,6 @@ func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, u
 		if err != nil {
 			return model.Design{}, err
 		}
-
 		image, err := designService.imageStore.Upload(designDto.Image, fmt.Sprintf("designs/%d", userId))
 		if err != nil {
 			return model.Design{}, err
@@ -72,6 +72,7 @@ func (designService *DesignService) GetDesign(idDesign int64, username string) (
 		ID:        idDesign,
 		IDProfile: profileId,
 		IsDeleted: utils.Bool(false),
+		HaveStock: utils.Bool(true),
 	}, opts)
 }
 func (designService *DesignService) GetDesigns(username string, params dto.DesignFindDto) ([]model.Design, *DesignsMetadata, error) {
@@ -106,6 +107,7 @@ func (designService *DesignService) GetDesigns(username string, params dto.Desig
 		IDProfile: profileId,
 		Category:  params.Category,
 		IsDeleted: utils.Bool(false),
+		HaveStock: utils.Bool(true),
 	}, opts)
 	if err != nil {
 		return nil, nil, err
@@ -150,7 +152,6 @@ func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataU
 		Price:       &data.Price,
 	})
 }
-
 func (designService *DesignService) DeleteDesign(idUser int64, designId int64) error {
 	idProfile, err := designService.profileService.GetProfileIDFromIDUser(idUser)
 	if err != nil {
@@ -198,7 +199,6 @@ func (designService *DesignService) DeleteDesign(idUser int64, designId int64) e
 	}
 
 }
-
 func (designService *DesignService) GetDesignCategories(username string) ([]string, error) {
 	profileId, err := designService.profileService.GetProfileIdFromUsername(username)
 	if err != nil {
