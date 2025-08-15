@@ -36,6 +36,7 @@ type View struct {
 	Timezone  null.String `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
 	Region    null.String `boil:"region" json:"region,omitempty" toml:"region" yaml:"region,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	IDTattoo  null.Int64  `boil:"id_tattoo" json:"id_tattoo,omitempty" toml:"id_tattoo" yaml:"id_tattoo,omitempty"`
 
 	R *viewR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L viewL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -54,6 +55,7 @@ var ViewColumns = struct {
 	Timezone  string
 	Region    string
 	CreatedAt string
+	IDTattoo  string
 }{
 	ID:        "id",
 	IDPost:    "id_post",
@@ -67,6 +69,7 @@ var ViewColumns = struct {
 	Timezone:  "timezone",
 	Region:    "region",
 	CreatedAt: "created_at",
+	IDTattoo:  "id_tattoo",
 }
 
 var ViewTableColumns = struct {
@@ -82,6 +85,7 @@ var ViewTableColumns = struct {
 	Timezone  string
 	Region    string
 	CreatedAt string
+	IDTattoo  string
 }{
 	ID:        "views.id",
 	IDPost:    "views.id_post",
@@ -95,6 +99,7 @@ var ViewTableColumns = struct {
 	Timezone:  "views.timezone",
 	Region:    "views.region",
 	CreatedAt: "views.created_at",
+	IDTattoo:  "views.id_tattoo",
 }
 
 // Generated where
@@ -112,6 +117,7 @@ var ViewWhere = struct {
 	Timezone  whereHelpernull_String
 	Region    whereHelpernull_String
 	CreatedAt whereHelpertime_Time
+	IDTattoo  whereHelpernull_Int64
 }{
 	ID:        whereHelperint64{field: "\"views\".\"id\""},
 	IDPost:    whereHelpernull_Int64{field: "\"views\".\"id_post\""},
@@ -125,6 +131,7 @@ var ViewWhere = struct {
 	Timezone:  whereHelpernull_String{field: "\"views\".\"timezone\""},
 	Region:    whereHelpernull_String{field: "\"views\".\"region\""},
 	CreatedAt: whereHelpertime_Time{field: "\"views\".\"created_at\""},
+	IDTattoo:  whereHelpernull_Int64{field: "\"views\".\"id_tattoo\""},
 }
 
 // ViewRels is where relationship names are stored.
@@ -133,12 +140,14 @@ var ViewRels = struct {
 	IDPostPost       string
 	IDProfileProfile string
 	IDStudioStudio   string
+	IDTattooTattoo   string
 	IDUserUser       string
 }{
 	IDLinkLink:       "IDLinkLink",
 	IDPostPost:       "IDPostPost",
 	IDProfileProfile: "IDProfileProfile",
 	IDStudioStudio:   "IDStudioStudio",
+	IDTattooTattoo:   "IDTattooTattoo",
 	IDUserUser:       "IDUserUser",
 }
 
@@ -148,6 +157,7 @@ type viewR struct {
 	IDPostPost       *Post    `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
 	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
 	IDStudioStudio   *Studio  `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
+	IDTattooTattoo   *Tattoo  `boil:"IDTattooTattoo" json:"IDTattooTattoo" toml:"IDTattooTattoo" yaml:"IDTattooTattoo"`
 	IDUserUser       *User    `boil:"IDUserUser" json:"IDUserUser" toml:"IDUserUser" yaml:"IDUserUser"`
 }
 
@@ -220,6 +230,22 @@ func (r *viewR) GetIDStudioStudio() *Studio {
 	return r.IDStudioStudio
 }
 
+func (o *View) GetIDTattooTattoo() *Tattoo {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDTattooTattoo()
+}
+
+func (r *viewR) GetIDTattooTattoo() *Tattoo {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDTattooTattoo
+}
+
 func (o *View) GetIDUserUser() *User {
 	if o == nil {
 		return nil
@@ -240,9 +266,9 @@ func (r *viewR) GetIDUserUser() *User {
 type viewL struct{}
 
 var (
-	viewAllColumns            = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at"}
+	viewAllColumns            = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at", "id_tattoo"}
 	viewColumnsWithoutDefault = []string{}
-	viewColumnsWithDefault    = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at"}
+	viewColumnsWithDefault    = []string{"id", "id_post", "id_profile", "id_link", "id_studio", "id_user", "country", "city", "continent", "timezone", "region", "created_at", "id_tattoo"}
 	viewPrimaryKeyColumns     = []string{"id"}
 	viewGeneratedColumns      = []string{}
 )
@@ -594,6 +620,17 @@ func (o *View) IDStudioStudio(mods ...qm.QueryMod) studioQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Studios(queryMods...)
+}
+
+// IDTattooTattoo pointed to by the foreign key.
+func (o *View) IDTattooTattoo(mods ...qm.QueryMod) tattooQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.IDTattoo),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Tattoos(queryMods...)
 }
 
 // IDUserUser pointed to by the foreign key.
@@ -1103,6 +1140,130 @@ func (viewL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
+// LoadIDTattooTattoo allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (viewL) LoadIDTattooTattoo(ctx context.Context, e boil.ContextExecutor, singular bool, maybeView interface{}, mods queries.Applicator) error {
+	var slice []*View
+	var object *View
+
+	if singular {
+		var ok bool
+		object, ok = maybeView.(*View)
+		if !ok {
+			object = new(View)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeView)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeView))
+			}
+		}
+	} else {
+		s, ok := maybeView.(*[]*View)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeView)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeView))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &viewR{}
+		}
+		if !queries.IsNil(object.IDTattoo) {
+			args[object.IDTattoo] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &viewR{}
+			}
+
+			if !queries.IsNil(obj.IDTattoo) {
+				args[obj.IDTattoo] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`tattoos`),
+		qm.WhereIn(`tattoos.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Tattoo")
+	}
+
+	var resultSlice []*Tattoo
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Tattoo")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for tattoos")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tattoos")
+	}
+
+	if len(tattooAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.IDTattooTattoo = foreign
+		if foreign.R == nil {
+			foreign.R = &tattooR{}
+		}
+		foreign.R.IDTattooViews = append(foreign.R.IDTattooViews, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.IDTattoo, foreign.ID) {
+				local.R.IDTattooTattoo = foreign
+				if foreign.R == nil {
+					foreign.R = &tattooR{}
+				}
+				foreign.R.IDTattooViews = append(foreign.R.IDTattooViews, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadIDUserUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (viewL) LoadIDUserUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeView interface{}, mods queries.Applicator) error {
@@ -1542,6 +1703,86 @@ func (o *View) RemoveIDStudioStudio(ctx context.Context, exec boil.ContextExecut
 			related.R.IDStudioViews[i] = related.R.IDStudioViews[ln-1]
 		}
 		related.R.IDStudioViews = related.R.IDStudioViews[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetIDTattooTattoo of the view to the related item.
+// Sets o.R.IDTattooTattoo to related.
+// Adds o to related.R.IDTattooViews.
+func (o *View) SetIDTattooTattoo(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Tattoo) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"views\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo"}),
+		strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.IDTattoo, related.ID)
+	if o.R == nil {
+		o.R = &viewR{
+			IDTattooTattoo: related,
+		}
+	} else {
+		o.R.IDTattooTattoo = related
+	}
+
+	if related.R == nil {
+		related.R = &tattooR{
+			IDTattooViews: ViewSlice{o},
+		}
+	} else {
+		related.R.IDTattooViews = append(related.R.IDTattooViews, o)
+	}
+
+	return nil
+}
+
+// RemoveIDTattooTattoo relationship.
+// Sets o.R.IDTattooTattoo to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *View) RemoveIDTattooTattoo(ctx context.Context, exec boil.ContextExecutor, related *Tattoo) error {
+	var err error
+
+	queries.SetScanner(&o.IDTattoo, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("id_tattoo")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.IDTattooTattoo = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.IDTattooViews {
+		if queries.Equal(o.IDTattoo, ri.IDTattoo) {
+			continue
+		}
+
+		ln := len(related.R.IDTattooViews)
+		if ln > 1 && i < ln-1 {
+			related.R.IDTattooViews[i] = related.R.IDTattooViews[ln-1]
+		}
+		related.R.IDTattooViews = related.R.IDTattooViews[:ln-1]
 		break
 	}
 	return nil

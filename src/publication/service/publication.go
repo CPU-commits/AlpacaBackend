@@ -518,7 +518,7 @@ func (publicationService *PublicationService) HandleLike(
 	}
 	tattoos, _, err := publicationService.tattooService.GetTattoos(service.GetTattoosParams{
 		IDPublication: publication.ID,
-	}, 0)
+	}, 0, "", "")
 	if err != nil {
 		return false, err
 	}

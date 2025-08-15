@@ -152,6 +152,7 @@ model tattoos {
 	studio studios? @relation(fields: [id_studio], references: [id])
 	image images @relation(fields: [id_image], references: [id])
 	profile profiles @relation(fields: [id_profile], references: [id])
+	view views[]
 }
 
 model designs{
@@ -294,6 +295,7 @@ model views {
 	id_link BigInt?
 	id_studio BigInt?
 	id_user BigInt?
+	id_tattoo BigInt?
 	country String?
 	city String?
 	continent String?
@@ -305,6 +307,7 @@ model views {
 	user users? @relation(fields: [id_user], references: [id])
 	link links? @relation(fields: [id_link], references: [id], onDelete: Cascade)
 	studio studios? @relation(fields: [id_studio], references: [id], onDelete: Cascade)
+	tattoo tattoos? @relation(fields: [id_tattoo],references: [id], onDelete: Cascade)
 }
 
 model shares {

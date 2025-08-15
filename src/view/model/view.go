@@ -9,6 +9,7 @@ type View struct {
 	IDUser    int64
 	IDStudio  int64
 	IDLink    int64
+	IDTattoo  int64
 	Country   string
 	Continent string
 	City      string

@@ -38,6 +38,7 @@ func NewPublicationQueueController(
 			*fileService,
 			embeddingapi.NewAPIEmbedding(),
 			bus,
+			*viewService,
 		),
 	}
 }
@@ -103,7 +104,7 @@ func (queueController *QueuePublicationController) UpdateRatings(c bus.Context) 
 		}
 		tattoos, _, err := queueController.tattooService.GetTattoos(tattooService.GetTattoosParams{
 			IDPublication: publication.ID,
-		}, 0)
+		}, 0, "", "")
 		if err != nil {
 			setError(err)
 			return

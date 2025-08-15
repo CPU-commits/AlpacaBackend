@@ -57,6 +57,7 @@ func NewHTTPInternalController(bus bus.Bus) *HttpInternalController {
 					*fileService,
 					embeddingapi.NewAPIEmbedding(),
 					bus,
+					*viewService,
 				),
 				profileService,
 				imageStore,

@@ -13,6 +13,7 @@ import (
 	"github.com/CPU-commits/Template_Go-EventDriven/src/tattoo/repository/tattoo_repository"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/user/service"
 	"github.com/CPU-commits/Template_Go-EventDriven/src/utils"
+	view_service "github.com/CPU-commits/Template_Go-EventDriven/src/view/service"
 )
 
 var tattooService *TattooService
@@ -24,6 +25,7 @@ type TattooService struct {
 	fileService      file_service.FileService
 	embedding        embedding.Embedding
 	bus              bus.Bus
+	viewService      view_service.ViewService
 }
 
 func (tattooService *TattooService) updateViews(idTattoos []int64) {
@@ -95,7 +97,7 @@ func (tattooService *TattooService) SearchByImage(
 	}, nil
 }
 
-func (tattooService *TattooService) GetTattoos(params GetTattoosParams, page int) ([]model.Tattoo, *TattoosMetadata, error) {
+func (tattooService *TattooService) GetTattoos(params GetTattoosParams, page int, identifie, ip string) ([]model.Tattoo, *TattoosMetadata, error) {
 	criteria := &tattoo_repository.Criteria{}
 
 	if params.Username != "" {
@@ -140,11 +142,26 @@ func (tattooService *TattooService) GetTattoos(params GetTattoosParams, page int
 	if err != nil {
 		return nil, nil, err
 	}
-	go tattooService.updateViews(utils.MapNoError(tattoos, func(tattoo model.Tattoo) int64 {
-		return tattoo.ID
-	}))
-
-	return tattoos, &TattoosMetadata{
+	if identifie != "" || ip != "" {
+		go utils.ConcurrentForEach(tattoos, func(tattoo model.Tattoo, setError func(err error)) {
+			tattooService.viewService.AddPermanentViewIfTemporalViewNotExists(identifie, view_service.ToView{
+				IDTattoo: tattoo.ID,
+			}, utils.String(ip))
+		}, &utils.OptionsConcurrentForEach{
+			MaxConcurrency: 10,
+		})
+	}
+	tattoosWithViews := utils.MapNoError(tattoos, func(tattoo model.Tattoo) model.Tattoo {
+		views, err := tattooService.viewService.CountAllViews(view_service.ToView{
+			IDTattoo: tattoo.ID,
+		})
+		if err != nil {
+			return model.Tattoo{}
+		}
+		tattoo.Views = int(views)
+		return tattoo
+	})
+	return tattoosWithViews, &TattoosMetadata{
 		Limit: limit,
 		Total: int(count),
 	}, nil
@@ -253,6 +270,8 @@ func NewTattooService(
 	fileService file_service.FileService,
 	embedding embedding.Embedding,
 	bus bus.Bus,
+	viewService view_service.ViewService,
+
 ) *TattooService {
 	if tattooService == nil {
 		tattooService = &TattooService{
@@ -262,6 +281,7 @@ func NewTattooService(
 			fileService:      fileService,
 			embedding:        embedding,
 			bus:              bus,
+			viewService:      viewService,
 		}
 	}
 

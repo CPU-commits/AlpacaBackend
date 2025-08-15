@@ -11,6 +11,7 @@ type Criteria struct {
 	IDPost    int64
 	IDProfile int64
 	IDStudio  int64
+	IDTattoo  int64
 	IDLink    int64
 	CreatedAt *repository.CriteriaTime
 }
@@ -31,4 +32,5 @@ type ViewRepository interface {
 	Insert(view model.View) error
 	CountGroupByDay(criteria *Criteria) ([]CountGroupByDayResult, error)
 	CountGroupByDayAndLocation(criteria *Criteria) ([]CountGroupByDayResultAndLocation, error)
+	Count(criteria *Criteria) (int64, error)
 }

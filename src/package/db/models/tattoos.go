@@ -162,19 +162,22 @@ var TattooRels = struct {
 	IDPostPost       string
 	IDProfileProfile string
 	IDStudioStudio   string
+	IDTattooViews    string
 }{
 	IDImageImage:     "IDImageImage",
 	IDPostPost:       "IDPostPost",
 	IDProfileProfile: "IDProfileProfile",
 	IDStudioStudio:   "IDStudioStudio",
+	IDTattooViews:    "IDTattooViews",
 }
 
 // tattooR is where relationships are stored.
 type tattooR struct {
-	IDImageImage     *Image   `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
-	IDPostPost       *Post    `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
-	IDProfileProfile *Profile `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
-	IDStudioStudio   *Studio  `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
+	IDImageImage     *Image    `boil:"IDImageImage" json:"IDImageImage" toml:"IDImageImage" yaml:"IDImageImage"`
+	IDPostPost       *Post     `boil:"IDPostPost" json:"IDPostPost" toml:"IDPostPost" yaml:"IDPostPost"`
+	IDProfileProfile *Profile  `boil:"IDProfileProfile" json:"IDProfileProfile" toml:"IDProfileProfile" yaml:"IDProfileProfile"`
+	IDStudioStudio   *Studio   `boil:"IDStudioStudio" json:"IDStudioStudio" toml:"IDStudioStudio" yaml:"IDStudioStudio"`
+	IDTattooViews    ViewSlice `boil:"IDTattooViews" json:"IDTattooViews" toml:"IDTattooViews" yaml:"IDTattooViews"`
 }
 
 // NewStruct creates a new relationship struct
@@ -244,6 +247,22 @@ func (r *tattooR) GetIDStudioStudio() *Studio {
 	}
 
 	return r.IDStudioStudio
+}
+
+func (o *Tattoo) GetIDTattooViews() ViewSlice {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetIDTattooViews()
+}
+
+func (r *tattooR) GetIDTattooViews() ViewSlice {
+	if r == nil {
+		return nil
+	}
+
+	return r.IDTattooViews
 }
 
 // tattooL is where Load methods for each relationship are stored.
@@ -604,6 +623,20 @@ func (o *Tattoo) IDStudioStudio(mods ...qm.QueryMod) studioQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Studios(queryMods...)
+}
+
+// IDTattooViews retrieves all the view's Views with an executor via id_tattoo column.
+func (o *Tattoo) IDTattooViews(mods ...qm.QueryMod) viewQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"views\".\"id_tattoo\"=?", o.ID),
+	)
+
+	return Views(queryMods...)
 }
 
 // LoadIDImageImage allows an eager lookup of values, cached into the
@@ -1094,6 +1127,119 @@ func (tattooL) LoadIDStudioStudio(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
+// LoadIDTattooViews allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (tattooL) LoadIDTattooViews(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTattoo interface{}, mods queries.Applicator) error {
+	var slice []*Tattoo
+	var object *Tattoo
+
+	if singular {
+		var ok bool
+		object, ok = maybeTattoo.(*Tattoo)
+		if !ok {
+			object = new(Tattoo)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeTattoo)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTattoo))
+			}
+		}
+	} else {
+		s, ok := maybeTattoo.(*[]*Tattoo)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeTattoo)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTattoo))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &tattooR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &tattooR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`views`),
+		qm.WhereIn(`views.id_tattoo in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load views")
+	}
+
+	var resultSlice []*View
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice views")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on views")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for views")
+	}
+
+	if len(viewAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.IDTattooViews = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &viewR{}
+			}
+			foreign.R.IDTattooTattoo = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.IDTattoo) {
+				local.R.IDTattooViews = append(local.R.IDTattooViews, foreign)
+				if foreign.R == nil {
+					foreign.R = &viewR{}
+				}
+				foreign.R.IDTattooTattoo = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetIDImageImage of the tattoo to the related item.
 // Sets o.R.IDImageImage to related.
 // Adds o to related.R.IDImageTattoo.
@@ -1345,6 +1491,133 @@ func (o *Tattoo) RemoveIDStudioStudio(ctx context.Context, exec boil.ContextExec
 		related.R.IDStudioTattoos = related.R.IDStudioTattoos[:ln-1]
 		break
 	}
+	return nil
+}
+
+// AddIDTattooViews adds the given related objects to the existing relationships
+// of the tattoo, optionally inserting them as new records.
+// Appends related to o.R.IDTattooViews.
+// Sets related.R.IDTattooTattoo appropriately.
+func (o *Tattoo) AddIDTattooViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.IDTattoo, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"views\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"id_tattoo"}),
+				strmangle.WhereClause("\"", "\"", 2, viewPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.IDTattoo, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &tattooR{
+			IDTattooViews: related,
+		}
+	} else {
+		o.R.IDTattooViews = append(o.R.IDTattooViews, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &viewR{
+				IDTattooTattoo: o,
+			}
+		} else {
+			rel.R.IDTattooTattoo = o
+		}
+	}
+	return nil
+}
+
+// SetIDTattooViews removes all previously related items of the
+// tattoo replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.IDTattooTattoo's IDTattooViews accordingly.
+// Replaces o.R.IDTattooViews with related.
+// Sets related.R.IDTattooTattoo's IDTattooViews accordingly.
+func (o *Tattoo) SetIDTattooViews(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*View) error {
+	query := "update \"views\" set \"id_tattoo\" = null where \"id_tattoo\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.IDTattooViews {
+			queries.SetScanner(&rel.IDTattoo, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.IDTattooTattoo = nil
+		}
+		o.R.IDTattooViews = nil
+	}
+
+	return o.AddIDTattooViews(ctx, exec, insert, related...)
+}
+
+// RemoveIDTattooViews relationships from objects passed in.
+// Removes related items from R.IDTattooViews (uses pointer comparison, removal does not keep order)
+// Sets related.R.IDTattooTattoo.
+func (o *Tattoo) RemoveIDTattooViews(ctx context.Context, exec boil.ContextExecutor, related ...*View) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.IDTattoo, nil)
+		if rel.R != nil {
+			rel.R.IDTattooTattoo = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("id_tattoo")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.IDTattooViews {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.IDTattooViews)
+			if ln > 1 && i < ln-1 {
+				o.R.IDTattooViews[i] = o.R.IDTattooViews[ln-1]
+			}
+			o.R.IDTattooViews = o.R.IDTattooViews[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

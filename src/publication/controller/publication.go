@@ -526,6 +526,7 @@ func NewPublicationHttpController(bus bus.Bus) *HttpPublicationController {
 				*fileService,
 				embeddingapi.NewAPIEmbedding(),
 				bus,
+				*viewService,
 			),
 			profileService,
 			imageStore,

@@ -97,6 +97,7 @@ func NewTattooQueueController(bus bus.Bus) *QueueTattooController {
 			*fileService,
 			embeddingapi.NewAPIEmbedding(),
 			bus,
+			*viewService,
 		),
 	}
 }

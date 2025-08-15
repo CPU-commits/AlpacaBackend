@@ -3,6 +3,7 @@ package view_repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/package/db"
@@ -35,6 +36,9 @@ func (sqlViewRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	if criteria.IDStudio != 0 {
 		where = append(where, models.ViewWhere.IDStudio.EQ(null.Int64From(criteria.IDStudio)))
 	}
+	if criteria.IDTattoo != 0 {
+		where = append(where, models.ViewWhere.IDTattoo.EQ(null.Int64From(criteria.IDTattoo)))
+	}
 	if criteria.CreatedAt != nil {
 		if !criteria.CreatedAt.LTE.IsZero() {
 			where = append(where, models.ViewWhere.CreatedAt.LTE(criteria.CreatedAt.LTE))
@@ -54,6 +58,23 @@ func (sqlViewRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	}
 
 	return where
+}
+func (sqlViewRepository) sqlToModel(sqlView *models.View) model.View {
+	return model.View{
+		ID:        sqlView.ID,
+		IDPost:    sqlView.IDPost.Int64,
+		IDProfile: sqlView.IDProfile.Int64,
+		IDUser:    sqlView.IDUser.Int64,
+		IDLink:    sqlView.IDLink.Int64,
+		IDStudio:  sqlView.IDStudio.Int64,
+		IDTattoo:  sqlView.IDTattoo.Int64,
+		Country:   sqlView.Country.String,
+		Continent: sqlView.Continent.String,
+		City:      sqlView.City.String,
+		Region:    sqlView.Region.String,
+		TimeZone:  sqlView.Timezone.String,
+		CreatedAt: sqlView.CreatedAt,
+	}
 }
 
 func (sqlVR sqlViewRepository) CountGroupByDayAndLocation(criteria *Criteria) ([]CountGroupByDayResultAndLocation, error) {
@@ -127,6 +148,7 @@ func (sqlVR sqlViewRepository) Insert(view model.View) error {
 		IDUser:    null.NewInt64(view.IDUser, view.IDUser != 0),
 		IDPost:    null.NewInt64(view.IDPost, view.IDPost != 0),
 		IDProfile: null.NewInt64(view.IDProfile, view.IDProfile != 0),
+		IDTattoo:  null.NewInt64(view.IDTattoo, view.IDTattoo != 0),
 		Country:   null.NewString(view.Country, view.Country != ""),
 		IDStudio:  null.NewInt64(view.IDStudio, view.IDStudio != 0),
 		City:      null.NewString(view.City, view.City != ""),
@@ -135,12 +157,22 @@ func (sqlVR sqlViewRepository) Insert(view model.View) error {
 		Timezone:  null.NewString(view.TimeZone, view.TimeZone != ""),
 		IDLink:    null.NewInt64(view.IDLink, view.IDLink != 0),
 	}
-
+	fmt.Printf("sqlView: %v\n", sqlView)
 	if err := sqlView.Insert(context.Background(), sqlVR.db, boil.Infer()); err != nil {
 		return utils.ErrRepositoryFailed
 	}
 
 	return nil
+}
+func (sqlVR sqlViewRepository) Count(criteria *Criteria) (int64, error) {
+	where := sqlVR.criteriaToWhere(criteria)
+
+	views, err := models.Views(where...).Count(context.Background(), sqlVR.db)
+	if err != nil {
+		return 0, utils.ErrRepositoryFailed
+	}
+
+	return views, nil
 }
 
 func NewSqlViewRepository() ViewRepository {

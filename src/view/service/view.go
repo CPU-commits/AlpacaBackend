@@ -26,6 +26,7 @@ type ToView struct {
 	IDProfile int64
 	IDLink    int64
 	IDStudio  int64
+	IDTattoo  int64
 }
 
 func (viewService *ViewService) StatsViewsByLocation(
@@ -64,6 +65,19 @@ func (viewService *ViewService) StatsViewsByLocation(
 	return stats, count, nil
 }
 
+func (viewService *ViewService) CountAllViews(
+	to ToView,
+) (int64, error) {
+
+	return viewService.viewRepository.Count(&view_repository.Criteria{
+		IDPost:    to.IDPost,
+		IDProfile: to.IDProfile,
+		IDStudio:  to.IDStudio,
+		IDTattoo:  to.IDTattoo,
+		IDLink:    to.IDLink,
+	})
+}
+
 func (viewService *ViewService) StatsViews(
 	to ToView,
 	from time.Time,
@@ -74,6 +88,7 @@ func (viewService *ViewService) StatsViews(
 		IDProfile: to.IDProfile,
 		IDLink:    to.IDLink,
 		IDStudio:  to.IDStudio,
+		IDTattoo:  to.IDTattoo,
 		CreatedAt: &repository.CriteriaTime{
 			GTE: from,
 			LTE: toTime,
@@ -112,7 +127,10 @@ func (viewService *ViewService) AddPermanentViewIfTemporalViewNotExists(
 		key = fmt.Sprintf("post-%d", to.IDPost)
 	} else if to.IDProfile != 0 {
 		key = fmt.Sprintf("profile-%d", to.IDPost)
+	} else if to.IDTattoo != 0 {
+		key = fmt.Sprintf("tattoo-%d", to.IDTattoo)
 	}
+
 	exists, err := viewService.temporalViewRepository.ExistsView(key, identifier)
 	if err != nil {
 		return err
@@ -146,6 +164,7 @@ func (viewService *ViewService) AddPermanentViewIfTemporalViewNotExists(
 		IDPost:    to.IDPost,
 		IDLink:    to.IDLink,
 		IDStudio:  to.IDStudio,
+		IDTattoo:  to.IDTattoo,
 		Country:   country,
 		City:      city,
 		Continent: continent,
@@ -181,6 +200,7 @@ func (viewService *ViewService) AddPermanentView(
 		IDPost:    to.IDPost,
 		IDProfile: to.IDProfile,
 		IDStudio:  to.IDStudio,
+		IDTattoo:  to.IDTattoo,
 		IDLink:    to.IDLink,
 		Country:   country,
 		City:      city,

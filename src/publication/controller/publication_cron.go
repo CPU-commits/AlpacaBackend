@@ -52,6 +52,7 @@ func NewCronPublication(
 				*fileService,
 				embeddingapi.NewAPIEmbedding(),
 				bus,
+				*viewService,
 			),
 			profileService,
 			imageStore,

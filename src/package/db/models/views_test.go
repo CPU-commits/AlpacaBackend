@@ -738,6 +738,67 @@ func testViewToOneStudioUsingIDStudioStudio(t *testing.T) {
 	}
 }
 
+func testViewToOneTattooUsingIDTattooTattoo(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local View
+	var foreign Tattoo
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, viewDBTypes, true, viewColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize View struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, tattooDBTypes, false, tattooColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Tattoo struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.IDTattoo, foreign.ID)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.IDTattooTattoo().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.ID, foreign.ID) {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddTattooHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Tattoo) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ViewSlice{&local}
+	if err = local.L.LoadIDTattooTattoo(ctx, tx, false, (*[]*View)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDTattooTattoo == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.IDTattooTattoo = nil
+	if err = local.L.LoadIDTattooTattoo(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.IDTattooTattoo == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testViewToOneUserUsingIDUserUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1235,6 +1296,115 @@ func testViewToOneRemoveOpStudioUsingIDStudioStudio(t *testing.T) {
 	}
 }
 
+func testViewToOneSetOpTattooUsingIDTattooTattoo(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a View
+	var b, c Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Tattoo{&b, &c} {
+		err = a.SetIDTattooTattoo(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.IDTattooTattoo != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.IDTattooViews[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.IDTattoo, x.ID) {
+			t.Error("foreign key was wrong value", a.IDTattoo)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.IDTattoo))
+		reflect.Indirect(reflect.ValueOf(&a.IDTattoo)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.IDTattoo, x.ID) {
+			t.Error("foreign key was wrong value", a.IDTattoo, x.ID)
+		}
+	}
+}
+
+func testViewToOneRemoveOpTattooUsingIDTattooTattoo(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a View
+	var b Tattoo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, viewDBTypes, false, strmangle.SetComplement(viewPrimaryKeyColumns, viewColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, tattooDBTypes, false, strmangle.SetComplement(tattooPrimaryKeyColumns, tattooColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetIDTattooTattoo(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveIDTattooTattoo(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.IDTattooTattoo().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.IDTattooTattoo != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.IDTattoo) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.IDTattooViews) != 0 {
+		t.Error("failed to remove a from b's relationships")
+	}
+}
+
 func testViewToOneSetOpUserUsingIDUserUser(t *testing.T) {
 	var err error
 
@@ -1418,7 +1588,7 @@ func testViewsSelect(t *testing.T) {
 }
 
 var (
-	viewDBTypes = map[string]string{`ID`: `bigint`, `IDPost`: `bigint`, `IDProfile`: `bigint`, `IDLink`: `bigint`, `IDStudio`: `bigint`, `IDUser`: `bigint`, `Country`: `text`, `City`: `text`, `Continent`: `text`, `Timezone`: `text`, `Region`: `text`, `CreatedAt`: `timestamp without time zone`}
+	viewDBTypes = map[string]string{`ID`: `bigint`, `IDPost`: `bigint`, `IDProfile`: `bigint`, `IDLink`: `bigint`, `IDStudio`: `bigint`, `IDUser`: `bigint`, `Country`: `text`, `City`: `text`, `Continent`: `text`, `Timezone`: `text`, `Region`: `text`, `CreatedAt`: `timestamp without time zone`, `IDTattoo`: `bigint`}
 	_           = bytes.MinRead
 )
 

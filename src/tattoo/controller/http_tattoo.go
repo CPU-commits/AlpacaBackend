@@ -40,6 +40,13 @@ func (httpTattoo *HttpTattooController) GetTattoos(c *gin.Context) {
 	username := c.Query("username")
 	pageStr := c.DefaultQuery("page", "0")
 	page, err := strconv.Atoi(pageStr)
+	var identifier string
+	claims, exists := utils.NewClaimsFromContext(c)
+	if exists {
+		identifier = strconv.Itoa(int(claims.ID))
+	} else {
+		identifier = utils.GetIP(c)
+	}
 	if err != nil {
 		utils.ResWithMessageID(c, "form.error", http.StatusBadRequest, err)
 		return
@@ -57,7 +64,7 @@ func (httpTattoo *HttpTattooController) GetTattoos(c *gin.Context) {
 	tattoos, metadata, err := httpTattoo.tattooService.GetTattoos(service.GetTattoosParams{
 		Username: username,
 		IDStudio: idStudio,
-	}, page)
+	}, page, identifier, utils.GetIP(c))
 	if err != nil {
 		utils.ResFromErr(c, err)
 		return
@@ -263,6 +270,7 @@ func NewTattooHttpController(bus bus.Bus) *HttpTattooController {
 			*fileService,
 			embeddingapi.NewAPIEmbedding(),
 			bus,
+			*viewService,
 		),
 	}
 }

@@ -64,6 +64,7 @@ func TestToOne(t *testing.T) {
 	t.Run("ViewToPostUsingIDPostPost", testViewToOnePostUsingIDPostPost)
 	t.Run("ViewToProfileUsingIDProfileProfile", testViewToOneProfileUsingIDProfileProfile)
 	t.Run("ViewToStudioUsingIDStudioStudio", testViewToOneStudioUsingIDStudioStudio)
+	t.Run("ViewToTattooUsingIDTattooTattoo", testViewToOneTattooUsingIDTattooTattoo)
 	t.Run("ViewToUserUsingIDUserUser", testViewToOneUserUsingIDUserUser)
 }
 
@@ -116,6 +117,7 @@ func TestToMany(t *testing.T) {
 	t.Run("StudioToIDStudioTattoos", testStudioToManyIDStudioTattoos)
 	t.Run("StudioToIDStudioViews", testStudioToManyIDStudioViews)
 	t.Run("SubscriptionToIDSubscriptionPayments", testSubscriptionToManyIDSubscriptionPayments)
+	t.Run("TattooToIDTattooViews", testTattooToManyIDTattooViews)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyIDUserAppointments)
 	t.Run("UserToIDUserCodes", testUserToManyIDUserCodes)
@@ -193,6 +195,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("ViewToPostUsingIDPostViews", testViewToOneSetOpPostUsingIDPostPost)
 	t.Run("ViewToProfileUsingIDProfileViews", testViewToOneSetOpProfileUsingIDProfileProfile)
 	t.Run("ViewToStudioUsingIDStudioViews", testViewToOneSetOpStudioUsingIDStudioStudio)
+	t.Run("ViewToTattooUsingIDTattooViews", testViewToOneSetOpTattooUsingIDTattooTattoo)
 	t.Run("ViewToUserUsingIDUserViews", testViewToOneSetOpUserUsingIDUserUser)
 }
 
@@ -221,6 +224,7 @@ func TestToOneRemove(t *testing.T) {
 	t.Run("ViewToPostUsingIDPostViews", testViewToOneRemoveOpPostUsingIDPostPost)
 	t.Run("ViewToProfileUsingIDProfileViews", testViewToOneRemoveOpProfileUsingIDProfileProfile)
 	t.Run("ViewToStudioUsingIDStudioViews", testViewToOneRemoveOpStudioUsingIDStudioStudio)
+	t.Run("ViewToTattooUsingIDTattooViews", testViewToOneRemoveOpTattooUsingIDTattooTattoo)
 	t.Run("ViewToUserUsingIDUserViews", testViewToOneRemoveOpUserUsingIDUserUser)
 }
 
@@ -281,6 +285,7 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("StudioToIDStudioTattoos", testStudioToManyAddOpIDStudioTattoos)
 	t.Run("StudioToIDStudioViews", testStudioToManyAddOpIDStudioViews)
 	t.Run("SubscriptionToIDSubscriptionPayments", testSubscriptionToManyAddOpIDSubscriptionPayments)
+	t.Run("TattooToIDTattooViews", testTattooToManyAddOpIDTattooViews)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyAddOpIDTattooArtistAppointments)
 	t.Run("UserToIDUserAppointments", testUserToManyAddOpIDUserAppointments)
 	t.Run("UserToIDUserCodes", testUserToManyAddOpIDUserCodes)
@@ -317,6 +322,7 @@ func TestToManySet(t *testing.T) {
 	t.Run("StudioToIDStudioTattoos", testStudioToManySetOpIDStudioTattoos)
 	t.Run("StudioToIDStudioViews", testStudioToManySetOpIDStudioViews)
 	t.Run("SubscriptionToIDSubscriptionPayments", testSubscriptionToManySetOpIDSubscriptionPayments)
+	t.Run("TattooToIDTattooViews", testTattooToManySetOpIDTattooViews)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManySetOpIDTattooArtistAppointments)
 	t.Run("UserToIDUserLinks", testUserToManySetOpIDUserLinks)
 	t.Run("UserToIDUserPayments", testUserToManySetOpIDUserPayments)
@@ -342,6 +348,7 @@ func TestToManyRemove(t *testing.T) {
 	t.Run("StudioToIDStudioTattoos", testStudioToManyRemoveOpIDStudioTattoos)
 	t.Run("StudioToIDStudioViews", testStudioToManyRemoveOpIDStudioViews)
 	t.Run("SubscriptionToIDSubscriptionPayments", testSubscriptionToManyRemoveOpIDSubscriptionPayments)
+	t.Run("TattooToIDTattooViews", testTattooToManyRemoveOpIDTattooViews)
 	t.Run("UserToIDTattooArtistAppointments", testUserToManyRemoveOpIDTattooArtistAppointments)
 	t.Run("UserToIDUserLinks", testUserToManyRemoveOpIDUserLinks)
 	t.Run("UserToIDUserPayments", testUserToManyRemoveOpIDUserPayments)
