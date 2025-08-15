@@ -298,6 +298,14 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 	}
 	return nil
 }
+func (sqlDS *sqlDesignRepository) Exists(criteria *Criteria) (bool, error) {
+	where := sqlDS.criteriaToWhere(criteria)
+	exists, err := models.Designs(where...).Exists(context.Background(), sqlDS.db)
+	if err != nil {
+		return false, utils.ErrRepositoryFailed
+	}
+	return exists, nil
+}
 
 // Action reduce | increase
 func (sqlDS *sqlDesignRepository) UpdateStock(id int64, action string) error {

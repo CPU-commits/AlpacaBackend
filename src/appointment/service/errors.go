@@ -17,4 +17,5 @@ var (
 	ErrAppointmentIsNotFinished         = errors.New("err: appointment is not finished")
 	ErrCantRequestAppointmentToMe       = errors.New("err: cant request appointment to me")
 	ErrExcluyentParams                  = errors.New("err: excluyent params")
+	ErrCantRequestWithoutDesign         = errors.New("err: cant request without design")
 )

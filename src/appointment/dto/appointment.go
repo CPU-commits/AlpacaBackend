@@ -18,7 +18,7 @@ type AppointmentDto struct {
 	Description    string           `form:"description" binding:"required,max=500"`
 	Images         []store.ImageDto `form:"-"`
 	HasDesign      *bool            `form:"hasDesign" binding:"required"`
-	IDDesign       *int64           `form:"idDesign" binding:"required_if=HasDesign true"`
+	IDDesign       *int64           `form:"idDesign" `
 }
 
 func (appointment *AppointmentDto) ToModel(idUser int64) (*model.Appointment, error) {

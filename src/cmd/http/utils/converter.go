@@ -165,6 +165,10 @@ func init() {
 		StatusCode: http.StatusConflict,
 		MessageId:  "appointment.no_studio",
 	}
+	errorsService[appointmentService.ErrCantRequestWithoutDesign] = errRes{
+		StatusCode: http.StatusConflict,
+		MessageId:  "appointment.without_design",
+	}
 	errorsService[generatorService.ErrCodeNotValid] = errRes{
 		StatusCode: http.StatusUnprocessableEntity,
 		MessageId:  "code.not_valid",

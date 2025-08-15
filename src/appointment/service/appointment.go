@@ -735,6 +735,18 @@ func (appointmentService *AppointmentService) RequestAppointment(
 	if *appointmentDto.HasDesign && *appointmentDto.HasIdea {
 		return ErrExcluyentParams
 	}
+	if *appointmentDto.HasDesign && appointmentDto.IDDesign == nil {
+		return ErrCantRequestWithoutDesign
+	}
+	profileID, err := appointmentService.profileService.GetProfileIDFromIDUser(appointmentDto.IDTattooArtist)
+	if err != nil {
+		return err
+	}
+	appointmentService.designRepository.Exists(&design_repository.Criteria{
+		ID:        *appointmentDto.IDDesign,
+		IDProfile: profileID,
+	})
+
 	if appointmentDto.IDTattooArtist != 0 && appointmentDto.IDStudio == 0 {
 		isTattooArtist, err := appointmentService.userService.UserIsTattooArtist(
 			appointmentDto.IDTattooArtist,

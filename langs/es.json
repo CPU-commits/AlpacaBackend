@@ -62,7 +62,8 @@
 		"not_found": "No existe la cita",
 		"no_studio": "Esta cita no está vinculada a ningún estudio",
 		"already_tattoo_artist": "La cita ya tiene un tatuador asignado",
-		"excluyent_params": "Parametros excluyentes"
+		"excluyent_params": "Parametros excluyentes",
+		"without_design": "Escoge un diseño valido"
 	},
 	"common": {
 		"date_format_error": "El formato de la fecha no es correcto"

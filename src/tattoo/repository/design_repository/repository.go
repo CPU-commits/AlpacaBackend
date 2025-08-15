@@ -118,4 +118,5 @@ type DesignRepository interface {
 	Delete(criteria *Criteria) error
 	GetCategories(criteria *Criteria) ([]string, error)
 	UpdateStock(id int64, action string) error
+	Exists(criteria *Criteria) (bool, error)
 }
