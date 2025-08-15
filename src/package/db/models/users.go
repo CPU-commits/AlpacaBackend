@@ -30,8 +30,8 @@ type User struct {
 	Username  string      `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Phone     null.String `boil:"phone" json:"phone,omitempty" toml:"phone" yaml:"phone,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Location  null.String `boil:"location" json:"location,omitempty" toml:"location" yaml:"location,omitempty"`
 	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Location  null.String `boil:"location" json:"location,omitempty" toml:"location" yaml:"location,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,8 +44,8 @@ var UserColumns = struct {
 	Username  string
 	Phone     string
 	CreatedAt string
-	Location  string
 	UpdatedAt string
+	Location  string
 }{
 	ID:        "id",
 	Email:     "email",
@@ -53,8 +53,8 @@ var UserColumns = struct {
 	Username:  "username",
 	Phone:     "phone",
 	CreatedAt: "created_at",
-	Location:  "location",
 	UpdatedAt: "updated_at",
+	Location:  "location",
 }
 
 var UserTableColumns = struct {
@@ -64,8 +64,8 @@ var UserTableColumns = struct {
 	Username  string
 	Phone     string
 	CreatedAt string
-	Location  string
 	UpdatedAt string
+	Location  string
 }{
 	ID:        "users.id",
 	Email:     "users.email",
@@ -73,8 +73,8 @@ var UserTableColumns = struct {
 	Username:  "users.username",
 	Phone:     "users.phone",
 	CreatedAt: "users.created_at",
-	Location:  "users.location",
 	UpdatedAt: "users.updated_at",
+	Location:  "users.location",
 }
 
 // Generated where
@@ -86,8 +86,8 @@ var UserWhere = struct {
 	Username  whereHelperstring
 	Phone     whereHelpernull_String
 	CreatedAt whereHelpertime_Time
-	Location  whereHelpernull_String
 	UpdatedAt whereHelpertime_Time
+	Location  whereHelpernull_String
 }{
 	ID:        whereHelperint64{field: "\"users\".\"id\""},
 	Email:     whereHelperstring{field: "\"users\".\"email\""},
@@ -95,8 +95,8 @@ var UserWhere = struct {
 	Username:  whereHelperstring{field: "\"users\".\"username\""},
 	Phone:     whereHelpernull_String{field: "\"users\".\"phone\""},
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
-	Location:  whereHelpernull_String{field: "\"users\".\"location\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"users\".\"updated_at\""},
+	Location:  whereHelpernull_String{field: "\"users\".\"location\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -478,9 +478,9 @@ func (r *userR) GetIDUserViews() ViewSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "name", "username", "phone", "created_at", "location", "updated_at"}
+	userAllColumns            = []string{"id", "email", "name", "username", "phone", "created_at", "updated_at", "location"}
 	userColumnsWithoutDefault = []string{"email", "name", "username"}
-	userColumnsWithDefault    = []string{"id", "phone", "created_at", "location", "updated_at"}
+	userColumnsWithDefault    = []string{"id", "phone", "created_at", "updated_at", "location"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )

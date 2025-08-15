@@ -120,6 +120,7 @@ type TattooRepository interface {
 	Count(criteria *Criteria) (int64, error)
 	ConvertImageInTattoo(idImages []int64, tattoos []model.Tattoo, idProfile int64) ([]model.Tattoo, error)
 	UpdateViews(ids []int64) error
+	UpdateLikes(ids []int64, action string) error
 	Update(criteria *Criteria, data UpdateData) error
 	TattooSimilarity(params SimilarityParams, opts *SimilarityOptions) ([]model.Tattoo, int64, error)
 	Delete(criteria *Criteria) error

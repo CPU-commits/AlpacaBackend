@@ -37,10 +37,10 @@ type Plan struct {
 	IsActive     bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Identifier   string      `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
 	BannerURL    null.String `boil:"banner_url" json:"banner_url,omitempty" toml:"banner_url" yaml:"banner_url,omitempty"`
+	VolumeItem   null.String `boil:"volume_item" json:"volume_item,omitempty" toml:"volume_item" yaml:"volume_item,omitempty"`
 	ForStudios   bool        `boil:"for_studios" json:"for_studios" toml:"for_studios" yaml:"for_studios"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	VolumeItem   null.String `boil:"volume_item" json:"volume_item,omitempty" toml:"volume_item" yaml:"volume_item,omitempty"`
 
 	R *planR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L planL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -60,10 +60,10 @@ var PlanColumns = struct {
 	IsActive     string
 	Identifier   string
 	BannerURL    string
+	VolumeItem   string
 	ForStudios   string
 	CreatedAt    string
 	UpdatedAt    string
-	VolumeItem   string
 }{
 	ID:           "id",
 	Name:         "name",
@@ -78,10 +78,10 @@ var PlanColumns = struct {
 	IsActive:     "is_active",
 	Identifier:   "identifier",
 	BannerURL:    "banner_url",
+	VolumeItem:   "volume_item",
 	ForStudios:   "for_studios",
 	CreatedAt:    "created_at",
 	UpdatedAt:    "updated_at",
-	VolumeItem:   "volume_item",
 }
 
 var PlanTableColumns = struct {
@@ -98,10 +98,10 @@ var PlanTableColumns = struct {
 	IsActive     string
 	Identifier   string
 	BannerURL    string
+	VolumeItem   string
 	ForStudios   string
 	CreatedAt    string
 	UpdatedAt    string
-	VolumeItem   string
 }{
 	ID:           "plans.id",
 	Name:         "plans.name",
@@ -116,10 +116,10 @@ var PlanTableColumns = struct {
 	IsActive:     "plans.is_active",
 	Identifier:   "plans.identifier",
 	BannerURL:    "plans.banner_url",
+	VolumeItem:   "plans.volume_item",
 	ForStudios:   "plans.for_studios",
 	CreatedAt:    "plans.created_at",
 	UpdatedAt:    "plans.updated_at",
-	VolumeItem:   "plans.volume_item",
 }
 
 // Generated where
@@ -161,10 +161,10 @@ var PlanWhere = struct {
 	IsActive     whereHelperbool
 	Identifier   whereHelperstring
 	BannerURL    whereHelpernull_String
+	VolumeItem   whereHelpernull_String
 	ForStudios   whereHelperbool
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
-	VolumeItem   whereHelpernull_String
 }{
 	ID:           whereHelperint64{field: "\"plans\".\"id\""},
 	Name:         whereHelperstring{field: "\"plans\".\"name\""},
@@ -179,10 +179,10 @@ var PlanWhere = struct {
 	IsActive:     whereHelperbool{field: "\"plans\".\"is_active\""},
 	Identifier:   whereHelperstring{field: "\"plans\".\"identifier\""},
 	BannerURL:    whereHelpernull_String{field: "\"plans\".\"banner_url\""},
+	VolumeItem:   whereHelpernull_String{field: "\"plans\".\"volume_item\""},
 	ForStudios:   whereHelperbool{field: "\"plans\".\"for_studios\""},
 	CreatedAt:    whereHelpertime_Time{field: "\"plans\".\"created_at\""},
 	UpdatedAt:    whereHelpertime_Time{field: "\"plans\".\"updated_at\""},
-	VolumeItem:   whereHelpernull_String{field: "\"plans\".\"volume_item\""},
 }
 
 // PlanRels is where relationship names are stored.
@@ -222,9 +222,9 @@ func (r *planR) GetIDPlanSubscriptions() SubscriptionSlice {
 type planL struct{}
 
 var (
-	planAllColumns            = []string{"id", "name", "description", "price", "pricing_model", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "for_studios", "created_at", "updated_at", "volume_item"}
+	planAllColumns            = []string{"id", "name", "description", "price", "pricing_model", "currency", "features", "billing_cycle", "code", "trial_days", "is_active", "identifier", "banner_url", "volume_item", "for_studios", "created_at", "updated_at"}
 	planColumnsWithoutDefault = []string{"name", "price", "currency", "billing_cycle", "code", "trial_days", "is_active", "identifier"}
-	planColumnsWithDefault    = []string{"id", "description", "pricing_model", "features", "banner_url", "for_studios", "created_at", "updated_at", "volume_item"}
+	planColumnsWithDefault    = []string{"id", "description", "pricing_model", "features", "banner_url", "volume_item", "for_studios", "created_at", "updated_at"}
 	planPrimaryKeyColumns     = []string{"id"}
 	planGeneratedColumns      = []string{}
 )

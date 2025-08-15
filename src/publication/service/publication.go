@@ -491,7 +491,6 @@ func (publicationService *PublicationService) HandleLike(
 	opts := publication_repository.NewFindOneOptions().
 		Select(publication_repository.SelectOpts{
 			IDProfile: utils.Bool(true),
-			ID:        utils.Bool(true),
 		})
 
 	publication, err := publicationService.publicationRepository.FindOne(
@@ -517,6 +516,12 @@ func (publicationService *PublicationService) HandleLike(
 	if err != nil {
 		return false, err
 	}
+	tattoos, _, err := publicationService.tattooService.GetTattoos(service.GetTattoosParams{
+		IDPublication: publication.ID,
+	}, 0)
+	if err != nil {
+		return false, err
+	}
 	if existsLike {
 
 		err = publicationService.likeRepository.Delete(&like_repository.Criteria{
@@ -538,6 +543,12 @@ func (publicationService *PublicationService) HandleLike(
 		); err != nil {
 			return false, err
 		}
+		if err := publicationService.tattooRepository.UpdateLikes(utils.MapNoError(tattoos, func(tattoo tattooModel.Tattoo) int64 {
+			return tattoo.ID
+		}), "reduce"); err != nil {
+			return false, err
+		}
+
 		err = publicationService.interactionEvent(publication.ID)
 		if err != nil {
 			return false, err
@@ -560,6 +571,11 @@ func (publicationService *PublicationService) HandleLike(
 				SumLikes: 1,
 			},
 		); err != nil {
+			return false, err
+		}
+		if err := publicationService.tattooRepository.UpdateLikes(utils.MapNoError(tattoos, func(tattoo tattooModel.Tattoo) int64 {
+			return tattoo.ID
+		}), "increase"); err != nil {
 			return false, err
 		}
 		err = publicationService.interactionEvent(publication.ID)

@@ -331,6 +331,39 @@ func (sqlTR sqlTattooRepository) Count(criteria *Criteria) (int64, error) {
 	return count, nil
 }
 
+func (sqlTR sqlTattooRepository) UpdateLikes(ids []int64, action string) error {
+	var in string = "("
+	for i, id := range ids {
+		if i != 0 {
+			in += ","
+		}
+
+		in += strconv.Itoa(int(id))
+	}
+
+	in += ")"
+
+	if action == "reduce" {
+		_, err := sqlTR.db.Exec(
+			fmt.Sprintf("update tattoos set likes = likes - 1 where id in %s", in),
+		)
+		if err != nil {
+			return utils.ErrRepositoryFailed
+		}
+	} else if action == "increase" {
+		_, err := sqlTR.db.Exec(
+			fmt.Sprintf("update tattoos set likes = likes + 1 where id in %s", in),
+		)
+		if err != nil {
+			return utils.ErrRepositoryFailed
+		}
+	} else {
+		return utils.ErrRepositoryFailed
+	}
+
+	return nil
+}
+
 func (sqlTR sqlTattooRepository) UpdateViews(ids []int64) error {
 	var in string = "("
 	for i, id := range ids {

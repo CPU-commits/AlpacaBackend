@@ -32,10 +32,10 @@ type Design struct {
 	Price       null.Int64        `boil:"price" json:"price,omitempty" toml:"price" yaml:"price,omitempty"`
 	Categories  types.StringArray `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
 	Coordinate  null.String       `boil:"coordinate" json:"coordinate,omitempty" toml:"coordinate" yaml:"coordinate,omitempty"`
+	IsExclusive null.Bool         `boil:"is_exclusive" json:"is_exclusive,omitempty" toml:"is_exclusive" yaml:"is_exclusive,omitempty"`
+	MaxCopies   null.Int64        `boil:"max_copies" json:"max_copies,omitempty" toml:"max_copies" yaml:"max_copies,omitempty"`
 	CreatedAt   time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	IsDeleted   bool              `boil:"is_deleted" json:"is_deleted" toml:"is_deleted" yaml:"is_deleted"`
-	MaxCopies   null.Int64        `boil:"max_copies" json:"max_copies,omitempty" toml:"max_copies" yaml:"max_copies,omitempty"`
-	IsExclusive null.Bool         `boil:"is_exclusive" json:"is_exclusive,omitempty" toml:"is_exclusive" yaml:"is_exclusive,omitempty"`
 
 	R *designR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L designL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,10 +49,10 @@ var DesignColumns = struct {
 	Price       string
 	Categories  string
 	Coordinate  string
+	IsExclusive string
+	MaxCopies   string
 	CreatedAt   string
 	IsDeleted   string
-	MaxCopies   string
-	IsExclusive string
 }{
 	ID:          "id",
 	IDProfile:   "id_profile",
@@ -61,10 +61,10 @@ var DesignColumns = struct {
 	Price:       "price",
 	Categories:  "categories",
 	Coordinate:  "coordinate",
+	IsExclusive: "is_exclusive",
+	MaxCopies:   "max_copies",
 	CreatedAt:   "created_at",
 	IsDeleted:   "is_deleted",
-	MaxCopies:   "max_copies",
-	IsExclusive: "is_exclusive",
 }
 
 var DesignTableColumns = struct {
@@ -75,10 +75,10 @@ var DesignTableColumns = struct {
 	Price       string
 	Categories  string
 	Coordinate  string
+	IsExclusive string
+	MaxCopies   string
 	CreatedAt   string
 	IsDeleted   string
-	MaxCopies   string
-	IsExclusive string
 }{
 	ID:          "designs.id",
 	IDProfile:   "designs.id_profile",
@@ -87,10 +87,10 @@ var DesignTableColumns = struct {
 	Price:       "designs.price",
 	Categories:  "designs.categories",
 	Coordinate:  "designs.coordinate",
+	IsExclusive: "designs.is_exclusive",
+	MaxCopies:   "designs.max_copies",
 	CreatedAt:   "designs.created_at",
 	IsDeleted:   "designs.is_deleted",
-	MaxCopies:   "designs.max_copies",
-	IsExclusive: "designs.is_exclusive",
 }
 
 // Generated where
@@ -153,10 +153,10 @@ var DesignWhere = struct {
 	Price       whereHelpernull_Int64
 	Categories  whereHelpertypes_StringArray
 	Coordinate  whereHelpernull_String
+	IsExclusive whereHelpernull_Bool
+	MaxCopies   whereHelpernull_Int64
 	CreatedAt   whereHelpertime_Time
 	IsDeleted   whereHelperbool
-	MaxCopies   whereHelpernull_Int64
-	IsExclusive whereHelpernull_Bool
 }{
 	ID:          whereHelperint64{field: "\"designs\".\"id\""},
 	IDProfile:   whereHelperint64{field: "\"designs\".\"id_profile\""},
@@ -165,10 +165,10 @@ var DesignWhere = struct {
 	Price:       whereHelpernull_Int64{field: "\"designs\".\"price\""},
 	Categories:  whereHelpertypes_StringArray{field: "\"designs\".\"categories\""},
 	Coordinate:  whereHelpernull_String{field: "\"designs\".\"coordinate\""},
+	IsExclusive: whereHelpernull_Bool{field: "\"designs\".\"is_exclusive\""},
+	MaxCopies:   whereHelpernull_Int64{field: "\"designs\".\"max_copies\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"designs\".\"created_at\""},
 	IsDeleted:   whereHelperbool{field: "\"designs\".\"is_deleted\""},
-	MaxCopies:   whereHelpernull_Int64{field: "\"designs\".\"max_copies\""},
-	IsExclusive: whereHelpernull_Bool{field: "\"designs\".\"is_exclusive\""},
 }
 
 // DesignRels is where relationship names are stored.
@@ -246,9 +246,9 @@ func (r *designR) GetIDDesignAppointments() AppointmentSlice {
 type designL struct{}
 
 var (
-	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "price", "categories", "coordinate", "created_at", "is_deleted", "max_copies", "is_exclusive"}
+	designAllColumns            = []string{"id", "id_profile", "id_image", "description", "price", "categories", "coordinate", "is_exclusive", "max_copies", "created_at", "is_deleted"}
 	designColumnsWithoutDefault = []string{"id_profile", "id_image"}
-	designColumnsWithDefault    = []string{"id", "description", "price", "categories", "coordinate", "created_at", "is_deleted", "max_copies", "is_exclusive"}
+	designColumnsWithDefault    = []string{"id", "description", "price", "categories", "coordinate", "is_exclusive", "max_copies", "created_at", "is_deleted"}
 	designPrimaryKeyColumns     = []string{"id"}
 	designGeneratedColumns      = []string{}
 )

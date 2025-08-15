@@ -239,6 +239,7 @@ func (sqlPublicationRepository) selectOpts(selectOpts *SelectOpts) []QueryMod {
 	if selectOpts.CreatedAt != nil && *selectOpts.CreatedAt {
 		mod = append(mod, Select(models.PostColumns.CreatedAt))
 	}
+
 	return mod
 }
 
