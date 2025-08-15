@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/CPU-commits/Template_Go-EventDriven/src/auth/repository/user_repository"
@@ -274,6 +275,7 @@ func (adminStudioService *AdminStudioService) GetStudioPeople(
 		},
 		opts,
 	)
+	fmt.Printf("people: %v\n", len(people))
 	if err != nil {
 		return nil, err
 	}

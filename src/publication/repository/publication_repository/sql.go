@@ -108,6 +108,7 @@ func (sqlPublicationRepository) sqlPostToPublication(
 		CreatedAt:  post.CreatedAt,
 		Categories: post.Categories,
 		Mentions:   post.Mentions,
+		IDStudio:   post.IDStudio.Int64,
 		Tattoos:    tattoos,
 		Profile:    profile,
 		IDProfile:  post.IDProfile,

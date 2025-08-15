@@ -705,8 +705,8 @@ func (publicationService *PublicationService) Publish(
 	}
 	publication.Images = images
 
-	categories := utils.ExtractWords[string](publication.Content, "#")
-	dirtyMentions := utils.ExtractWords[string](publication.Content, "@")
+	categories := utils.ExtractHashtags(publication.Content)
+	dirtyMentions := utils.ExtractMentions(publication.Content)
 
 	publication.Categories = categories
 

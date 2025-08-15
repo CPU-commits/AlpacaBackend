@@ -206,7 +206,7 @@ func (tattooService *TattooService) PublishTattoos(
 		}
 		tattoo := tattooDto.ToModel(*image)
 
-		tattoo.Categories = utils.ExtractWords[string](tattoo.Description, "#")
+		tattoo.Categories = utils.ExtractHashtags(tattoo.Description)
 
 		return tattoo, nil
 	}, nil)

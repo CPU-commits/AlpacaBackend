@@ -2,7 +2,6 @@ package googlecalendar
 
 import (
 	"encoding/base32"
-	"fmt"
 	"strings"
 	"time"
 
@@ -52,8 +51,7 @@ func (gc googleCalendar) Send(event icalendar.Event) error {
 	call := srv.Events.Insert("primary", calendarEvent)
 	call = call.SendUpdates("all")
 
-	x, err := call.Do()
-	fmt.Printf("x.Id: %v\n", x.Id)
+	_, err := call.Do()
 	return err
 }
 

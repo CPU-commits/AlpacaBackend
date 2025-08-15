@@ -58,7 +58,6 @@ func (sqlASR sqlPeopleStudioRepository) sqlPeopleToModel(sqlPeople *models.Studi
 
 func (sqlASR sqlPeopleStudioRepository) criteriaToWhere(criteria *Criteria) []QueryMod {
 	where := []QueryMod{
-		LeftOuterJoin("studio_admins_permissions sap ON studio_users.id_user = sap.id_admin"),
 		Load(models.StudioUserRels.IDAdminStudioAdminsPermissions),
 	}
 	if criteria == nil {
@@ -78,6 +77,8 @@ func (sqlASR sqlPeopleStudioRepository) criteriaToWhere(criteria *Criteria) []Qu
 		where = append(where, Where(fmt.Sprintf(`studio_users.roles @> '[%s]'::jsonb`, roles)))
 	}
 	if criteria.Permissions != nil {
+		where = append(where, LeftOuterJoin("studio_admins_permissions sap ON studio_users.id = sap.id_admin"))
+
 		for _, permission := range criteria.Permissions {
 			where = append(where, Where("sap.permission = ?", permission))
 		}

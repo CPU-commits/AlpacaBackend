@@ -196,7 +196,6 @@ func Init(zapLogger *zap.Logger, logger logger.Logger) {
 		appointment.POST(":idAppointment/review", appointmentController.ReviewAppointment)
 		appointment.PATCH(
 			":idAppointment/schedule",
-			middleware.RolesMiddleware([]model.Role{model.TATTOO_ARTIST_ROLE}),
 			appointmentController.ScheduleAppointment,
 		)
 		appointment.PATCH(":idAppointment/cancel", appointmentController.CancelAppointment)

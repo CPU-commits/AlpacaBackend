@@ -192,7 +192,6 @@ func init() {
 		{Name: "mentions", Type: "int64[]", Facet: pointer.True(), Optional: pointer.True()},
 		{Name: "image", Type: "image", Store: pointer.False(), Optional: pointer.True()},
 		{Name: "color", Type: "string", Optional: pointer.True()},
-		{Name: "areas", Type: "string[]", Optional: pointer.True()},
 		{Name: "description", Type: "string", Index: pointer.True()},
 		{Name: "publication_description", Type: "string", Index: pointer.True()},
 		{Name: "created_at", Type: "int64", Sort: pointer.True(), Facet: pointer.True()},

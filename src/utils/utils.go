@@ -11,14 +11,64 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func ToPayload(data interface{}) []byte {
 	payload, _ := json.Marshal(data)
 
 	return payload
+}
+
+var reHashtag = regexp.MustCompile(`#([\w-]+)`)
+
+func ExtractHashtags(text string) []string {
+	matches := reHashtag.FindAllStringSubmatch(text, -1)
+	out := make([]string, 0, len(matches))
+	for _, m := range matches {
+		out = append(out, m[1]) // grupo 1: lo que va después de '#'
+	}
+	return out
+}
+
+var validate = validator.New(validator.WithRequiredStructEnabled())
+var reMention = regexp.MustCompile(`(^|[^a-z0-9._])@([a-z0-9._]+)`)
+
+func isUsername(u string) bool {
+	if len(u) == 0 {
+		return false
+	}
+	hasLetter := false
+	for i := 0; i < len(u); i++ {
+		c := u[i]
+		switch {
+		case c >= 'a' && c <= 'z':
+			hasLetter = true
+		case c >= '0' && c <= '9':
+			// ok
+		case c == '.' || c == '_':
+			// ok
+		default:
+			return false
+		}
+	}
+	return hasLetter
+}
+
+func ExtractMentions(text string) []string {
+	matches := reMention.FindAllStringSubmatch(text, -1)
+	out := make([]string, 0, len(matches))
+	for _, m := range matches {
+		user := m[2]
+		if isUsername(user) {
+			out = append(out, user)
+		}
+	}
+	return out
 }
 
 func ExtractWords[T comparable](text string, delimiter string) []T {

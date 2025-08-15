@@ -45,7 +45,7 @@ func (designService *DesignService) PublishDesigns(designsDto []dto.DesignDto, u
 			return model.Design{}, err
 		}
 		design := designDto.ToModel(*image)
-		design.Categories = utils.ExtractWords[string](design.Description, "#")
+		design.Categories = utils.ExtractHashtags(design.Description)
 		return design, nil
 	}, nil)
 	if err != nil {
