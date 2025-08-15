@@ -143,14 +143,21 @@ func (designService *DesignService) UpdateDesign(profileId int64, data dto.DataU
 	if data.Description == "" && data.Price == 0 {
 		return ErrNotParams
 	}
-
+	var dataUpdate design_repository.UpdateData
+	if data.Description != "" {
+		dataUpdate.Description = &data.Description
+	}
+	if data.Price != 0 {
+		dataUpdate.Price = &data.Price
+	}
+	fmt.Printf("data.Description: %v\n", data.Description)
+	fmt.Printf("data.Price: %v\n", data.Price)
+	fmt.Printf("dataUpdate: %v\n", dataUpdate.Description)
+	fmt.Printf("dataUpdate: %v\n", dataUpdate.Price)
 	return designService.designRepository.Update(&design_repository.Criteria{
 		ID:        data.ID,
 		IDProfile: profileId,
-	}, design_repository.UpdateData{
-		Description: &data.Description,
-		Price:       &data.Price,
-	})
+	}, dataUpdate)
 }
 func (designService *DesignService) DeleteDesign(idUser int64, designId int64) error {
 	idProfile, err := designService.profileService.GetProfileIDFromIDUser(idUser)

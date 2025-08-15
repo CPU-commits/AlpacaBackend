@@ -233,7 +233,6 @@ func (sqlDS *sqlDesignRepository) Insert(designs []model.Design, idProfile int64
 			tx.Rollback()
 			return nil, utils.ErrRepositoryFailed
 		}
-		fmt.Printf("null.BoolFrom(design.IsExclusive): %v\n", design.IsExclusive)
 		sqlDesign := models.Design{
 			IDProfile:   idProfile,
 			IDImage:     sqlImage.ID,
@@ -273,7 +272,7 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 		return utils.ErrRepositoryFailed
 	}
 	cols := []string{}
-	if data.Description != nil {
+	if data.Description != nil && *data.Description != "" {
 		sd.Description = null.StringFromPtr(data.Description)
 		cols = append(cols, models.DesignColumns.Description)
 	}
@@ -281,7 +280,7 @@ func (sqlDS *sqlDesignRepository) Update(c *Criteria, data UpdateData) error {
 		sd.Categories = *data.Categories
 		cols = append(cols, models.DesignColumns.Categories)
 	}
-	if data.Price != nil {
+	if data.Price != nil && *data.Price != 0 {
 		sd.Price = null.Int64FromPtr(data.Price)
 		cols = append(cols, models.DesignColumns.Price)
 	}
