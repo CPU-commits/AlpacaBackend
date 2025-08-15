@@ -744,6 +744,7 @@ func (appointmentService *AppointmentService) RequestAppointment(
 	}
 	appointmentService.designRepository.Exists(&design_repository.Criteria{
 		ID:        *appointmentDto.IDDesign,
+		IsDeleted: utils.Bool(false),
 		IDProfile: profileID,
 	})
 
