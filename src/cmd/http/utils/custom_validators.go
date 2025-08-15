@@ -17,5 +17,6 @@ func RegisterCustomValidators() {
 		v.RegisterValidation("studioRole", studioDto.IsRole)
 		v.RegisterValidation("permission", studioDto.IsPermission)
 		v.RegisterValidation("mediaType", studioDto.IsMediaType)
+		v.RegisterValidation("phone", authDto.IsPhone)
 	}
 }
